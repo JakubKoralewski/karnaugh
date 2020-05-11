@@ -1,5 +1,5 @@
 import {cloneElement} from "react"
-import Presentation from "../components/presentation";
+import Presentation from "../components/presentation/presentation";
 import slides from "./slides"
 
 export default function MyPresentation(props) {

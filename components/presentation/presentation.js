@@ -1,10 +1,9 @@
-import React, {useState, useEffect, useRef, createRef, useCallback} from 'react'
+import React, {useState, useEffect, useRef, useCallback} from 'react'
 import {AnimatePresence} from "framer-motion"
 
 import Slide from './slide'
 import Controls from './controls'
 import styles from './presentation.module.scss'
-// import {useRouter} from "next/router"
 // Will be available on both server-side and client-side
 const staticFolder = process.env.prod ? process.env.staticFolder : ''
 
@@ -13,10 +12,8 @@ const LEFT_ARROW = 37
 const RIGHT_ARROW = 39
 
 export default function Presentation(props) {
-    // const router = useRouter()
     const slides = props.children
     let [currentData, setData] = useState([props.slideID ?? 0, null]);
-    // let [stepNumber, setStepNumber] = useState(slide.current ? slide.current.step() : 0)
     let [currentSlideNumber, direction] = currentData
     let slideRef = useRef(null)
     // https://medium.com/@teh_builder/ref-objects-inside-useeffect-hooks-eb7c15198780
@@ -80,9 +77,7 @@ export default function Presentation(props) {
             newPath +=`/${newSlide}`
         }
         // https://nextjs.org/docs/routing/shallow-routing
-
         window.history.pushState({sid: newSlide}, '', newPath)
-        // router.push(newPath, newPath, {shallow:true})
     }
 
     const canGoBackASlide = () =>

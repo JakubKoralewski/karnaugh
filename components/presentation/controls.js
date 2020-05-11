@@ -52,7 +52,7 @@ function AvailableSteps(props) {
             20,
             15,
             360 * i / steps,
-            360 * (i + 1) / steps - 0.00001// - 20 //- (15*3.14*2/360*10)
+            360 * (i + 1) / steps - 0.00001
         )
     }
     const normalArc = (i, steps = props.steps) => {
@@ -61,7 +61,7 @@ function AvailableSteps(props) {
             20,
             15,
             360 * i / steps,
-            360 * (i + 1) / steps - 20 //- (15*3.14*2/360*10)
+            360 * (i + 1) / steps - 20
         )
     }
     const createPath = (d, classes, i=0) => (
@@ -109,10 +109,6 @@ function AvailableSteps(props) {
 const Controls = function Controls(props) {
     // https://remixicon.com/
     return (
-        /*TODO: Add indicator of how many steps are left on page
-        * https://www.w3schools.com/graphics/svg_stroking.asp
-        * https://developer.mozilla.org/en-US/docs/Web/SVG/Attribute/stroke-dasharray
-        * */
         <div className={`${props.className} ${styles.controls}`}>
             <div className={[styles.controlButton, props.canGoBack() ? styles.active : ''].join(' ')}
                  onClick={props.goBack}>
@@ -135,16 +131,3 @@ const Controls = function Controls(props) {
 }
 
 export default Controls
-
-/*
-formula:
-<circle cx="50" cy="50" r="40" stroke="black" stroke-dasharray="30 5" stroke-width="10" fill="none" />
-https://stackoverflow.com/questions/58553504/how-to-draw-a-circle-with-stripped-border-in-svg
-*/
-const genCircle = (radius, gaps, amount) => {
-    //FIXME: uneven circle
-    /*
-    <circle cx="50" cy="50" r="40" stroke="black" stroke-dasharray="88.5 10" stroke-width="10" fill="none" />
-    */
-    (radius * 3.14 + gaps * amount) / amount
-}

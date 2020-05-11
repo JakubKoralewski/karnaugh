@@ -11,7 +11,6 @@ export default slideOrder.map(createWithRef)
 
 import React, {forwardRef, useImperativeHandle, useState, createRef, useMemo} from "react";
 function createWithRef({Slide, steps=0}) {
-    console.log("creating slide")
 
     const SlideWithRef = forwardRef((props, ref) => {
         // https://stackoverflow.com/a/60739001/10854888
@@ -43,7 +42,6 @@ function createWithRef({Slide, steps=0}) {
                 return step
             }
         }))
-        // let innerRef = createRef()
 
         return  <Slide step={step} {...props}/>
     })
