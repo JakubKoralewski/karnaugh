@@ -4,17 +4,16 @@ import {AnimatePresence} from "framer-motion"
 import Slide from './slide'
 import Controls from './controls'
 import styles from './presentation.module.scss'
-
-import getConfig from 'next/config'
-const { publicRuntimeConfig } = getConfig()
+// import {useRouter} from "next/router"
 // Will be available on both server-side and client-side
-const staticFolder = publicRuntimeConfig.prod ? publicRuntimeConfig.staticFolder : ''
+const staticFolder = process.env.prod ? process.env.staticFolder : ''
 
 // https://css-tricks.com/snippets/javascript/javascript-keycodes/
 const LEFT_ARROW = 37
 const RIGHT_ARROW = 39
 
 export default function Presentation(props) {
+    // const router = useRouter()
     const slides = props.children
     let [currentData, setData] = useState([props.slideID ?? 0, null]);
     // let [stepNumber, setStepNumber] = useState(slide.current ? slide.current.step() : 0)
@@ -47,9 +46,26 @@ export default function Presentation(props) {
             }
         }
         setStepNumber(slideRef.current.step())
-        window.addEventListener("keydown", onKeyDown)
 
-        return () => {window.removeEventListener("keydown", onKeyDown)}
+        window.addEventListener("keydown", onKeyDown)
+        const onPopState = event => {
+            // https://developer.mozilla.org/en-US/docs/Web/API/History_API
+            let popSlideNumber
+            if(event.state.as) {
+                console.log("Next event state: ", event)
+                popSlideNumber = 0
+            } else {
+                popSlideNumber = event.state.sid
+            }
+            console.log("popstate new slide number: ", event)
+            setData(oldData => [popSlideNumber, oldData[1]])
+        }
+        window.addEventListener("popstate", onPopState)
+
+        return () => {
+            window.removeEventListener("keydown", onKeyDown)
+            window.removeEventListener("popstate", onPopState)
+        }
     }, [currentData])
 
     const updateRoute = (newSlideDelta) => {
@@ -64,7 +80,9 @@ export default function Presentation(props) {
             newPath +=`/${newSlide}`
         }
         // https://nextjs.org/docs/routing/shallow-routing
-        window.history.pushState(newSlide, '', newPath)
+
+        window.history.pushState({sid: newSlide}, '', newPath)
+        // router.push(newPath, newPath, {shallow:true})
     }
 
     const canGoBackASlide = () =>

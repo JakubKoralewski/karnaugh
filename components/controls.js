@@ -64,7 +64,7 @@ function AvailableSteps(props) {
             360 * (i + 1) / steps - 20 //- (15*3.14*2/360*10)
         )
     }
-    const createPath = (d, classes) => (
+    const createPath = (d, classes, i=0) => (
         <motion.path
             fill="none"
             strokeWidth="2"
@@ -73,6 +73,7 @@ function AvailableSteps(props) {
             variants={arcVariants}
             transition={{default: {duration: 2}}}
             className={classes}
+            key={i}
             d={d}
         />
     )
@@ -94,7 +95,7 @@ function AvailableSteps(props) {
             }
             let classes = [condition ? styles.stepActive : "", styles.stepArc].join(' ')
             paths.push(
-                createPath(arc, classes)
+                createPath(arc, classes, i)
             )
         }
     }
