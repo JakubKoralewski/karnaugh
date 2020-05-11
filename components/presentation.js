@@ -5,6 +5,11 @@ import Slide from './slide'
 import Controls from './controls'
 import styles from './presentation.module.scss'
 
+import getConfig from 'next/config'
+const { publicRuntimeConfig } = getConfig()
+// Will be available on both server-side and client-side
+const staticFolder = publicRuntimeConfig.prod ? publicRuntimeConfig.staticFolder : ''
+
 // https://css-tricks.com/snippets/javascript/javascript-keycodes/
 const LEFT_ARROW = 37
 const RIGHT_ARROW = 39
@@ -52,11 +57,11 @@ export default function Presentation(props) {
         let newSlide = currentSlideNumber+newSlideDelta
         setData([newSlide, newSlideDelta])
         console.log("new slide: ", newSlide)
-        let newPath
+        let newPath = staticFolder
         if(newSlide === 0) {
-            newPath = '/'
+            newPath += '/'
         } else {
-            newPath =`/${newSlide}`
+            newPath +=`/${newSlide}`
         }
         // https://nextjs.org/docs/routing/shallow-routing
         window.history.pushState(newSlide, '', newPath)
