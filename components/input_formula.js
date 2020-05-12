@@ -20,31 +20,55 @@ function tableReducer(state, {type, statement}) {
     }
 }
 
+const initialState = {
+    statement: null,
+    isValid: null,
+    errorMessage: "text",
+    showErrorMessage: false
+}
+
+function reducer(state, {type, text, show}) {
+    switch(type) {
+        case 'add': {
+            let errorMessage
+            let isValid = true
+            let statement
+            try {
+                statement = new Statement(text)
+            } catch(error) {
+                isValid = false
+                errorMessage = error
+            }
+            return {
+                statement: statement ?? state.statement,
+                isValid,
+                errorMessage: errorMessage ?? state.errorMessage
+            }
+        }
+        case 'show_error': {
+            return {
+                ...state,
+                showErrorMessage: show
+            }
+        }
+    }
+}
+
 export default function InputFormula() {
     let [text, setText] = useState("")
-    let [statement, setStatement] = useState(null)
-    let [isValid, setIsValid] = useState(null)
-    let [showError, setShowError] = useState(false)
-    let [errorMessage, setErrorMessage] = useState("text")
-
+    const [state, dispatch] = useReducer(reducer, initialState)
 
     // https://reactjs.org/docs/hooks-reference.html#usereducer
     const [tableState, tableDispatch] = useReducer(tableReducer, tableInitialState);
     useEffect(() => {
         if (!text) return;
-        try {
-            setStatement(new Statement(text))
-            setIsValid(true)
-        } catch (error) {
-            setIsValid(false)
-            setErrorMessage(error)
-        }
+        dispatch({type: 'add', text})
     }, [text])
 
 
     const generateTruthTable = () => {
-        if (!statement) return;
-        tableDispatch({type: 'generate', statement})
+        if (!state.statement) return;
+        tableDispatch({type: 'generate', statement:state.statement})
     }
 
     // debounce
@@ -56,19 +80,19 @@ export default function InputFormula() {
         <div className={styles.container}>
             <div className={styles.formulaButtonRow}>
                 <div className={styles.formulaWrapper}>
-                    <div className={[styles.error, showError && isValid === false ? styles.showError : ''].join(' ')}>
-                        {errorMessage.toString()}
+                    <div className={[styles.error, state.showError && isValid === false ? styles.showError : ''].join(' ')}>
+                        {state.errorMessage.toString()}
                     </div>
                     <input
-                        className={[isValid ? styles.valid : styles.invalid, styles.inputFormula].join(' ')}
+                        className={[state.isValid ? styles.valid : styles.invalid, styles.inputFormula].join(' ')}
                         onChange={(event) => {
                             debouncedHandler(event.target.value)
                         }}
                         onMouseEnter={() => {
-                            setShowError(true)
+                            dispatch({type: 'show_error', show: true})
                         }}
                         onMouseLeave={() => {
-                            setShowError(false)
+                            dispatch({type: 'show_error', show: false})
                         }}
                     >
                     </input>
