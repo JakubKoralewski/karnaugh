@@ -58,8 +58,22 @@
     border-right: rgba(0, 0, 0, 0.2) solid 1px;
   }
 }
+.buttons {
+  display: flex;
+  flex-direction: row;
+  // https://stackoverflow.com/questions/20626685/better-way-to-set-distance-between-flexbox-items
+  margin: 0 -15px;
+}
+.hidden {
+  display: none;
+}
+.parseTreeContainer {
+  display:flex;
+  justify-content: center;
+}
 
-.generateTruthTableButton {
+.button {
+  margin: 0 15px;
   border: none;
   padding: 0.5rem;
   font-size: 1.5rem;
