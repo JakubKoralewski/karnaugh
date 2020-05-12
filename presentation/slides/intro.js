@@ -1,11 +1,14 @@
 import styles from './slides.module.scss'
 import {motion} from "framer-motion"
+import InputFormula from "../../components/input_formula"
+import React from "react"
 
 function Intro(props) {
     // https://stackoverflow.com/a/60739001/10854888
 
     return (
         <div className={[styles.intro].join(' ')}>
+            <InputFormula />
             {
                 props.step >= 1 &&
                 <motion.h2

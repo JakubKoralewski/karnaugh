@@ -1,0 +1,74 @@
+.valid {
+  color: rgb(0, 200, 0) !important;
+}
+
+.inputFormula {
+  transition: color 0.25s ease-in-out;
+  border: none;
+  border-radius: 1.5rem;
+  font-size: 2rem;
+  padding: 0.5rem 1.5rem;
+  color: red;
+}
+
+.formulaWrapper {
+  display: flex;
+  flex-direction: column;
+}
+
+.formulaButtonRow {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-evenly;
+  margin-bottom: 2rem;
+}
+
+.error {
+  visibility: hidden;
+  pointer-events:none;
+}
+
+.showError {
+  visibility: visible;
+  top: var(--top);
+  left: var(--left);
+}
+
+.container {
+  display: flex;
+  flex-direction: column;
+  width: 80vw;
+}
+.truthTable {
+  align-self: center;
+  background: white;
+  padding: 0;
+  border-spacing: 0px;
+  thead {
+    background: lightgray;
+  }
+  td,th {
+    padding: 0.5rem;
+    text-align: center;
+  }
+  th:last-child {
+    padding: 0.5rem 2rem;
+  }
+  td:nth-child(n+1):not(:last-child) {
+    border-right: rgba(0, 0, 0, 0.2) solid 1px;
+  }
+}
+
+.generateTruthTableButton {
+  border: none;
+  padding: 0.5rem;
+  font-size: 1.5rem;
+  cursor: pointer;
+  box-shadow: 5px 5px 5px rgba(0, 0, 0, 0.2);
+  transition: all 0.01s ease-out;
+
+  &:active {
+    transform: translateX(1px) translateY(1px);
+    box-shadow: 1px 1px 5px rgba(0, 0, 0, 0.2);
+  }
+}
