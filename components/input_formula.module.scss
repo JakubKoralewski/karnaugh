@@ -9,11 +9,13 @@
   font-size: 2rem;
   padding: 0.5rem 1.5rem;
   color: red;
+  //width: 66.6%;
 }
 
 .formulaWrapper {
   display: flex;
   flex-direction: column;
+  width: 66.6%;
 }
 
 .formulaButtonRow {
@@ -43,13 +45,20 @@
   align-self: center;
   background: white;
   padding: 0;
-  border-spacing: 0px;
+  border: rgba(0, 0, 0, 0.2) solid 1px;
+  border-spacing: 0;
   thead {
     background: lightgray;
+  }
+  tr.tableFalseRow {
+    background: rgb(255, 220, 220);
   }
   td,th {
     padding: 0.5rem;
     text-align: center;
+  }
+  th {
+    border-bottom: rgba(0, 0, 0, 0.2) solid 1px;
   }
   th:last-child {
     padding: 0.5rem 2rem;

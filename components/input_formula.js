@@ -1,25 +1,10 @@
-import React, {useState, useEffect, useCallback, useReducer, useRef} from "react"
+import React, {useState, useEffect, useCallback, useReducer, useRef, useMemo} from "react"
 import Statement from "../project/statement";
 import makeTruthTable from "../project/truth_table"
 import styles from './input_formula.module.scss'
 import {debounce} from "lodash"
 import * as d3 from "d3"
 
-
-const tableInitialState = {
-    truthTable: null,
-    truthTableJsx: null
-}
-
-function tableReducer(state, {type, statement}) {
-    switch (type) {
-        case 'generate': {
-            let truthTable = makeTruthTable(statement)
-            let truthTableJsx = generateTruthTableJsx(truthTable)
-            return {truthTable, truthTableJsx}
-        }
-    }
-}
 
 const initialState = {
     statement: null,
@@ -55,20 +40,37 @@ function reducer(state, {type, text, show}) {
     }
 }
 
+const MemoParseTreeLocalStorageKey = `${process.env.staticFolder}-last-parse-tree-output`
+
 const parseTreeInitialState = {
-    jsx: null,
-    canvasRef: null
+    canvasRef: null,
+    memoParseTree: !process.browser ? null : window ? (JSON.parse(window.localStorage.getItem(MemoParseTreeLocalStorageKey)) || '') : ''
 }
 
-function parseTreeReducer(state, {type, statement, node}) {
-    switch (type) {
+function parseTreeReducer(state, action) {
+    switch (action.type) {
         case 'generate': {
+            let {statement} = action
+            if (state.memoParseTree && state.memoParseTree.input === statement.statement.trim()) {
+                console.log("parse tree same as last time, abort")
+                return state;
+            }
             console.log("canvasRef: ", state)
             state.canvasRef.innerHTML = ''
-            const parseTreeJsx = generateParseTreeJsx(statement.tree, state.canvasRef)
-            return {...state, jsx: parseTreeJsx}
+            generateParseTreeJsx(statement.tree, state.canvasRef)
+            let memoParseTree = {input: statement.statement.trim(), html: state.canvasRef.innerHTML}
+            window.localStorage.setItem(
+                MemoParseTreeLocalStorageKey,
+                JSON.stringify(memoParseTree)
+            )
+            state.memoParseTree = memoParseTree
+            return state
         }
         case 'set_ref': {
+            let {node, text} = action
+            if (state.memoParseTree && text.trim() === state.memoParseTree.input) {
+                node.innerHTML = state.memoParseTree.html
+            }
             return {...state, canvasRef: node}
         }
     }
@@ -84,35 +86,56 @@ const useStateWithLocalStorage = localStorageKey => {
     }, [value]);
 
     return [value, setValue];
-};
+}
 
-export default function InputFormula() {
+export default function InputFormula({shouldGenerateParseTree, shouldGenerateTruthTable}) {
     let text, setText
+    let truthTable, setTruthTable
+    // let truthTableJsxCache, setTruthTableJsxCache
+    // if the below condition is not checked the useStateWithLocalStorage hook
+    // will throw `window is undefined` error for N/A reasons
     if (process.browser) {
-        [text, setText] = useStateWithLocalStorage(`${process.env.staticFolder}-input-formula-text`)
+        [text, setText] =
+            useStateWithLocalStorage(
+                `${process.env.staticFolder}-input-formula-text`
+            );
+        [truthTable, setTruthTable] =
+            useStateWithLocalStorage(
+                `${process.env.staticFolder}-input-formula-truth-table`
+            );
+        // [truthTableJsxCache, setTruthTableJsxCache] = useStateWithLocalStorage(
+        //     `${process.env.staticFolder}-input-formula-truth-table-jsx`
+        // )
     } else {
-        [text, setText] = useState('')
+        [text, setText] = useState('');
+        [truthTable, setTruthTable] =
+            useState(null)
+        // [truthTableJsxCache, setTruthTableJsxCache] = useState(null)
     }
+    // https://reactjs.org/docs/hooks-reference.html#usereducer
     const [state, dispatch] = useReducer(reducer, initialState)
     let inputElem = useRef()
     useEffect(() => {
         inputElem.current.value = text
         dispatch({type: 'add', text})
     }, [])
-
-    // https://reactjs.org/docs/hooks-reference.html#usereducer
-    const [tableState, tableDispatch] = useReducer(tableReducer, tableInitialState);
-    const [parseTreeState, parseTreeDispatch] = useReducer(parseTreeReducer, parseTreeInitialState);
+    const [, parseTreeDispatch] = useReducer(parseTreeReducer, parseTreeInitialState);
+    // let [truthTable, setTruthTable] = useState(null)
+    // let [truthTableJsx,setTruthTableJsx] = useState(truthTableJsxCache ? JSON.parse(truthTableJsxCache) : null)
 
     const canvasRefCallback = useCallback(node => {
         if (node !== null) {
-            parseTreeDispatch({type: 'set_ref', node})
+            parseTreeDispatch({type: 'set_ref', node, text})
         }
     }, [])
 
     const generateTruthTable = () => {
         if (!state.statement) return
-        tableDispatch({type: 'generate', statement: state.statement})
+        let table = makeTruthTable(state.statement)
+        setTruthTable(JSON.stringify(table))
+        // let truthTableJsx = ()
+        // setTruthTableJsx(truthTableJsx)
+        // setTruthTableJsxCache(JSON.stringify(truthTableJsx.innerHTML))
     }
     const generateParseTree = () => {
         if (!state.statement) return
@@ -125,6 +148,15 @@ export default function InputFormula() {
     const debouncedHandler = useCallback(debounce((text) => {
         dispatch({type: 'add', text})
     }, 200), [])
+
+    useEffect(() => {
+        if (shouldGenerateTruthTable) {
+            generateTruthTable()
+        }
+        if (shouldGenerateParseTree) {
+            generateParseTree()
+        }
+    }, [state.statement])
 
     return (
         <div className={styles.container}>
@@ -151,6 +183,7 @@ export default function InputFormula() {
                     >
                     </input>
                 </div>
+                {/*
                 <div className={styles.buttons}>
                     <button
                         className={styles.button}
@@ -165,10 +198,11 @@ export default function InputFormula() {
                         Generate parse tree
                     </button>
                 </div>
+*/}
             </div>
 
             {
-                tableState.truthTable && tableState.truthTableJsx
+                truthTable && <TruthTableJsx truthTable={JSON.parse(truthTable)}/>
             }
             <div
                 className={styles.parseTreeContainer}
@@ -183,7 +217,7 @@ function generateParseTreeJsx(data, containerRef) {
     // https://github.com/d3/d3/blob/master/CHANGES.md#shapes-d3-shape
     // https://github.com/d3/d3-hierarchy/blob/master/README.md#tree
     // https://observablehq.com/@d3/tidy-tree
-    console.log("Drawing parse tree with data: ", data)
+    console.group("Drawing parse tree with data: ", data)
     const size = data.size
     const margin = {top: 20, right: 120, bottom: 20, left: 120}
     const width = 960 - margin.right - margin.left
@@ -205,7 +239,7 @@ function generateParseTreeJsx(data, containerRef) {
         .attr('height', height + margin.top + margin.bottom)
     const g = svg
         .append('g')
-        .attr('style', `transform: translateX(${circleRadius}px);`)
+        .attr('style', `transform: translate(${circleRadius}px, ${circleRadius}px);`)
         .attr('class', styles.svgGroup)
     // Compute the new tree layout.
     // https://stackoverflow.com/questions/41087568/d3js-tree-nodes-is-not-a-function
@@ -214,7 +248,10 @@ function generateParseTreeJsx(data, containerRef) {
 
     // Normalize for fixed-depth.
     nodes.forEach(d => {
-        d.y = d.depth * 180
+        d.y = d.depth * 100
+        d.x *= 1.5
+        d.x += 12
+        console.log(d)
     })
 
     // Declare the nodes
@@ -263,20 +300,27 @@ function generateParseTreeJsx(data, containerRef) {
         .attr('d', diagonal)
 
     const actualSize = svg.select('g').node().getBoundingClientRect()
+    maxYTransform += circleRadius
+    if (actualSize.height > maxYTransform) {
+        maxYTransform = actualSize.height
+    }
     // https://stackoverflow.com/questions/50813950/how-do-i-make-an-svg-size-to-fit-its-content
-    svg.attr('width', actualSize.width).attr('height', maxYTransform + circleRadius)
+    svg.attr('width', actualSize.width + 10).attr('height', maxYTransform + 15 + 10)
+    console.groupEnd()
 }
 
-function generateTruthTableJsx(truthTable) {
+const TruthTableJsx = React.memo(({truthTable}) => {
+    console.group("generating truth table", truthTable)
     let rows = []
     for (let i = 0; i < truthTable.rows.length; ++i) {
         let row = []
         for (let j = 0; j < truthTable.variables.length; ++j) {
             row.push(truthTable.rows[i][truthTable.variables[j]])
         }
-        row.push(truthTable.rows[i].eval)
+        let rowEval = truthTable.rows[i].eval
+        row.push(rowEval)
         rows.push((
-            <tr key={i}>
+            <tr key={i} className={!rowEval ? styles.tableFalseRow : ''}>
                 {
                     row.map((someEval, j) => {
                         return (<td key={j}>
@@ -289,7 +333,7 @@ function generateTruthTableJsx(truthTable) {
             </tr>
         ))
     }
-
+    console.groupEnd()
     return (
         <table className={styles.truthTable}>
             <thead>
@@ -310,4 +354,4 @@ function generateTruthTableJsx(truthTable) {
             </tbody>
         </table>
     )
-}
+})
