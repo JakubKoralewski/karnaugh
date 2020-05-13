@@ -73,6 +73,7 @@ function parseTreeReducer(state, {type, statement, node}) {
         }
     }
 }
+
 const useStateWithLocalStorage = localStorageKey => {
     const [value, setValue] = React.useState(
         window ? (window.localStorage.getItem(localStorageKey) || '') : ''
@@ -87,7 +88,7 @@ const useStateWithLocalStorage = localStorageKey => {
 
 export default function InputFormula() {
     let text, setText
-    if(process.browser) {
+    if (process.browser) {
         [text, setText] = useStateWithLocalStorage(`${process.env.staticFolder}-input-formula-text`)
     } else {
         [text, setText] = useState('')
@@ -96,6 +97,7 @@ export default function InputFormula() {
     let inputElem = useRef()
     useEffect(() => {
         inputElem.current.value = text
+        dispatch({type: 'add', text})
     }, [])
 
     // https://reactjs.org/docs/hooks-reference.html#usereducer
@@ -103,7 +105,7 @@ export default function InputFormula() {
     const [parseTreeState, parseTreeDispatch] = useReducer(parseTreeReducer, parseTreeInitialState);
 
     const canvasRefCallback = useCallback(node => {
-        if(node !== null) {
+        if (node !== null) {
             parseTreeDispatch({type: 'set_ref', node})
         }
     }, [])
@@ -190,64 +192,62 @@ function generateParseTreeJsx(data, containerRef) {
     let i = 0
 
     let root = d3.hierarchy(data.tree[0])
-    const tree= d3.tree().size([height, width])
-    // root.x0 = height/2
-    // root.y0 = 0
+    const tree = d3.tree().size([height, width])
+    let maxYTransform = 0
+
     const treeData = tree(root)
+
+    const circleRadius = 15
 
     const svg = d3.select(containerRef)
         .append('svg')
         .attr('width', width + margin.right + margin.left)
         .attr('height', height + margin.top + margin.bottom)
-    const g =svg
+    const g = svg
         .append('g')
-        .attr('style', 'transform: translateX(10px);')
+        .attr('style', `transform: translateX(${circleRadius}px);`)
+        .attr('class', styles.svgGroup)
     // Compute the new tree layout.
     // https://stackoverflow.com/questions/41087568/d3js-tree-nodes-is-not-a-function
     let nodes = treeData.descendants().reverse()
     let links = treeData.links()
 
     // Normalize for fixed-depth.
-    nodes.forEach(function (d) {
+    nodes.forEach(d => {
         d.y = d.depth * 180
     })
 
     // Declare the nodes
     let node = g.selectAll('g.node')
-        .data(nodes, function (d) {
-            return d.id || (d.id = ++i)
-        })
+        .data(nodes, d => d.id || (d.id = ++i))
 
     // Enter the nodes.
-    let nodeEnter = node.enter().append('g')
-        .attr('class', 'node')
-        .attr('transform', function (d) {
-            return 'translate(' + d.y + ',' + d.x + ')'
-        })
+    let nodeEnter = node
+        .enter()
+        .append('g')
+        .attr('class', d => d.children ? styles.operatorNode : styles.variableNode)
+        .attr('transform', d => {
+                if (d.x > maxYTransform) {
+                    console.log("setting new max transform on ", d)
+                    maxYTransform = d.x
+                }
+                return `translate(${d.y},${d.x})`
+            }
+        )
 
     nodeEnter.append('circle')
-        .attr('r', 10)
-        .style('fill', '#fff')
+        .attr('r', circleRadius)
 
     nodeEnter.append('text')
-        .attr('x', function (d) {
-            return 0
-        })
+        .attr('x', 0)
         .attr('dy', '.35em')
-        .attr('text-anchor', function (d) {
-            return 'middle'
-        })
-        .text(function (d) {
-            console.log("text: ", d)
-            return d.data.name
-        })
-        .style('fill-opacity', 1)
+        .text(d => d.data.name)
 
-    // Declare the links¦
-    let link = g.selectAll('path.link')
-        .data(links, function (d) {
-            return d.target.id
-        })
+    // Declare the links
+    let link = g
+        .selectAll('path.link')
+        .data(links, d => d.target.id)
+
     // https://stackoverflow.com/questions/40845121/where-is-d3-svg-diagonal
     // https://github.com/d3/d3-shape/issues/27
     let diagonal = function link(d) {
@@ -256,21 +256,15 @@ function generateParseTreeJsx(data, containerRef) {
             + " " + (d.source.y + d.target.y) / 2 + "," + d.target.x
             + " " + d.target.y + "," + d.target.x;
     }
-    var line = d3.line()
-        .x(function(d) { return d.y; })
-        .y(function(d) { return d.x; })
-        .curve(d3.curveLinear);
+
     // Enter the links.
-    link.enter().insert('path', 'g')
-        .attr('class', 'link')
+    link.enter()
+        .insert('path', 'g')
         .attr('d', diagonal)
-        .attr('fill', 'none')
-        .attr('stroke', 'black')
-        .attr('stroke-width', '2')
 
     const actualSize = svg.select('g').node().getBoundingClientRect()
     // https://stackoverflow.com/questions/50813950/how-do-i-make-an-svg-size-to-fit-its-content
-    svg.attr('width', actualSize.width).attr('height', actualSize.height)
+    svg.attr('width', actualSize.width).attr('height', maxYTransform + circleRadius)
 }
 
 function generateTruthTableJsx(truthTable) {

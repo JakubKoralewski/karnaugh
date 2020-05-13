@@ -72,6 +72,40 @@
   justify-content: center;
 }
 
+.svgGroup {
+  path {
+    fill: none;
+    stroke: black;
+    stroke-width: 2;
+  }
+  text {
+    fill: white;
+    text-anchor: middle;
+  }
+}
+.variableNode {
+  fill: white;
+  text {
+    font-weight: 900;
+    fill: black;
+  }
+}
+.operatorNode {
+  circle {
+    stroke: white;
+    stroke-width: 2px;
+    stroke-linejoin: round;
+  }
+  fill: rgba(177, 177, 177, 1);
+  text {
+    font-weight: 900;
+  }
+}
+
+.circle {
+  fill: white;
+}
+
 .button {
   margin: 0 15px;
   border: none;

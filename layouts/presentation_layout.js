@@ -7,7 +7,7 @@ export default function PresentationLayout(props) {
                 <title>Karnaugh Map to DNF</title>
                 <link rel="icon" href="/favicon.ico" />
                 <style>{`
-                    #__next { height: 100% }
+                    #__next { min-height: 100% }
                 `}
                 </style>
             </Head>
