@@ -16,7 +16,7 @@ function WhatIsKarnaugh(props) {
                         <figure style={{float: "left", width: "33%"}}>
                             <img alt="Karnaugh map example"
 
-                                 src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/02/K-map_6%2C8%2C9%2C10%2C11%2C12%2C13%2C14_anti-race.svg/1200px-K-map_6%2C8%2C9%2C10%2C11%2C12%2C13%2C14_anti-race.svg.png"
+                                 src="/kmap.svg"
                             />
                             <figcaption>
                                 Karnaugh Map example - Wikipedia <a
@@ -51,7 +51,7 @@ function WhatIsKarnaugh(props) {
                                 for the general case of a two variable problem.
                                 <br/>
                                 <img
-                                    src="http://www.ee.surrey.ac.uk/Projects/Labview/minimisation/graphics/karintro1.gif"/>
+                                    src="/karintro1.gif"/>
                             </div>
                         </Cite>
                     </SimpleOpacityAnimation>
