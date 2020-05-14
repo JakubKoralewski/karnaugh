@@ -1,4 +1,4 @@
-import React from "react"
+import React, {useEffect} from "react"
 import styles from './controls.module.scss'
 import {motion} from "framer-motion"
 
@@ -23,21 +23,25 @@ function describeArc(x, y, radius, startAngle, endAngle) {
         "A", radius, radius, 0, arcSweep, 0, end.x, end.y,
     ].join(" ");
 }
+let lastStepsAmt = 0
 
 const arcVariants = {
-    hidden: {
-        // opacity: 0,
-        pathOffset: 1,
-        // pathSpacing: 0,
-        pathLength: 0,
-        // fill: "rgba(255, 255, 255, 0)"
-    },
-    visible: {
-        // opacity: 1,
-        // pathSpacing: 1,
-        pathLength: 1,
-        pathOffset: 0
-        // fill: "rgba(255, 255, 255, 1)"
+    hidden:  {
+            pathOffset: 1,
+            pathLength: 0,
+        }
+    ,
+    visible: ({isFull, lastChanged}) => {
+        let anim =  {
+            // opacity: 1,
+            // pathSpacing: 1,
+            pathLength: 1,
+            pathOffset: 0,
+            transition: {duration: lastChanged ? 0.5 : isFull ? 1 : 1}
+            // fill: "rgba(255, 255, 255, 1)"
+        }
+        // console.log("visible variant args: isFull",isFull, "lastChanged: ", lastChanged, "anim: ", anim)
+        return anim
     }
 };
 
@@ -71,9 +75,9 @@ function AvailableSteps(props) {
             initial="hidden"
             animate="visible"
             variants={arcVariants}
-            transition={{default: {duration: 2}}}
+            custom={{isFull: props.active === props.steps, lastChanged: props.steps !== lastStepsAmt}}
             className={classes}
-            key={i}
+            key={`${i}${props.active === props.steps}${props.steps}`}
             d={d}
         />
     )
@@ -89,7 +93,7 @@ function AvailableSteps(props) {
             }
             let condition
             if (props.back) {
-                condition = i >= props.active
+                condition = i >= props.active || props.active === props.steps
             } else {
                 condition = i < props.active
             }
@@ -108,6 +112,9 @@ function AvailableSteps(props) {
 
 const Controls = function Controls(props) {
     // https://remixicon.com/
+    useEffect(() => {
+        return () => lastStepsAmt = props.stepsInSlide
+    })
     return (
         <div className={`${props.className} ${styles.controls}`}>
             <div className={[styles.controlButton, props.canGoBack() ? styles.active : ''].join(' ')}

@@ -4,7 +4,7 @@ import {AnimatePresence} from "framer-motion"
 import Slide from './slide'
 import Controls from './controls'
 import styles from './presentation.module.scss'
-// Will be available on both server-side and client-side
+
 const staticFolder = process.env.prod ? process.env.staticFolder : ''
 
 // https://css-tricks.com/snippets/javascript/javascript-keycodes/
@@ -36,6 +36,10 @@ export default function Presentation(props) {
     // https://stackoverflow.com/questions/55326406/react-hooks-value-is-not-accessible-in-event-listener-function
     useEffect(() => {
         const onKeyDown = event => {
+            console.log("keydown", event)
+            if(event.target !== window.document.body) {
+                return; //previous `composed` check did not work
+            }
             if(event.keyCode === RIGHT_ARROW) {
                 goForward()
             } else if (event.keyCode === LEFT_ARROW) {
@@ -138,7 +142,6 @@ export default function Presentation(props) {
                 stepsInSlide={slideRef.current ? slideRef.current.steps() : 0}
                 currentStep={stepNumber}
             />
-            {/*FIXME: the directions are wrong*/}
             <AnimatePresence initial={false} exitBeforeEnter custom={direction*-1}>
                 <Slide key={currentSlideNumber} direction={direction}>
                     {React.cloneElement(slides[currentSlideNumber], {ref: callbackSlideRef, direction:direction})}
