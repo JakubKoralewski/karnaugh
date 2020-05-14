@@ -93,7 +93,7 @@ function AvailableSteps(props) {
             }
             let condition
             if (props.back) {
-                condition = i >= props.active
+                condition = i >= props.active || props.active === props.steps
             } else {
                 condition = i < props.active
             }
