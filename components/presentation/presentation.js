@@ -37,8 +37,8 @@ export default function Presentation(props) {
     useEffect(() => {
         const onKeyDown = event => {
             console.log("keydown", event)
-            if(event.composed) {
-                return; // when typing it shouldnt work
+            if(event.target !== window.document.body) {
+                return; //previous `composed` check did not work
             }
             if(event.keyCode === RIGHT_ARROW) {
                 goForward()
