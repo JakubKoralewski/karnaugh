@@ -43,9 +43,10 @@
 }
 .truthTableContainer {
   align-self: center;
-  display: flex;
-  //width: max-content;
-  justify-content: center;
+  //display: flex;
+  width: max-content;
+  //justify-content: center;
+  margin: 0 auto;
   max-height: 66.6vh;
   overflow-y: auto;
 }

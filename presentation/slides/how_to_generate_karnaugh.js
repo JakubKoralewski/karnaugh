@@ -29,7 +29,7 @@ function HowToGenerateKarnaugh(props) {
                         props.step >= 2 &&
                         <SimpleOpacityAnimation>
                             <li>Second, we generate the truth table.</li>
-                            <TruthTableJsx statement={statement} />
+                                <TruthTableJsx statement={statement} />
                         </SimpleOpacityAnimation>
                     }
                 </ol>
