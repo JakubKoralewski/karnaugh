@@ -4,11 +4,14 @@ import {motion} from "framer-motion"
 export const Animation = React.forwardRef((props, ref) => {
     let child = props.children
     let type = child.type
+    let toRender
     let SomeTag
     if(typeof type === "string"){
         SomeTag = motion[type]
+        toRender = child.props.children
     } else {
         SomeTag = motion.div
+        toRender = child
     }
 
     // https://stackoverflow.com/questions/35152522/react-transferring-props-except-one
@@ -21,7 +24,7 @@ export const Animation = React.forwardRef((props, ref) => {
             {...otherProps}
             ref={ref}
         >
-            {child.props.children}
+            {toRender}
         </SomeTag>
     )
 })
