@@ -8,6 +8,27 @@
   }
 }
 
-.titular {
+div.titular {
+  // https://css-tricks.com/snippets/css/complete-guide-grid/
   display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  grid-template-rows: 1fr 8fr;
+  grid-template-areas:
+          "header header header header header"
+          "main main main main main";
+  h2 {
+    grid-area: header;
+    text-align: center;
+    font-size: 3rem;
+  }
+  main {
+    //text-align: center;
+    grid-area: main;
+    padding: 0 10rem;
+    font-size: 1.5rem;
+    font-weight: 100;
+  }
+  footer {
+    grid-area: footer;
+  }
 }

@@ -142,7 +142,6 @@ export default function Presentation(props) {
                 stepsInSlide={slideRef.current ? slideRef.current.steps() : 0}
                 currentStep={stepNumber}
             />
-            {/*FIXME: the directions are wrong*/}
             <AnimatePresence initial={false} exitBeforeEnter custom={direction*-1}>
                 <Slide key={currentSlideNumber} direction={direction}>
                     {React.cloneElement(slides[currentSlideNumber], {ref: callbackSlideRef, direction:direction})}

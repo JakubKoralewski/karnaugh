@@ -4,7 +4,12 @@ import {motion} from "framer-motion"
 export const Animation = React.forwardRef((props, ref) => {
     let child = props.children
     let type = child.type
-    let SomeTag = motion[type]
+    let SomeTag
+    if(typeof type === "string"){
+        SomeTag = motion[type]
+    } else {
+        SomeTag = motion.div
+    }
 
     // https://stackoverflow.com/questions/35152522/react-transferring-props-except-one
     const {onMount, onUnMount, ...otherProps} = props
@@ -22,7 +27,6 @@ export const Animation = React.forwardRef((props, ref) => {
 })
 
 export const ScrollIntoViewAnimation = React.forwardRef((props, ref) => {
-    console.log("scroll into view animation props refs: ", props, ref)
     let scrollObj
     if (!ref) {
         ref = useRef()
@@ -50,6 +54,20 @@ export const ScrollIntoViewAnimation = React.forwardRef((props, ref) => {
         </Animation>
     )
 })
+export function SimpleOpacityAnimation(props) {
+    let ref = useRef()
+    return (
+        <ScrollIntoViewAnimation
+            initial={{opacity: 0}}
+            animate={{opacity: 1}}
+            transition={{duration: props.duration ?? 1}}
+            ref={ref}
+            {...props}
+        >
+            {props.children}
+        </ScrollIntoViewAnimation>
+    )
+}
 
 export function BasicAnimation(props) {
     let ref = useRef()

@@ -11,6 +11,24 @@
     flex-direction: column;
     padding: 6rem 4rem;
   }
+
+  q {
+    &:after {
+      &:after {
+        content: "(" attr(cite) ")";
+      }
+    }
+  }
+  figure {
+    img {
+      width: 100%;
+    }
+    figcaption {
+      font-size: 0.7rem;
+      text-align: center;
+      font-style: italic;
+    }
+  }
 }
 
 h1, h2, h3, h4, h5, h6 {

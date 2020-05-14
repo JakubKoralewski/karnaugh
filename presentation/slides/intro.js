@@ -6,11 +6,9 @@ import {BasicAnimation, ScrollIntoViewAnimation} from "../animations"
 
 function Intro(props) {
     // https://stackoverflow.com/a/60739001/10854888
-    let ref = useRef()
 
     return (
         <div className={[styles.intro].join(' ')}>
-            <InputFormula shouldGenerateParseTree={true} shouldGenerateTruthTable={true}/>
             {
                 props.step >= 1 &&
                 <BasicAnimation>
