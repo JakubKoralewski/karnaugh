@@ -169,13 +169,16 @@ export default function InputFormula({shouldGenerateParseTree, shouldGenerateTru
             </div>
 
             {
-                truthTable && <TruthTableJsx truthTable={JSON.parse(truthTable)}/>
+                shouldGenerateTruthTable && truthTable && <TruthTableJsx truthTable={JSON.parse(truthTable)}/>
             }
-            <div
-                className={styles.parseTreeContainer}
-                ref={canvasRefCallback}
-            >
-            </div>
+            {
+                shouldGenerateParseTree &&
+                <div
+                    className={styles.parseTreeContainer}
+                    ref={canvasRefCallback}
+                >
+                </div>
+            }
         </div>
     )
 }
