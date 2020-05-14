@@ -1,11 +1,11 @@
 import Intro from "./slides/intro"
 import WhatIsKarnaugh from "./slides/what_is_karnaugh"
-import WhatIsNarnia from "./slides/the_chronicles_of_narnia"
+import HowToGenerateKarnaugh from "./slides/how_to_generate_karnaugh"
 
 const slideOrder = [
     Intro,
     WhatIsKarnaugh,
-    WhatIsNarnia
+    HowToGenerateKarnaugh
 ]
 export default slideOrder.map(createWithRef)
 

@@ -41,6 +41,14 @@
   flex-direction: column;
   width: 80vw;
 }
+.truthTableContainer {
+  align-self: center;
+  display: flex;
+  //width: max-content;
+  justify-content: center;
+  max-height: 66.6vh;
+  overflow-y: auto;
+}
 .truthTable {
   align-self: center;
   background: white;
@@ -77,8 +85,12 @@
   display: none;
 }
 .parseTreeContainer {
-  display:flex;
-  justify-content: center;
+  overflow: auto;
+
+  svg {
+    display: block;
+    margin: 0 auto;
+  }
 }
 
 .svgGroup {

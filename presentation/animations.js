@@ -63,7 +63,7 @@ export function SimpleOpacityAnimation(props) {
         <ScrollIntoViewAnimation
             initial={{opacity: 0}}
             animate={{opacity: 1}}
-            transition={{duration: props.duration ?? 1}}
+            transition={{duration: props.duration ?? 1, delay: props.delay ?? 0}}
             ref={ref}
             {...props}
         >

@@ -10,8 +10,7 @@ function WhatIsKarnaugh(props) {
             </BasicAnimation>
             <main>
                 {
-                    props.step >= 1 &&
-                    <SimpleOpacityAnimation duration={0.5} style={{float: "left", width: "33%"}}>
+                    <SimpleOpacityAnimation delay={0.25} duration={1} style={{float: "left", width: "33%"}}>
 
                         <figure style={{float: "left", width: "33%"}}>
                             <img alt="Karnaugh map example"
@@ -31,7 +30,7 @@ function WhatIsKarnaugh(props) {
                     </SimpleOpacityAnimation>
                 }
                 {
-                    props.step >= 2 &&
+                    props.step >= 1 &&
                     <SimpleOpacityAnimation duration={0.5}>
                         <Cite
                             prettyLink="Surrey University"
@@ -63,5 +62,5 @@ function WhatIsKarnaugh(props) {
 
 export default {
     Slide: WhatIsKarnaugh,
-    steps: 2
+    steps: 1
 }
