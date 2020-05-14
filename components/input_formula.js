@@ -1,4 +1,5 @@
 import React, {useState, useEffect, useCallback, useReducer, useRef, useMemo} from "react"
+import useStateWithLocalStorage from "./useStateWithLocalStorage"
 import Statement from "../project/statement";
 import makeTruthTable from "../project/truth_table"
 import styles from './input_formula.module.scss'
@@ -76,22 +77,11 @@ function parseTreeReducer(state, action) {
     }
 }
 
-const useStateWithLocalStorage = localStorageKey => {
-    const [value, setValue] = React.useState(
-        window ? (window.localStorage.getItem(localStorageKey) || '') : ''
-    );
-
-    React.useEffect(() => {
-        window.localStorage.setItem(localStorageKey, value);
-    }, [value]);
-
-    return [value, setValue];
-}
 
 export default function InputFormula({shouldGenerateParseTree, shouldGenerateTruthTable}) {
     let text, setText
     let truthTable, setTruthTable
-    // let truthTableJsxCache, setTruthTableJsxCache
+
     // if the below condition is not checked the useStateWithLocalStorage hook
     // will throw `window is undefined` error for N/A reasons
     if (process.browser) {
@@ -103,15 +93,13 @@ export default function InputFormula({shouldGenerateParseTree, shouldGenerateTru
             useStateWithLocalStorage(
                 `${process.env.staticFolder}-input-formula-truth-table`
             );
-        // [truthTableJsxCache, setTruthTableJsxCache] = useStateWithLocalStorage(
-        //     `${process.env.staticFolder}-input-formula-truth-table-jsx`
-        // )
+
     } else {
         [text, setText] = useState('');
         [truthTable, setTruthTable] =
             useState(null)
-        // [truthTableJsxCache, setTruthTableJsxCache] = useState(null)
     }
+
     // https://reactjs.org/docs/hooks-reference.html#usereducer
     const [state, dispatch] = useReducer(reducer, initialState)
     let inputElem = useRef()
@@ -120,8 +108,6 @@ export default function InputFormula({shouldGenerateParseTree, shouldGenerateTru
         dispatch({type: 'add', text})
     }, [])
     const [, parseTreeDispatch] = useReducer(parseTreeReducer, parseTreeInitialState);
-    // let [truthTable, setTruthTable] = useState(null)
-    // let [truthTableJsx,setTruthTableJsx] = useState(truthTableJsxCache ? JSON.parse(truthTableJsxCache) : null)
 
     const canvasRefCallback = useCallback(node => {
         if (node !== null) {
@@ -133,9 +119,6 @@ export default function InputFormula({shouldGenerateParseTree, shouldGenerateTru
         if (!state.statement) return
         let table = makeTruthTable(state.statement)
         setTruthTable(JSON.stringify(table))
-        // let truthTableJsx = ()
-        // setTruthTableJsx(truthTableJsx)
-        // setTruthTableJsxCache(JSON.stringify(truthTableJsx.innerHTML))
     }
     const generateParseTree = () => {
         if (!state.statement) return
@@ -183,22 +166,6 @@ export default function InputFormula({shouldGenerateParseTree, shouldGenerateTru
                     >
                     </input>
                 </div>
-                {/*
-                <div className={styles.buttons}>
-                    <button
-                        className={styles.button}
-                        onClick={generateTruthTable}
-                    >
-                        Generate truth table
-                    </button>
-                    <button
-                        className={styles.button}
-                        onClick={generateParseTree}
-                    >
-                        Generate parse tree
-                    </button>
-                </div>
-*/}
             </div>
 
             {
