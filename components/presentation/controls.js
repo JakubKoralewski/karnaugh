@@ -1,6 +1,6 @@
 import React, {useEffect} from "react"
 import styles from './controls.module.scss'
-import {motion} from "framer-motion"
+import {AnimatePresence, motion} from "framer-motion"
 
 
 // https://stackoverflow.com/questions/5736398/how-to-calculate-the-svg-path-for-an-arc-of-a-circle/24569190#24569190
@@ -110,13 +110,35 @@ function AvailableSteps(props) {
     )
 }
 
-const Controls = function Controls(props) {
+export default function Controls(props) {
     // https://remixicon.com/
     useEffect(() => {
         return () => lastStepsAmt = props.stepsInSlide
     })
     return (
         <div className={`${props.className} ${styles.controls}`}>
+            <AnimatePresence >
+                {
+                    props.errorMessage !== null &&
+                    <motion.div
+                        initial={{y: "100%", opacity: 0}}
+                        animate={{y:0, opacity: 1}}
+                        exit={{y: "100%", opacity: 0}}
+                        transition={{ease: "easeOut", duration: 3}}
+                        className={styles.errorAlert}
+                    >
+                        <span>
+                            {
+                                props.errorMessage
+                            }
+                        </span>
+                        <motion.svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
+                            <path fill="none" d="M0 0h24v24H0z"/>
+                            <path d="M12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10-4.477 10-10 10zm0-2a8 8 0 1 0 0-16 8 8 0 0 0 0 16zm0-9.414l2.828-2.829 1.415 1.415L13.414 12l2.829 2.828-1.415 1.415L12 13.414l-2.828 2.829-1.415-1.415L10.586 12 7.757 9.172l1.415-1.415L12 10.586z"/>
+                        </motion.svg>
+                    </motion.div>
+                }
+            </AnimatePresence>
             <div className={[styles.controlButton, props.canGoBack() ? styles.active : ''].join(' ')}
                  onClick={props.goBack}>
                 <AvailableSteps steps={props.stepsInSlide} back={true} active={props.stepsInSlide - props.currentStep}/>
@@ -136,5 +158,3 @@ const Controls = function Controls(props) {
         </div>
     )
 }
-
-export default Controls

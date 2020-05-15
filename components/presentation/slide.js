@@ -24,23 +24,23 @@ let ticking = false
 export default function Slide(props) {
     console.log("Slide props: ", props)
     const localStorageKey = `${process.env.staticFolder}-slide-scroll-pos-${props.children.key}`
-    let scroll,setScroll
-    if(process.browser) {
+    let scroll, setScroll
+    if (process.browser) {
         [scroll, setScroll] =
-        useState(
-            window.localStorage.getItem(localStorageKey) || null
-        )
-}
-let direction = props.direction ?? -1
+            useState(
+                window.localStorage.getItem(localStorageKey) || null
+            )
+    }
+    let direction = props.direction ?? -1
     useEffect(() => {
         console.log("scroll is", scroll)
-        if(scroll) {
+        if (scroll) {
             window.document.body.scrollTo(0, scroll)
         }
 
         const scrollReactor = (e) => {
             if (!ticking) {
-                window.requestAnimationFrame(function() {
+                window.requestAnimationFrame(function () {
                     const value = window.document.body.scrollTop
                     // console.log("setting scroll pos", value)
                     window.localStorage.setItem(localStorageKey, value);
@@ -52,7 +52,7 @@ let direction = props.direction ?? -1
         }
         window.document.body.addEventListener("scroll", scrollReactor)
         return () => window.document.body.removeEventListener("scroll", scrollReactor)
-    },[])
+    }, [])
 
     // https://codesandbox.io/s/framer-motion-image-gallery-pqvx3?fontsize=14&module=%2Fsrc%2FExample.tsx
     return (
@@ -64,7 +64,7 @@ let direction = props.direction ?? -1
             custom={direction}
             variants={variants}
             transition={{
-                x: { type: "tween", ease: "easeOut", stiffness: 300, damping: 200, duration: 0.25},
+                x: {type: "tween", ease: "easeOut", stiffness: 300, damping: 200, duration: 0.25},
             }}
         >
             {props.children}

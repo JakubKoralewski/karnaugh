@@ -17,6 +17,11 @@ function createWithRef({Slide, steps=0}) {
         let direction = props.direction ?? 1
         // direction > 0 is going right, and vice versa
         let [step, updateStep] = useState(direction > 0 ? 0 : steps)
+        let [slideAllowsMeToGoForward, setSlideAllowsMeToGoForward] = useState(true)
+
+        const canGoForward = (x) => {
+            setSlideAllowsMeToGoForward(x)
+        }
 
         useImperativeHandle(ref, () => ({
             prevStep() {
@@ -28,6 +33,9 @@ function createWithRef({Slide, steps=0}) {
                 return true
             },
             nextStep() {
+                if(slideAllowsMeToGoForward !== true) {
+                    return slideAllowsMeToGoForward;
+                }
                 if(step === steps) {
                     return;
                 }
@@ -43,7 +51,7 @@ function createWithRef({Slide, steps=0}) {
             }
         }))
 
-        return  <Slide step={step} {...props}/>
+        return  <Slide step={step} canGoForward={canGoForward} {...props}/>
     })
     return <SlideWithRef/>
 }

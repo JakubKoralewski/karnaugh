@@ -15,6 +15,14 @@ function HowToGenerateKarnaugh(props) {
         console.log("setting table")
         setTable(t)
     }
+    useEffect(() => {
+        if(!statement) {
+            props.canGoForward("Please input a formula")
+        } else {
+            props.canGoForward(true)
+        }
+    }, [props.step, statement])
+
 
     return (
         <div className={styles.titular} style={{background: "pink"}}>
@@ -47,7 +55,7 @@ function HowToGenerateKarnaugh(props) {
                                     <div>
 
                                     <li>And finally, we generate the Karnaugh map.</li>
-                                    <KarnaughMap table={table} symbols={{t: "T", f: "F"}}/>
+                                    <KarnaughMap table={table} symbols={{t: "T", f: "F", na: "*"}}/>
                                     </div>
                                 </SimpleOpacityAnimation>
                             }

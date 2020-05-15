@@ -86,15 +86,24 @@ function transformTable(tableRows, rows, columns) {
 }
 
 
-export default React.memo(function KarnaughMap({table, symbols: {t, f}, ...props}) {
+export default React.memo(function KarnaughMap({table, symbols: {t, f, na}, ...props}) {
     console.group("karnaugh map")
-    console.log("Generating Karnaugh from: ", table, "with symbols t,f: ", t, f)
+    console.log("Generating Karnaugh from: ", table, "with symbols t,f, na: ", t, f, na)
     let [rowHeaders, columnHeaders] = splitVariablesInHalf(table.variables)
     let [rowGrayCode, columnGrayCode] =
         [rowHeaders, columnHeaders]
             .map(grayCode)
     const transformedTable = transformTable(table.rows, rowHeaders, columnHeaders)
-    const mapSymbols = code => Array.isArray(code) ? code.map(x => x ? t : f) : code ? t : f
+    const mapSymbol = code => {
+        if(code == 0) {
+            return f
+        } else if (code == 1) {
+            return t
+        } else {
+            return na
+        }
+    }
+    const mapSymbols = code => Array.isArray(code) ? code.map(mapSymbol) : mapSymbol(code)
     const columns = React.useMemo(
         () => [
             {

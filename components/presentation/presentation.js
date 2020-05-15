@@ -13,7 +13,7 @@ const RIGHT_ARROW = 39
 
 export default function Presentation(props) {
     const slides = props.children
-    let [currentData, setData] = useState([props.slideID ?? 0, null]);
+    let [currentData, setData] = useState([props.slideID ?? 0, null])
     let [currentSlideNumber, direction] = currentData
     let slideRef = useRef(null)
     // https://medium.com/@teh_builder/ref-objects-inside-useeffect-hooks-eb7c15198780
@@ -32,6 +32,8 @@ export default function Presentation(props) {
 
     let maybeCurrent = (slide) => slide.current ? slide.current.step() : null
     let [stepNumber, setStepNumber] = useState(maybeCurrent(slideRef))
+
+    let [errorMessage, setErrorMessage] = useState(null)
 
     // https://stackoverflow.com/questions/55326406/react-hooks-value-is-not-accessible-in-event-listener-function
     useEffect(() => {
@@ -102,6 +104,7 @@ export default function Presentation(props) {
 
     const goBack = () => {
         console.log("currentSlideNumber", currentSlideNumber)
+        setErrorMessage(null)
         if(slideRef.current.prevStep()) {
             console.log(
                 `Slide had more prev steps, not changing slideRef (${slideRef.current.step()}/${slideRef.current.steps()})`,
@@ -117,7 +120,15 @@ export default function Presentation(props) {
     }
     const goForward = () => {
         console.log("currentSlideNumber", currentSlideNumber)
-        if(slideRef.current.nextStep()) {
+        const next_step = slideRef.current.nextStep()
+        if(typeof next_step === 'string') {
+            console.log("error going next step: ", next_step)
+            setErrorMessage(next_step)
+            return;
+        }
+        setErrorMessage(null)
+
+        if(next_step) {
             console.log(
                 `Slide had more next steps, not changing slideRef (${slideRef.current.step()}/${slideRef.current.steps()})`,
             )
@@ -141,6 +152,7 @@ export default function Presentation(props) {
                 canGoForward={canGoForward}
                 stepsInSlide={slideRef.current ? slideRef.current.steps() : 0}
                 currentStep={stepNumber}
+                errorMessage={errorMessage}
             />
             <AnimatePresence initial={false} exitBeforeEnter custom={direction*-1}>
                 <Slide key={currentSlideNumber} direction={direction}>
