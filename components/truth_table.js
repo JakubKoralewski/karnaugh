@@ -27,11 +27,12 @@ function generateTable(state, statement) {
     return memoTruthTable
 }
 
-const TruthTableJsx = React.memo(({statement}) => {
+const TruthTableJsx = React.memo(({statement, onChange}) => {
     console.group("generating truth table", statement)
     // let truthTable, setTruthTable
     let truthTable = generateTable(initialState, statement).table
     console.log("truthTable: ", truthTable)
+    onChange(truthTable)
 
     let rows = []
     for (let i = 0; i < truthTable.rows.length; ++i) {

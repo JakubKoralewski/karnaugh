@@ -79,6 +79,9 @@ export default function InputFormula({onChange}) {
                 {state.errorMessage.toString()}
             </div>
             <input
+                autoComplete="off"
+                autoCorrect="off"
+                spellCheck="false"
                 className={[state.isValid ? styles.valid : styles.invalid, styles.inputFormula].join(' ')}
                 onChange={(event) => {
                     let text = event.target.value

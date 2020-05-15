@@ -1,13 +1,18 @@
 import {useRef, useEffect, useCallback, useState} from "react"
 import styles from "./slides.module.scss"
-import InputFormulaAll  from "../../components/input_formula_all"
+import InputFormulaAll from "../../components/input_formula_all"
 import {BasicAnimation, SimpleOpacityAnimation} from "../animations"
-import TruthTableJsx from "../../components/truth_table";
+import TruthTableJsx from "../../components/truth_table"
+import KarnaughMap from "../../components/karnaugh_map"
 
 function HowToGenerateKarnaugh(props) {
     const [statement, setStatement] = useState('')
+    const [table, setTable] = useState(null)
     const onStatementChange = (statement) => {
         setStatement(statement)
+    }
+    const onTableGenerate = (t) => {
+        setTable(t)
     }
 
     return (
@@ -27,10 +32,20 @@ function HowToGenerateKarnaugh(props) {
                     </SimpleOpacityAnimation>
                     {
                         props.step >= 2 &&
-                        <SimpleOpacityAnimation>
-                            <li>Second, we generate the truth table.</li>
-                                <TruthTableJsx statement={statement} />
-                        </SimpleOpacityAnimation>
+                        <>
+                            <SimpleOpacityAnimation>
+                                <li>Second, we generate the truth table.</li>
+                                <TruthTableJsx onChange={onTableGenerate} statement={statement}/>
+                            </SimpleOpacityAnimation>
+
+                            {
+                                table &&
+                                <SimpleOpacityAnimation>
+                                    <li>And finally, we generate the Karnaugh map.</li>
+                                    <KarnaughMap table={table} symbols={{t: "T", f: "F"}}/>
+                                </SimpleOpacityAnimation>
+                            }
+                        </>
                     }
                 </ol>
             </main>
