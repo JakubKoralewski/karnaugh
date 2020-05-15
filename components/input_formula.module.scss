@@ -51,6 +51,11 @@
   max-height: 66.6vh;
   overflow-y: auto;
 }
+
+.tableHeader {
+  background: lightgray;
+}
+
 .truthTable {
   align-self: center;
   background: white;
@@ -58,7 +63,8 @@
   border: rgba(0, 0, 0, 0.2) solid 1px;
   border-spacing: 0;
   thead {
-    background: lightgray;
+    //background: lightgray;
+    @extend .tableHeader;
   }
   tr.tableFalseRow {
     background: rgb(255, 220, 220);

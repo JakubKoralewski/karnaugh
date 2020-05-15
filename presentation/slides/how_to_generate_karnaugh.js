@@ -7,11 +7,12 @@ import KarnaughMap from "../../components/karnaugh_map"
 
 function HowToGenerateKarnaugh(props) {
     const [statement, setStatement] = useState('')
-    const [table, setTable] = useState(null)
+    let [table, setTable] = useState(null)
     const onStatementChange = (statement) => {
         setStatement(statement)
     }
     const onTableGenerate = (t) => {
+        console.log("setting table")
         setTable(t)
     }
 
@@ -32,20 +33,25 @@ function HowToGenerateKarnaugh(props) {
                     </SimpleOpacityAnimation>
                     {
                         props.step >= 2 &&
-                        <>
+                        <div style={{display: "grid", gridTemplateColumns: "repeat(2, 1fr)"}}>
                             <SimpleOpacityAnimation>
-                                <li>Second, we generate the truth table.</li>
-                                <TruthTableJsx onChange={onTableGenerate} statement={statement}/>
+                                <div>
+                                    <li>Second, we generate the truth table.</li>
+                                    <TruthTableJsx onChange={onTableGenerate} statement={statement}/>
+                                </div>
                             </SimpleOpacityAnimation>
 
-                            {
-                                table &&
+                        {
+                                props.step >=3 &&
                                 <SimpleOpacityAnimation>
+                                    <div>
+
                                     <li>And finally, we generate the Karnaugh map.</li>
                                     <KarnaughMap table={table} symbols={{t: "T", f: "F"}}/>
+                                    </div>
                                 </SimpleOpacityAnimation>
                             }
-                        </>
+                        </div>
                     }
                 </ol>
             </main>
@@ -55,5 +61,5 @@ function HowToGenerateKarnaugh(props) {
 
 export default {
     Slide: HowToGenerateKarnaugh,
-    steps: 2
+    steps: 3
 }

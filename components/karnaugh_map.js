@@ -1,5 +1,7 @@
 import React, {useState} from "react"
 import {useTable} from "react-table"
+import inputStyles from "./input_formula.module.scss"
+import styles from "./karnaugh_map.module.scss"
 
 /*
 * Animate from truth table: https://github.com/framer/motion/issues/550
@@ -70,7 +72,7 @@ function transformTable(tableRows, rows, columns) {
             rowKey.push(row[rowHeader])
         }
         let rowKeyJoined = rowKey.map(x => x ? 1 : 0).join('')
-        if(!rv[rowKeyJoined]) {
+        if (!rv[rowKeyJoined]) {
             rv[rowKeyJoined] = {}
         }
         let columnKey = []
@@ -84,7 +86,7 @@ function transformTable(tableRows, rows, columns) {
 }
 
 
-export default function KarnaughMap({table, symbols: {t, f}}) {
+export default React.memo(function KarnaughMap({table, symbols: {t, f}, ...props}) {
     console.group("karnaugh map")
     console.log("Generating Karnaugh from: ", table, "with symbols t,f: ", t, f)
     let [rowHeaders, columnHeaders] = splitVariablesInHalf(table.variables)
@@ -101,12 +103,12 @@ export default function KarnaughMap({table, symbols: {t, f}}) {
             },
             ...columnGrayCode.map((gray, i) => (
                 {
-                    Header: mapSymbols(gray).join(', '),
+                    Header: mapSymbols(gray).join(''),
                     accessor: (i + 1).toString()
                 }
             ))
         ],
-        []
+        [table.rows]
     )
     const data = React.useMemo(
         () => rowGrayCode.map((rowCode, i) => {
@@ -114,11 +116,12 @@ export default function KarnaughMap({table, symbols: {t, f}}) {
                 '0': mapSymbols(rowCode).join('')
             }
             columnGrayCode.forEach((columnCode, j) => {
-                cell[(j + 1).toString()] = mapSymbols(transformedTable[rowCode.join('')][columnCode.join('')])
+                cell[(j + 1).toString()] =
+                    mapSymbols(transformedTable[rowCode.join('')][columnCode.join('')])
             })
             return cell
         }),
-        []
+        [table.rows]
     )
 
     const {
@@ -130,49 +133,47 @@ export default function KarnaughMap({table, symbols: {t, f}}) {
     } = useTable({columns, data})
 
     console.groupEnd()
-    return (<table {...getTableProps()} style={{border: 'solid 1px blue'}}>
+    return (
+        <table
+            {...getTableProps()}
+            {...props}
+            className={[inputStyles.truthTable, styles.karnaughMap].join(' ')}
+        >
             <thead>
-            {headerGroups.map(headerGroup => (
-                <tr {...headerGroup.getHeaderGroupProps()}>
-                    {headerGroup.headers.map(column => (
-                        <th
-                            {...column.getHeaderProps()}
-                            style={{
-                                borderBottom: 'solid 3px red',
-                                background: 'aliceblue',
-                                color: 'black',
-                                fontWeight: 'bold',
-                            }}
-                        >
-                            {column.render('Header')}
-                        </th>
-                    ))}
-                </tr>
-            ))}
+            {
+                headerGroups.map(headerGroup => (
+                    <tr {...headerGroup.getHeaderGroupProps()}>
+                        {headerGroup.headers.map(column => (
+                            <th
+                                {...column.getHeaderProps()}
+                            >
+                                {column.render('Header')}
+                            </th>
+                        ))}
+                    </tr>
+                ))
+            }
             </thead>
             <tbody {...getTableBodyProps()}>
-            {rows.map(row => {
-                prepareRow(row)
-                return (
-                    <tr {...row.getRowProps()}>
-                        {row.cells.map(cell => {
-                            return (
-                                <td
-                                    {...cell.getCellProps()}
-                                    style={{
-                                        padding: '10px',
-                                        border: 'solid 1px gray',
-                                        background: 'papayawhip',
-                                    }}
-                                >
-                                    {cell.render('Cell')}
-                                </td>
-                            )
-                        })}
-                    </tr>
-                )
-            })}
+            {
+                rows.map(row => {
+                    prepareRow(row)
+                    return (
+                        <tr {...row.getRowProps()}>
+                            {row.cells.map(cell => {
+                                return (
+                                    <td
+                                        {...cell.getCellProps()}
+                                    >
+                                        {cell.render('Cell')}
+                                    </td>
+                                )
+                            })}
+                        </tr>
+                    )
+                })
+            }
             </tbody>
         </table>
     )
-}
+})

@@ -1,0 +1,8 @@
+@import "./input_formula.module.scss";
+
+.karnaughMap {
+  td:first-child {
+    font-weight: bold;
+    @extend .tableHeader;
+  }
+}

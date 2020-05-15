@@ -1,4 +1,4 @@
-import React, {useReducer} from "react"
+import React, {useReducer, useEffect} from "react"
 import styles from "./input_formula.module.scss"
 import makeTruthTable from "../project/truth_table"
 
@@ -32,7 +32,12 @@ const TruthTableJsx = React.memo(({statement, onChange}) => {
     // let truthTable, setTruthTable
     let truthTable = generateTable(initialState, statement).table
     console.log("truthTable: ", truthTable)
-    onChange(truthTable)
+    useEffect(
+        () => {
+            onChange(truthTable)
+        },
+        [statement]
+    )
 
     let rows = []
     for (let i = 0; i < truthTable.rows.length; ++i) {
