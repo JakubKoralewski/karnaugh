@@ -30,11 +30,17 @@ function HowToGenerateKarnaugh(props) {
 
     const getKarnaughHeader = () => {
         if(props.step === 3) {
-            return "We generate the headers."
+            return "1 We generate the headers."
         } else if(props.step >= 4) {
-            return "And then copy the values!"
+            return "2 We generate the headers."
+            // return "And then copy the values!"
         }
     }
+    useEffect(() => {
+        let prevBG = document.body.style.backgroundColor
+        document.body.style.background = "pink"
+        return () => document.body.style.backgroundColor = prevBG
+    })
 
     return (
         <div className={styles.titular} style={{background: "pink"}}>

@@ -114,12 +114,14 @@ export default React.memo(
                 {
                     isHeader: true,
                     value: `${rowHeaders.join('')}\\${columnHeaders.join('')}`,
+                    // variables: columnHeaders,
                     keys: null
                 },
                 ...columnGrayCode.map((gray, i) => (
                     {
                         isHeader: true,
                         value: mapSymbols(gray).join(''),
+                        variables: columnHeaders,
                         keys: columnHeaders.map((h, j) => `${h}${mapSymbol(gray[j])}`)
                     }
                 ))
@@ -132,6 +134,7 @@ export default React.memo(
                     {
                         isHeader: true,
                         value: mapSymbols(rowCode).join(''),
+                        variables: rowHeaders,
                         keys: rowHeaders.map((h, k) => `${h}${mapSymbol(rowCode[k])}`)
                     }
                 ]
@@ -141,6 +144,7 @@ export default React.memo(
                         {
                             isHeader: false,
                             value,
+                            variables: rowHeaders,
                             keys: [`eval${mapSymbols(rowCode).join('')}${mapSymbols(columnCode).join('')}${value}`]
                         }
                     )
@@ -149,9 +153,6 @@ export default React.memo(
             }),
             [table.rows]
         )
-        if(onlyHeaders) {
-            data = data.map(d => [d[0]])
-        }
 
         console.groupEnd()
         return (
@@ -177,12 +178,14 @@ export default React.memo(
                     data.map((row,i) => {
                         return (
                             <tr>
-                                {row.map(cell => {
+                                {row.map((cell,j) => {
                                     return (
                                         <CellRender
                                             cellKey={i+columns.length}
                                             cell={cell}
-                                            refs={tableRefs ? tableRefs.evals : null}
+                                            refs={!tableRefs || (onlyHeaders && j !== 0) ? null : tableRefs.evals}
+                                            show={!onlyHeaders || (onlyHeaders && j===0)}
+                                            isLast={j !== 0 && i===data.length-1 && j===row.length-1}
                                         />
                                     )
                                 })}
