@@ -1,4 +1,4 @@
-import React, {useReducer, useEffect} from "react"
+import React, {useEffect, useRef} from "react"
 import styles from "./input_formula.module.scss"
 import makeTruthTable from "../project/truth_table"
 
@@ -27,14 +27,18 @@ function generateTable(state, statement) {
     return memoTruthTable
 }
 
-const TruthTableJsx = React.memo(({statement, onChange}) => {
+const TruthTableJsx = React.memo(({statement, onChange, symbols={t: "T", f: "F"}, returnRefs}) => {
     console.group("generating truth table", statement)
-    // let truthTable, setTruthTable
     let truthTable = generateTable(initialState, statement).table
     console.log("truthTable: ", truthTable)
+    const headerEvalRef = useRef()
+    const refs = {evals: {}, headers: {}}
     useEffect(
         () => {
             onChange(truthTable)
+            if(returnRefs) {
+                returnRefs(refs)
+            }
         },
         [statement]
     )
@@ -43,17 +47,24 @@ const TruthTableJsx = React.memo(({statement, onChange}) => {
     for (let i = 0; i < truthTable.rows.length; ++i) {
         let row = []
         for (let j = 0; j < truthTable.variables.length; ++j) {
-            row.push(truthTable.rows[i][truthTable.variables[j]])
+            const variableName = truthTable.variables[j]
+            row.push({name: variableName, eval: truthTable.rows[i][variableName]})
         }
         let rowEval = truthTable.rows[i].eval
-        row.push(rowEval)
+        row.push({name: `eval${row.map(r => r.eval ? symbols.t : symbols.f).join('')}`, eval: rowEval})
         rows.push((
             <tr key={i} className={!rowEval ? styles.tableFalseRow : ''}>
                 {
                     row.map((someEval, j) => {
-                        return (<td key={j}>
+                        let newRef = useRef()
+                        let newRefKey = `${someEval.name}${someEval.eval ? symbols.t : symbols.f}`
+                        if(!refs.evals[newRefKey]) {
+                            refs.evals[newRefKey] = []
+                        }
+                        refs.evals[newRefKey].push(newRef)
+                        return (<td ref={newRef}>
                             {
-                                someEval ? "T" : "F"
+                                someEval.eval ? symbols.t : symbols.f
                             }
                         </td>)
                     })
@@ -69,11 +80,13 @@ const TruthTableJsx = React.memo(({statement, onChange}) => {
                 <tr>
                     {
                         truthTable.variables.map((variable, i) => {
+                            let newRef = useRef()
+                            refs.headers[variable] = newRef
 
-                            return (<th key={i}>{variable}</th>)
+                            return (<th key={i} ref={newRef}>{variable}</th>)
                         })
                     }
-                    <th>{truthTable.statement}</th>
+                    <th ref={headerEvalRef}>{truthTable.statement}</th>
                 </tr>
                 </thead>
                 <tbody>
