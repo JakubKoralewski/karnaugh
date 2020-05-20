@@ -1,3 +1,5 @@
+$main-font-size: 1.5rem;
+
 .intro {
   background-color: aqua;
   h2 {
@@ -12,7 +14,7 @@ div.titular {
   // https://css-tricks.com/snippets/css/complete-guide-grid/
   display: grid;
   grid-template-columns: repeat(5, 1fr);
-  grid-template-rows: 1fr 8fr;
+  grid-template-rows: calc(20vh - 5vw) 8fr;
   grid-template-areas:
           "header header header header header"
           "main main main main main";
@@ -24,7 +26,7 @@ div.titular {
   main {
     //text-align: center;
     grid-area: main;
-    padding: 0 10rem;
+    padding: 0 8%;
     font-size: 1.5rem;
     font-weight: 100;
   }

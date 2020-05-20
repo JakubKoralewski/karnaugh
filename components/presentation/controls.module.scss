@@ -2,6 +2,7 @@
   display: flex;
   flex-direction: row;
   justify-content: space-around;
+  z-index: 1000;
 }
 
 .controlButton {
@@ -46,5 +47,36 @@
 .stepActive {
   stroke-width: 3;
   stroke: rgba(0, 0, 0, 0.3);
-  //stroke: rgba(0, 0, 0, 1);
+}
+
+.errorAlert {
+  background: white;
+  justify-content: space-between;
+  align-items: center;
+  display: flex;
+  flex-direction: row;
+  padding: 0 0.5rem;
+  border-radius: 5px;
+  color: red;
+  font-weight: 600;
+  //border: 1px red dashed;
+  //border-color: red;
+  //border-leng
+  border-spacing: 100px;
+  margin-right: 1rem;
+  //padding-right: 2rem;
+  //font-size: 0.8rem;
+
+  //position: relative;
+  span {
+    margin-right: 1rem;
+  }
+
+  svg {
+    //width: 1rem;
+    //position: absolute;
+    //top: 1px;
+    //right: 1px;
+    fill:red;
+  }
 }

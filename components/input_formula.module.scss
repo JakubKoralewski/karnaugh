@@ -9,6 +9,7 @@
   font-size: 2rem;
   padding: 0.5rem 1.5rem;
   color: red;
+  outline: none;
   //width: 66.6%;
 }
 
@@ -41,6 +42,20 @@
   flex-direction: column;
   width: 80vw;
 }
+.truthTableContainer {
+  align-self: center;
+  //display: flex;
+  width: max-content;
+  //justify-content: center;
+  margin: 0 auto;
+  max-height: 66.6vh;
+  overflow-y: auto;
+}
+
+.tableHeader {
+  background: lightgray;
+}
+
 .truthTable {
   align-self: center;
   background: white;
@@ -48,7 +63,6 @@
   border: rgba(0, 0, 0, 0.2) solid 1px;
   border-spacing: 0;
   thead {
-    background: lightgray;
   }
   tr.tableFalseRow {
     background: rgb(255, 220, 220);
@@ -58,6 +72,7 @@
     text-align: center;
   }
   th {
+    @extend .tableHeader;
     border-bottom: rgba(0, 0, 0, 0.2) solid 1px;
   }
   th:last-child {
@@ -77,8 +92,12 @@
   display: none;
 }
 .parseTreeContainer {
-  display:flex;
-  justify-content: center;
+  overflow: auto;
+
+  svg {
+    display: block;
+    margin: 0 auto;
+  }
 }
 
 .svgGroup {
