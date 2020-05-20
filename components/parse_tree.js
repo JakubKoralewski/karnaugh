@@ -1,8 +1,7 @@
-import React, {useCallback, useEffect, useReducer, useState, useMemo, useRef} from "react"
+import React, {useEffect, useReducer, useState, useMemo, useRef} from "react"
 import styles from "./input_formula.module.scss"
 import * as d3 from "d3"
 import {motion} from "framer-motion"
-// import useStateWithLocalStorage from "./useStateWithLocalStorage"
 
 const localStorageKey = `${process.env.staticFolder}-last-parse-tree-output`
 
@@ -22,8 +21,8 @@ const initialState = {
     memo:
         !process.browser ?
             null : window ? (
-                JSON.parse(window.localStorage.getItem(localStorageKey)) || ''
-            ) : '',
+                JSON.parse(window.localStorage.getItem(localStorageKey)) || null
+            ) : null,
     nodes: null,
     links: null,
     circleRadius: 15
@@ -44,7 +43,6 @@ function reducer(state, action) {
                 return state;
             }
             console.log("canvasRef: ", state)
-            // state.canvasRef.innerHTML = ''
             let {nodes, links} = generateParseTree(statement.tree, {circleRadius: state.circleRadius})
             Object.assign(state, {nodes, links})
             nodes.forEach((n, i) => n.id = i)
@@ -57,43 +55,84 @@ function reducer(state, action) {
             state.memo = memoParseTree
             return state
         }
-        /*        case 'set_ref': {
-                    let {node, statement} = action
-                    // if (state.memoParseTree && statement.statement.trim() === state.memoParseTree.input) {
-                    //     node.innerHTML = state.memoParseTree.html
-                    // }
-                    if (state.memo) {
-                        let {nodes, links} = JSON.parse(state.memo)
-                        Object.assign(state, {nodes,links})
-                    }
-                    return {...state, canvasRef: node}
-                }*/
     }
 }
 
+const linkVariants = {
+    initial: ({initial, link}) => {
+        console.log("animate link initial isInitial: ", initial)
+        return {
+            pathLength: 0,
+        }
+    },
+    animate: ({initial, link}) => {
+        let transition = {}
+        if (initial.current) {
+            transition = {
+                delay: (link.source.depth + 1) * 0.4 + link.target.height * 0.3,
+                duration: 0.4 * (link.source.depth + 1) + link.target.height * 0.3,
+            }
+        } else {
+            transition = {
+                delay: 0,
+                duration: 0.5
+            }
+        }
+        console.log("animate link animate isInitial: ", initial, transition)
+        return {
+            pathLength: 1,
+            transition
+        }
+    }
+}
+
+const nodeVariants = {
+    initial: ({initial, d}) => {
+        console.log("animate d initial isInitial: ", initial)
+        return {
+            opacity: 0,
+        }
+    },
+    animate: ({initial, d}) => {
+        let transition = {}
+        if (initial.current) {
+            transition = {
+                delay: d.depth * 0.4 + d.height * 0.3,
+                duration: 0.4 * d.depth + d.height * 0.3,
+            }
+        } else {
+            transition = {
+                delay: 0,
+                duration: 0.5
+            }
+        }
+        console.log("animate d animate isInitial: ", initial, transition)
+        return {
+            opacity: 1,
+            transition
+        }
+    }
+}
+
+
 export default React.memo(function ParseTree({statement}) {
     console.log("rendering parse tree", statement)
-    // let canvasSet = false
     const [state, dispatch] = useReducer(reducer, initialState, init)
     const [svgSize, setSvgSize] = useState([-1, -1])
 
-    /*    const canvasRefCallback = useCallback(node => {
-            console.log("canvas ref")
-            if (node !== null) {
-                parseTreeDispatch({type: 'set_ref', node, statement})
-                if(!canvasSet) {
-                    parseTreeDispatch({type: 'generate', statement})
-                    canvasSet = true
-                }
-            }
-        }, [statement])*/
     useMemo(() => {
         dispatch({type: 'generate_parse_tree', statement})
     }, [statement])
 
+    let isInitialRender = useRef(true)
+    useEffect(() => {
+        console.log("Setting isInitialRender to false!")
+        isInitialRender.current = false
+    }, [])
+
     let mainGroupRef = useRef()
-    let i = 0
     let maxYTransform = 0
+
     useEffect(() => {
         const actualSize = mainGroupRef.current.getBoundingClientRect()
         maxYTransform += state.circleRadius
@@ -102,7 +141,8 @@ export default React.memo(function ParseTree({statement}) {
         }
         // https://stackoverflow.com/questions/50813950/how-do-i-make-an-svg-size-to-fit-its-content
         setSvgSize([actualSize.width + 10 + state.circleRadius, maxYTransform + state.circleRadius + 10])
-    }, [])
+    }, [statement])
+
     let diagonal = function link(d) {
         return "M" + d.source.y + "," + d.source.x
             + "C" + (d.source.y + d.target.y) / 2 + "," + d.source.x
@@ -113,28 +153,41 @@ export default React.memo(function ParseTree({statement}) {
     return (
         <div
             className={styles.parseTreeContainer}
-            // ref={canvasRefCallback}
         >
             <motion.svg width={svgSize[0]} height={svgSize[1]}>
                 <motion.g ref={mainGroupRef} className={styles.svgGroup}>
                     {
-                        state.links ? state.links.map(l => {
+                        state.links ? state.links.map((l, i) => {
+                            const key = [l.source.data.name, l.target.data.name]
+                            let x = [l.target]
+                            while (x.length !== 0) {
+                                let node = x.pop()
+                                key.push(node.data.name)
+                                if (!node.children) {
+                                    continue;
+                                }
+                                x.push(...node.children)
+                            }
+
                             // https://codesandbox.io/s/framer-motion-svg-checkbox-kqm7y
                             return (
                                 <motion.path
                                     d={diagonal(l)}
                                     className={styles.link}
-                                    animate={{pathLength: 1}}
-                                    initial={{pathLength: 0}}
-                                    transition={{duration: 0.4*(l.source.depth+1), delay: l.source.depth * 0.4}}
+                                    animate="animate"
+                                    initial="initial"
+                                    variants={linkVariants}
+                                    custom={{initial: isInitialRender, link: l}}
+                                    key={key.join('')}
                                 />
                             )
+
                         }) : null
                     }
 
                     {
-                        state.nodes ? state.nodes.map(d => {
-                            console.log(d)
+                        state.nodes ? state.nodes.map((d, i) => {
+                            console.log("node isInitialRender:", isInitialRender.current, d)
                             if (d.x > maxYTransform) {
                                 maxYTransform = d.x
                             }
@@ -149,13 +202,11 @@ export default React.memo(function ParseTree({statement}) {
                                     style={{
                                         transform: `translate(${d.y + state.circleRadius}px,${d.x}px)`
                                     }}
-                                    initial={{
-                                        opacity: 0
-                                    }}
-                                    animate={{
-                                        opacity: 1
-                                    }}
-                                    transition={{delay: d.depth*0.4}}
+                                    initial="initial"
+                                    animate="animate"
+                                    custom={{initial: isInitialRender, d}}
+                                    variants={nodeVariants}
+                                    key={`${d.data.name}${i}`}
                                 >
                                     <motion.circle r={state.circleRadius}/>
                                     <motion.text x="0" dy="0.35em">
@@ -194,17 +245,6 @@ function generateParseTree(data, {circleRadius}) {
 
     const treeData = tree(root)
 
-
-    /*
-        const svg = d3.select(containerRef)
-            .append('svg')
-            .attr('width', width + margin.right + margin.left)
-            .attr('height', height + margin.top + margin.bottom)
-        const g = svg
-            .append('g')
-            .attr('style', `transform: translate(${circleRadius}px, ${circleRadius}px);`)
-            .attr('class', styles.svgGroup)
-    */
     // Compute the new tree layout.
     // https://stackoverflow.com/questions/41087568/d3js-tree-nodes-is-not-a-function
     let nodes = treeData.descendants().reverse()
@@ -218,58 +258,4 @@ function generateParseTree(data, {circleRadius}) {
     let links = treeData.links()
     console.groupEnd()
     return {nodes, links}
-
-
-    // Declare the nodes
-    let node = g.selectAll('g.node')
-        .data(nodes, d => d.id || (d.id = ++i))
-
-    // Enter the nodes.
-    let nodeEnter = node
-        .enter()
-        .append('g')
-        .attr('class', d => d.children ? styles.operatorNode : styles.variableNode)
-        .attr('transform', d => {
-                if (d.x > maxYTransform) {
-                    console.log("setting new max transform on ", d)
-                    maxYTransform = d.x
-                }
-                return `translate(${d.y},${d.x})`
-            }
-        )
-
-    nodeEnter.append('circle')
-        .attr('r', circleRadius)
-
-    nodeEnter.append('text')
-        .attr('x', 0)
-        .attr('dy', '.35em')
-        .text(d => d.data.name)
-
-    // Declare the links
-    let link = g
-        .selectAll('path.link')
-        .data(links, d => d.target.id)
-
-    // https://stackoverflow.com/questions/40845121/where-is-d3-svg-diagonal
-    // https://github.com/d3/d3-shape/issues/27
-    let diagonal = function link(d) {
-        return "M" + d.source.y + "," + d.source.x
-            + "C" + (d.source.y + d.target.y) / 2 + "," + d.source.x
-            + " " + (d.source.y + d.target.y) / 2 + "," + d.target.x
-            + " " + d.target.y + "," + d.target.x;
-    }
-
-    // Enter the links.
-    link.enter()
-        .insert('path', 'g')
-        .attr('d', diagonal)
-
-    const actualSize = svg.select('g').node().getBoundingClientRect()
-    maxYTransform += circleRadius
-    if (actualSize.height > maxYTransform) {
-        maxYTransform = actualSize.height
-    }
-    // https://stackoverflow.com/questions/50813950/how-do-i-make-an-svg-size-to-fit-its-content
-    svg.attr('width', actualSize.width + 10 + circleRadius).attr('height', maxYTransform + circleRadius + 10)
 }
