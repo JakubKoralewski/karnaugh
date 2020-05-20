@@ -30,10 +30,9 @@ function HowToGenerateKarnaugh(props) {
 
     const getKarnaughHeader = () => {
         if(props.step === 3) {
-            return "1 We generate the headers."
+            return "We generate the headers."
         } else if(props.step >= 4) {
-            return "2 We generate the headers."
-            // return "And then copy the values!"
+            return "And then copy the values!"
         }
     }
     useEffect(() => {
