@@ -1,77 +1,67 @@
-function getArr(rowHeaders, columnHeaders, rowGrayCode, columnGrayCode, allArgs) {
-    let args = [];
+function getArr({rowHeaders, columnHeaders, rowGrayCode, columnGrayCode}) {
     let arr = [];
     let rowCount = rowHeaders.length;
     let colCount = columnHeaders.length;
     let row = rowGrayCode.length;
     let col = columnGrayCode.length;
-    for (i = 0; i < rowCount; i++) {
+    for (let i = 0; i < rowCount; i++) {
         arr[i] = [];
         arr[i].push(rowHeaders[i]);
-        for(j = 0; j < row; j++) {
+        for (let j = 0; j < row; j++) {
             if (rowGrayCode[j][i] === 1) {
-                for (k = 0; k < col; k++) {
+                for (let k = 0; k < col; k++) {
                     arr[i].push((j * col) + k);
                 }
             }
         }
     }
 
-    for (i = 0; i < colCount; i++) {
-        arr[rowCount+i] = [];
-        arr[rowCount+i].push(columnHeaders[i]);
-        for(j = 0; j < col; j++) {
+    for (let i = 0; i < colCount; i++) {
+        arr[rowCount + i] = [];
+        arr[rowCount + i].push(columnHeaders[i]);
+        for (let j = 0; j < col; j++) {
             if (columnGrayCode[j][i] === 1) {
-                for (k = 0; k < row; k++) {
-                    arr[rowCount+i].push(j + (col * k));
+                for (let k = 0; k < row; k++) {
+                    arr[rowCount + i].push(j + (col * k));
                 }
             }
         }
     }
-    args["arr"] = arr;
-    if (allArgs === false) {
-        return args;
+    return {
+        arr,
+        col,
+        row,
+        colCount, rowCount
     }
-    args["col"] = col;
-    args["row"] = row;
-    args["colCount"] = colCount;
-    args["rowCount"] = rowCount;
-    return args;
 }
 
-function getRectangles(transformedTable, rowHeaders, columnHeaders, rowGrayCode, columnGrayCode) {
-    let args = getArr(rowHeaders, columnHeaders, rowGrayCode, columnGrayCode, true);
-    arr = args["arr"];
-    let rowCount = args["rowCount"];
-    let colCount = args["colCount"];
-    let row = args["row"];
-    let col = args["col"];
+export function getRectangles({transformedTable, rowHeaders, columnHeaders, rowGrayCode, columnGrayCode}) {
+    // let visualizedMap = visualizeMap({rowGrayCode, columnGrayCode, transformedTable})
+    let {colCount, rowCount, row, col} =
+        getArr(
+            {rowHeaders, columnHeaders, rowGrayCode, columnGrayCode}
+        );
     let max = col * row;
     let values = [];
     let allValues = [];
     allValues[0] = [];
     allValues[1] = [];
-    for (keys in transformedTable) {
-        for (key in transformedTable[keys]) {
+    for (let keys in transformedTable) {
+        for (let key in transformedTable[keys]) {
             allValues[0].push(keys.concat(key));
-            if (transformedTable[keys][key] === true) {
-                allValues[1].push(1);
-            } else {
-                allValues[1].push(0);
-            }
-
+            allValues[1].push(transformedTable[keys][key] ? 1 : 0);
         }
     }
 
     let value = [];
     let cell = 0;
-    for (i = 0; i < rowGrayCode.length; i++) {
-        for (j = 0; j < columnGrayCode.length; j++) {
+    for (let i = 0; i < rowGrayCode.length; i++) {
+        for (let j = 0; j < columnGrayCode.length; j++) {
             value[cell] = "";
-            for (k = 0; k < rowCount; k++) {
+            for (let k = 0; k < rowCount; k++) {
                 value[cell] = value[cell].concat(rowGrayCode[i][k]);
             }
-            for (k = 0; k < colCount; k++) {
+            for (let k = 0; k < colCount; k++) {
                 value[cell] = value[cell].concat(columnGrayCode[j][k]);
             }
             let t = allValues[0].indexOf(value[cell]);
@@ -107,9 +97,9 @@ function getRectangles(transformedTable, rowHeaders, columnHeaders, rowGrayCode,
 
             while (right === 1) {
                 if (Math.floor(start / col) === Math.floor((start + n) / col) && (start + n < len)) {
-                    for (i = 1; i <= n; i++) {
-                        if (values[start+i] === 1) {
-                            tempArray.push(start+i);
+                    for (let i = 1; i <= n; i++) {
+                        if (values[start + i] === 1) {
+                            tempArray.push(start + i);
                             tempCount++;
                         } else {
                             allTrue = 0;
@@ -118,7 +108,7 @@ function getRectangles(transformedTable, rowHeaders, columnHeaders, rowGrayCode,
                         }
                     }
                     if (allTrue === 1) {
-                        for (i = 0; i < tempArray.length; i++) {
+                        for (let i = 0; i < tempArray.length; i++) {
                             temporary.push(tempArray[i]);
                         }
                         tempArray = [];
@@ -138,14 +128,14 @@ function getRectangles(transformedTable, rowHeaders, columnHeaders, rowGrayCode,
             }
 
             n = rightCount;
-            s = 1;
+            let s = 1;
             tempArray = [];
 
             while (down === 1) {
                 downCount = 0;
                 if (secondStart + (col * s) + n <= len) {
-                    for (j = 0; j < rightCount; j++) {
-                        for (i = 1; i <= s; i++) {
+                    for (let j = 0; j < rightCount; j++) {
+                        for (let i = 1; i <= s; i++) {
                             let y = secondStart + j + (col * i);
                             let f = values[y];
                             if (values[secondStart + j + (col * i)] === 1) {
@@ -159,7 +149,7 @@ function getRectangles(transformedTable, rowHeaders, columnHeaders, rowGrayCode,
                         }
                     }
                     if (allTrue === 1) {
-                        for (i = 0; i < tempArray.length; i++) {
+                        for (let i = 0; i < tempArray.length; i++) {
                             temporary.push(tempArray[i]);
                         }
                         tempArray = [];
@@ -176,39 +166,38 @@ function getRectangles(transformedTable, rowHeaders, columnHeaders, rowGrayCode,
                     if (downCount === rightCount * s) {
                         rect = temporary;
                         secondStart = secondStart + (col * s);
-                        s = s * 2;
+                        s *= 2;
                     } else {
                         temporary = rect;
                         break;
                     }
                 }
             }
-            for (i = 0; i < rect.length; i++) {
+            for (let i = 0; i < rect.length; i++) {
                 done.push(rect[i]);
             }
-            base = base + 1;
+            base++;
 
             if (rect.length > 0) {
                 rectangles.push(rect);
                 rect = [];
             }
         }
-        base = base + 1;
+        base++;
     }
     return rectangles;
 }
 
-function getDnf(rectangles, rowHeaders, columnHeaders, rowGrayCode, columnGrayCode) {
-    let args = getArr(rowHeaders, columnHeaders, rowGrayCode, columnGrayCode, false);
-    let arr = args["arr"];
+export function getDnf({rectangles, rowHeaders, columnHeaders, rowGrayCode, columnGrayCode}) {
+    let {arr} = getArr({rowHeaders, columnHeaders, rowGrayCode, columnGrayCode});
     let added = [];
     let dnf = "";
     let result = "";
 
-    for (k = 0; k < rectangles.length; k++) {
-        for (i = 0; i < arr.length; i++) {
-            count = 0;
-            for (j = 0; j < rectangles[k].length; j++) {
+    for (let k = 0; k < rectangles.length; k++) {
+        for (let i = 0; i < arr.length; i++) {
+            let count = 0;
+            for (let j = 0; j < rectangles[k].length; j++) {
                 if (arr[i].includes(rectangles[k][j])) {
                     count++;
                 }
@@ -220,7 +209,7 @@ function getDnf(rectangles, rowHeaders, columnHeaders, rowGrayCode, columnGrayCo
                     added.push(arr[i][0]);
                 }
             } else if (count === 0) {
-                str = "~";
+                let str = "~";
                 str = str.concat(arr[i][0])
                 if (added.includes(str)) {
 

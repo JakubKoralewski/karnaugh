@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "export": "next build && next export"
+    "export": "next build && next export",
+    "test": "jest"
   },
   "dependencies": {
     "babel-plugin-transform-remove-console": "^6.9.4",
@@ -17,5 +18,8 @@
     "react": "16.13.1",
     "react-dom": "16.13.1",
     "sass": "^1.26.5"
+  },
+  "devDependencies": {
+    "jest": "^26.0.1"
   }
 }
