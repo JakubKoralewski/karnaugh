@@ -21,7 +21,7 @@ export async function getStaticProps() {
 
 // https://nextjs.org/docs/basic-features/data-fetching#getstaticpaths-static-generation
 export async function getStaticPaths() {
-    console.log("slides", slides)
+    // console.log("slides", slides)
     return {
         paths: slides.map((slide, i) => (
             {

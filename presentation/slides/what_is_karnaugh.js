@@ -1,6 +1,7 @@
 import styles from "./slides.module.scss"
 import {BasicAnimation, SimpleOpacityAnimation} from "../animations";
 import Cite from "../../components/cite"
+import get_url from "../../components/get_url"
 
 function WhatIsKarnaugh(props) {
     return (
@@ -16,7 +17,7 @@ function WhatIsKarnaugh(props) {
                         <figure style={{float: "left", width: "33%"}}>
                             <img alt="Karnaugh map example"
 
-                                 src="/kmap.svg"
+                                 src={get_url('/kmap.svg')}
                             />
                             <figcaption>
                                 Karnaugh Map example - Wikipedia <a
@@ -51,7 +52,9 @@ function WhatIsKarnaugh(props) {
                                 for the general case of a two variable problem.
                                 <br/>
                                 <img
-                                    src="/karintro1.gif"/>
+                                    src={get_url('/karintro1.gif')}
+                                    alt="Truth table and Karnaugh map"
+                                />
                             </div>
                         </Cite>
                     </SimpleOpacityAnimation>

@@ -22,7 +22,7 @@ const variants = {
 let ticking = false
 
 export default function Slide(props) {
-    console.log("Slide props: ", props)
+    // console.log("Slide props: ", props)
     const localStorageKey = `${process.env.staticFolder}-slide-scroll-pos-${props.children.key}`
     let scroll,setScroll
     if(process.browser) {
