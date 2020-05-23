@@ -39,7 +39,7 @@ function HowToGenerateKarnaugh(props) {
         let prevBG = document.body.style.backgroundColor
         document.body.style.background = "pink"
         return () => document.body.style.backgroundColor = prevBG
-    })
+    }, [])
 
     return (
         <div className={styles.titular} style={{background: "pink"}}>

@@ -10,7 +10,7 @@ const zip = (arr, ...arrs) => {
 export function CellRender(props) {
     // let [elems, setElems] = useState([])
     let {cell, refs, cellKey, isLast, show} = props
-    console.log("cell redner key: ", cellKey)
+    console.log("cell render key: ", cellKey)
     let thisRef = useRef(null)
     let thisRefCallback = useCallback((node) => {
         if (node !== null) {
@@ -46,6 +46,7 @@ export function CellRender(props) {
             let row = document.createElement('tr')
             let i = 0
             for (const refObj of correspondingRefs) {
+                //FIXME: refObj is undefined
                 let {ref, variableName, eval: variableEval} = refObj
                 let elem = ref.current
                 let thisElem = thisRef.current
