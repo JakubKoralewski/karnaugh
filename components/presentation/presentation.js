@@ -4,8 +4,7 @@ import {AnimatePresence} from "framer-motion"
 import Slide from './slide'
 import Controls from './controls'
 import styles from './presentation.module.scss'
-
-const staticFolder = process.env.prod ? process.env.staticFolder : ''
+import get_url from '../get_url'
 
 // https://css-tricks.com/snippets/javascript/javascript-keycodes/
 const LEFT_ARROW = 37
@@ -76,11 +75,11 @@ export default function Presentation(props) {
         let newSlide = currentSlideNumber+newSlideDelta
         setData([newSlide, newSlideDelta])
         console.log("new slide: ", newSlide)
-        let newPath = staticFolder
+        let newPath
         if(newSlide === 0) {
-            newPath += '/'
+            newPath = get_url('/')
         } else {
-            newPath +=`/${newSlide}`
+            newPath = get_url(`/${newSlide}`)
         }
         // https://nextjs.org/docs/routing/shallow-routing
         window.history.pushState({sid: newSlide}, '', newPath)

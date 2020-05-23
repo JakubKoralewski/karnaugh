@@ -1,4 +1,4 @@
-import React, {useEffect, useRef} from "react"
+import React, {createRef, useEffect, useRef} from "react"
 import styles from "./input_formula.module.scss"
 import makeTruthTable from "../project/truth_table"
 
@@ -42,6 +42,15 @@ const TruthTableJsx = React.memo(({statement, onChange, symbols={t: "T", f: "F"}
         },
         [statement]
     )
+    let elRefs = React.useRef([])
+    let refsNonHeadersLength = truthTable.rows.length * (truthTable.variables.length+1)
+    let refsLength = refsNonHeadersLength + truthTable.variables.length
+
+    if (refsLength !== elRefs.current.length) {
+        elRefs.current = Array(refsLength)
+            .fill(0)
+            .map((_, i) => elRefs[i] || createRef())
+    }
 
     let rows = []
     for (let i = 0; i < truthTable.rows.length; ++i) {
@@ -52,11 +61,17 @@ const TruthTableJsx = React.memo(({statement, onChange, symbols={t: "T", f: "F"}
         }
         let rowEval = truthTable.rows[i].eval
         row.push({name: `eval${row.map(r => r.eval ? symbols.t : symbols.f).join('')}`, eval: rowEval})
+        // if (elRefs.length !== row.length) {
+        //     // add or remove refs
+        //     elRefs.current = new Array(row.length).fill(0).map((_, i) => elRefs.current[i] || createRef());
+        // }
         rows.push((
             <tr key={i} className={!rowEval ? styles.tableFalseRow : ''}>
                 {
                     row.map((someEval, j) => {
-                        let newRef = useRef()
+                        // let newRef = useRef()
+                        // FIXME: use right refs for right elements
+                        let newRef = elRefs.current[i*(truthTable.variables.length + 1)+j]
                         let newRefKey = `${someEval.name}${someEval.eval ? symbols.t : symbols.f}`
                         if(!refs.evals[newRefKey]) {
                             refs.evals[newRefKey] = []
@@ -80,7 +95,7 @@ const TruthTableJsx = React.memo(({statement, onChange, symbols={t: "T", f: "F"}
                 <tr>
                     {
                         truthTable.variables.map((variable, i) => {
-                            let newRef = useRef()
+                            let newRef = elRefs.current[refsNonHeadersLength + i]
                             refs.headers[variable] = newRef
 
                             return (<th key={i} ref={newRef}>{variable}</th>)
