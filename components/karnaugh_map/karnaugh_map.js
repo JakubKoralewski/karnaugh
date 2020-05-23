@@ -165,6 +165,7 @@ export default React.memo(
                     {
                         columns.map((column, i) => (
                             <CellRender
+                                key={i}
                                 cellKey={i}
                                 cell={column}
                                 refs={tableRefs ? i === 0 ? tableRefs.headers : tableRefs.evals : null}
@@ -181,7 +182,9 @@ export default React.memo(
                                 {row.map((cell,j) => {
                                     return (
                                         <CellRender
+                                            key={j}
                                             cellKey={i+columns.length}
+                                            naSymbol={na}
                                             cell={cell}
                                             refs={!tableRefs || (onlyHeaders && j !== 0) ? null : tableRefs.evals}
                                             show={!onlyHeaders || (onlyHeaders && j===0)}
