@@ -8,8 +8,7 @@ const zip = (arr, ...arrs) => {
 }
 
 export function CellRender(props) {
-    // let [elems, setElems] = useState([])
-    let {cell, refs, cellKey, isLast, show} = props
+    let {cell, refs, cellKey, isLast, show, naSymbol="*"} = props
     console.log("cell render key: ", cellKey)
     let thisRef = useRef(null)
     let thisRefCallback = useCallback((node) => {
@@ -19,10 +18,17 @@ export function CellRender(props) {
     }, [])
     useEffect(() => {
         console.group("render cell props: ", props)
+
+        // allRefs used only to check if refs.current are not null
         let allRefs = refs ? Object.values(refs) : null
         let table
+
         //         Need to check if ref has ref to elem, cuz it can have null current
-        if (refs && allRefs[0] && (allRefs[0].current || allRefs[0][0].current)) {
+        // refs - make sure refs were passed
+        // !allRefs[0].ref - grant access if this cell is the top-left most header
+        // allRefs[0] - before checking the next two make sure the first element even exists
+        // allRefs[0].current, allRefs[0][0].current - make sure refs are not null
+        if (refs && (allRefs[0].ref || (allRefs[0] && (allRefs[0].current || allRefs[0][0].current)))) {
             const parent = document.body.querySelector(`.${slideStyles.slide}`)
             table = parent.querySelector(`.${slideStyles.slide} > table`)
             if (!table) {
@@ -31,32 +37,73 @@ export function CellRender(props) {
                 table.style.display = "contents"
                 parent.appendChild(table)
             }
-            let correspondingRefs
+            let correspondingRefs = []
             if (cell.keys !== null) {
                 // make the refs be ordered in a horizontal fashion
-                correspondingRefs = zip(...cell.keys.map(k => refs[k].map(r => ({
-                    variableName: k.slice(0,4) === "eval" ? "eval" : k[0],
-                    eval: k[k.length-1],
-                    ref: r
-                }))))
-                correspondingRefs = correspondingRefs.flat()
+                // for animation purposes
+                const toBeZipped = []
+                for(const key of cell.keys) {
+                    if(!(key in refs)) {
+                        if(key[key.length-1] === naSymbol) {
+                            continue;
+                        } else {
+                            console.error("key of truth table cell in karnaugh map does not exist")
+                            continue;
+                        }
+                    }
+                    toBeZipped.push(refs[key].map(r => ({
+                        variableName: key.slice(0,4) === "eval" ? "eval" : key[0],
+                        eval: key[key.length-1],
+                        ref: r
+                    })))
+                }
+                if(toBeZipped.length > 0) {
+                    correspondingRefs = zip(...toBeZipped)
+                    correspondingRefs = correspondingRefs.flat()
+                } else {
+                    // No corresponding refs from table,
+                    // meaning undefined, e.g. `p&p` `0&1`
+                    thisRef.current.style.opacity = 1;
+                }
             } else {
-                correspondingRefs = Object.entries(refs).map(([variableName, ref ]) => ({variableName, ref}))
+                // cell.keys is null therefore the current cell is the top, left header with variable names
+                //FIXME: when variable names are duplicated, only one variable is sent
+                // problem with assigning key as variable name
+                correspondingRefs = refs
             }
             let row = document.createElement('tr')
             let i = 0
             for (const refObj of correspondingRefs) {
-                //FIXME: refObj is undefined
                 let {ref, variableName, eval: variableEval} = refObj
                 let elem = ref.current
                 let thisElem = thisRef.current
                 let thisBB = thisElem.getBoundingClientRect()
                 let rangeInfo = {left: 0}
                 if (document.createRange) {
+                    // If the browser has this API, try to get the exact position
+                    // of each variable in the headers for more accurate animation
                     const textNode = thisElem.childNodes[0]
                     let textPos = textNode.nodeValue.indexOf(elem.innerText.trim())
                     if (cell.variables) {
+                        // Fix problem when header is, e.g.: `FF`
                         let newTextPos = cell.variables.indexOf(variableName)
+                        if(newTextPos !== -1) {
+                            textPos = newTextPos
+                        }
+                    }
+                    if (cell.keys === null) {
+                        // Fix problem when left-top-most header has repeating variables
+                        /* @author https://stackoverflow.com/a/14482123 */
+                        function nthIndex(str, pat, n){
+                            const L= str.length;
+                            let i= -1;
+                            while(n-- && i++<L){
+                                i= str.indexOf(pat, i);
+                                if (i < 0) break;
+                            }
+                            return i;
+                        }
+                        let newTextPos = nthIndex(textNode.nodeValue, variableName, refObj.i+1)
                         if(newTextPos !== -1) {
                             textPos = newTextPos
                         }
@@ -86,6 +133,7 @@ export function CellRender(props) {
                 let leftPos = elem.offsetLeft + elem.offsetParent.offsetLeft
                 let clonedElem = elem.cloneNode(1)
                 if (cell.keys && !cell.keys[0].includes('eval')) {
+                    // row headers
                     let newClonedElem = document.createElement('th')
                     newClonedElem.innerText = clonedElem.innerText
                     clonedElem = newClonedElem
@@ -125,6 +173,8 @@ export function CellRender(props) {
                     thisElem.style.opacity = 1;
                     if (isLast) {
                         if (table.parentNode) {
+                            // Remove the whole animated table which in this scope should be
+                            // invisible now anyway
                             // table.parentNode.removeChild(table)
                         }
                     }
@@ -154,11 +204,11 @@ export function CellRender(props) {
 
     return (
         cell.isHeader ?
-            <th ref={refs ? thisRefCallback : null} style={style}>
+            <th ref={refs ? thisRefCallback : null} style={style} key={cellKey}>
                 {cell.value}
             </th>
             :
-            <td ref={refs ? thisRefCallback : null} style={style}>
+            <td ref={refs ? thisRefCallback : null} style={style} key={cellKey}>
                 {cell.value}
             </td>
     )

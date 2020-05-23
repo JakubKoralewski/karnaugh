@@ -32,7 +32,10 @@ const TruthTableJsx = React.memo(({statement, onChange, symbols={t: "T", f: "F"}
     let truthTable = generateTable(initialState, statement).table
     console.log("truthTable: ", truthTable)
     const headerEvalRef = useRef()
-    const refs = {evals: {}, headers: {}}
+    // refs.headers should be an array in case there are multiple variables
+    // with the same name, otherwise animation is broken, where only the first element
+    // gets animated
+    const refs = {evals: {}, headers: []}
     useEffect(
         () => {
             onChange(truthTable)
@@ -61,10 +64,6 @@ const TruthTableJsx = React.memo(({statement, onChange, symbols={t: "T", f: "F"}
         }
         let rowEval = truthTable.rows[i].eval
         row.push({name: `eval${row.map(r => r.eval ? symbols.t : symbols.f).join('')}`, eval: rowEval})
-        // if (elRefs.length !== row.length) {
-        //     // add or remove refs
-        //     elRefs.current = new Array(row.length).fill(0).map((_, i) => elRefs.current[i] || createRef());
-        // }
         rows.push((
             <tr key={i} className={!rowEval ? styles.tableFalseRow : ''}>
                 {
@@ -77,7 +76,7 @@ const TruthTableJsx = React.memo(({statement, onChange, symbols={t: "T", f: "F"}
                             refs.evals[newRefKey] = []
                         }
                         refs.evals[newRefKey].push(newRef)
-                        return (<td ref={newRef}>
+                        return (<td ref={newRef} key={`${j}${newRefKey}`}>
                             {
                                 someEval.eval ? symbols.t : symbols.f
                             }
@@ -96,7 +95,7 @@ const TruthTableJsx = React.memo(({statement, onChange, symbols={t: "T", f: "F"}
                     {
                         truthTable.variables.map((variable, i) => {
                             let newRef = elRefs.current[refsNonHeadersLength + i]
-                            refs.headers[variable] = newRef
+                            refs.headers.push({ref: newRef, variableName: variable, i})
 
                             return (<th key={i} ref={newRef}>{variable}</th>)
                         })
