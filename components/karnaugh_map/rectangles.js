@@ -4,10 +4,11 @@ import { Rectangle, Rectangles } from "../../project/rectangle"
 
 export default React.memo(function SVGRectangles(props) {
     const {/** @type {Rectangles} */rectangles, numRows, numColumns, rowHeight, rowWidth} = props
-    console.log("Drawing SVG rectangles: ", props)
-    const columnWidth = rowWidth / numRows
+    console.group("Drawing SVG rectangles: ", props)
+    const columnWidth = rowWidth / numColumns
     const strokeWidth = 4 + columnWidth/80
-    return (
+    console.groupEnd()
+    const rv = (
         <motion.svg
             viewBox={`0 0 ${rowWidth} ${rowHeight * numRows}`}
             style={{
@@ -15,11 +16,13 @@ export default React.memo(function SVGRectangles(props) {
                 top: "0px",
                 left: "0px",
                 width: `${rowWidth}px`,
-                height:`${rowHeight*numRows}px`
+                height:`${rowHeight*numRows}px`,
+                pointerEvents: "none"
             }}
         >
             {
-                rectangles.rectangles.map(rect => {
+                rectangles.rectangles.map((rect,i) => {
+                    console.log("Drawing rectangle number ", i, "with rect", rect)
                     return (
                         <motion.rect
                             width={(rect.width * columnWidth) - strokeWidth }
@@ -31,6 +34,7 @@ export default React.memo(function SVGRectangles(props) {
                             fill="none"
                             strokeWidth={strokeWidth}
                             stroke={rect.color}
+                            key={i}
                         >
                         </motion.rect>
                     )
@@ -38,4 +42,6 @@ export default React.memo(function SVGRectangles(props) {
             }
         </motion.svg>
     )
+    console.groupEnd()
+    return rv
 })

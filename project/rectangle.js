@@ -24,7 +24,8 @@ export class Rectangle {
         let lastPos = this.cellArray[0]
         for (const cell of this.cellArray.slice(1)) {
             if(cell -1 % rowLength !== lastPos) {
-                this.width = cell - this.cellArray[0] + 1
+                this.width = getX(cell) - getX(this.cellArray[0]) + 1
+                break;
             }
             lastPos = cell % rowLength
         }
@@ -50,6 +51,13 @@ export class Rectangle {
         }
     }
 }
+/**
+ * @property {Colors} colors
+ * @property {number} rowLength
+ * @property {Set.<string>} usedColors
+ * @property {Array.<Rectangle>} rectangles
+ * @property {Object.<number, Array.<Rectangle>>} map
+ * */
 export class Rectangles {
     constructor({rectangles: arrays, rowLength}) {
         this.rowLength = rowLength
@@ -60,15 +68,26 @@ export class Rectangles {
     }
 
     /**
-     * Create mapping from cell number to Rectangle
-     * @return {Object.<int, Rectangle>}
+     * Create mapping from cell number to Rectangle.
+     * Rectangles sorted from smallest to largest, so that the top most are
+     * the ones with least cells.
+     *
+     * @return {Object.<int, Array.<Rectangle>>}
      */
     generateMap() {
-        const map = {}
+        /** @type {Object.<int, Array.<Rectangle>>}*/
+        let map = {}
         for (const rect of this.rectangles) {
             for (const cell of rect) {
-                map[cell] = rect
+                if(!map[cell]) {
+                    map[cell] = [rect]
+                } else {
+                    map[cell].push(rect)
+                }
             }
+        }
+        for(const key of Object.keys(map)) {
+            map[key] = map[key].sort()
         }
         return map
     }
@@ -76,7 +95,7 @@ export class Rectangles {
 
     get(row, column) {
         const index = row * this.rowLength + column
-        return this.map[index]
+        if(this.map[index]) return this.map[index][0]
     }
 }
 

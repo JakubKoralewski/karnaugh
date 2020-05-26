@@ -41,7 +41,7 @@ export function CellRender(props) {
         ...restOfProps
     } = props
 
-    console.log("cell render key: ", cellKey)
+    console.group("cell render key: ", cellKey)
     let thisRef = useRef(null)
     let thisRefCallback = useCallback((node) => {
         if (node !== null) {
@@ -238,7 +238,7 @@ export function CellRender(props) {
         // style.backgroundColor = cell.rectangle.color
     }
 
-
+    console.groupEnd()
     return (
         cell.isHeader ?
             <th ref={refs ? thisRefCallback : null} style={style} key={cellKey} {...restOfProps}>

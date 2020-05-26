@@ -1,4 +1,4 @@
-import React, {useRef, useState} from "react"
+import React, {useEffect, useRef, useState} from "react"
 import inputStyles from "../input_formula.module.scss"
 import styles from "./karnaugh_map.module.scss"
 import {CellRender} from "./karnaugh_render"
@@ -111,7 +111,8 @@ export default React.memo(
         /** @type Rectangles */
         let rectangles
         if (dnf) {
-            rectangles = getRectangles(
+            rectangles = React.useMemo(
+                () => getRectangles(
                 {
                     transformedTable,
                     rowGrayCode,
@@ -119,12 +120,17 @@ export default React.memo(
                     rowHeaders,
                     columnHeaders
                 }
+            ), [table])
+
+            rectangles = React.useMemo(
+                () => new Rectangles({rectangles, rowLength: columnGrayCode.length}), [table]
             )
-            if (returnDNF) {
+        }
+        useEffect(() => {
+            if (dnf && returnDNF) {
                 returnDNF(getDnf({rectangles, columnGrayCode, columnHeaders, rowGrayCode, rowHeaders}))
             }
-            rectangles = new Rectangles({rectangles, rowLength: columnGrayCode.length})
-        }
+        }, [table])
         const mapSymbol = code => {
             // is == not === since they are possibly strings as well
             if (code == 0) {
@@ -245,7 +251,7 @@ export default React.memo(
                 {
                     data.map((row, i) => {
                         return (
-                            <tr>
+                            <tr key={i}>
                                 {
                                     row.map((cell, j) => {
                                         return (
@@ -257,7 +263,7 @@ export default React.memo(
                                                                 "initial" : null,
                                                     }
                                                 }
-                                                key={columns.length + i*data.length+j}
+                                                key={columns.length + i*(data.length-1)+j}
                                                 cellKey={i + columns.length}
                                                 naSymbol={na}
                                                 cell={cell}
