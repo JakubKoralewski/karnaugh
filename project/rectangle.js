@@ -19,11 +19,11 @@ export class Rectangle {
         this.color = color
         //FIXME: no need to sort
         //Possible when #17 is closed
-        this.cellArray = array.sort()
+        this.cellArray = array.sort((a, b) => a - b)
         this.pos = {x: getX(this.cellArray[0]), y: getY(this.cellArray[0])}
         let lastPos = this.cellArray[0]
         for (const cell of this.cellArray.slice(1)) {
-            if(cell -1 % rowLength !== lastPos) {
+            if(((cell -1) % rowLength) !== (lastPos % rowLength)) {
                 this.width = getX(cell) - getX(this.cellArray[0]) + 1
                 break;
             }
@@ -36,8 +36,10 @@ export class Rectangle {
             if(this.width > rowLength) {
                 // If no breaks, because spans whole multiple rows
                 this.width = rowLength
+                this.height = getY(this.cellArray[this.cellArray.length-1]) - getY(this.cellArray[0]) + 1
+            } else {
+                this.height = 1
             }
-            this.height = 1
         } else {
             // Width was found with a break, meaning more than one row of rectangle
             //FIXME
@@ -87,7 +89,10 @@ export class Rectangles {
             }
         }
         for(const key of Object.keys(map)) {
-            map[key] = map[key].sort()
+            // the less cells the higher the cell should be
+            map[key] = map[key].sort((
+                rect1, rect2) => rect1.cellArray.length - rect2.cellArray.length
+            )
         }
         return map
     }
