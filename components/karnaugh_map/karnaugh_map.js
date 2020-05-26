@@ -129,7 +129,7 @@ export default React.memo(
         useEffect(() => {
             if (dnf && returnDNF) {
                 console.log("returning dnf")
-                returnDNF(getDnf({rectangles: rectangles.rectangles, columnGrayCode, columnHeaders, rowGrayCode, rowHeaders}))
+                returnDNF(getDnf({rectangles: rectangles.rectangles.map(r => r.cellArray), columnGrayCode, columnHeaders, rowGrayCode, rowHeaders}))
             }
         }, [table])
         const mapSymbol = code => {
