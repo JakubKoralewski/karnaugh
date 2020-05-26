@@ -88,7 +88,7 @@ export default React.memo(
             table,
             symbols: {t, f, na} = {t: "T", f: "F", na: "*"},
             tableRefs,
-            onlyHeaders=false,
+            onlyHeaders = false,
             ...props
         }
     ) {
@@ -110,29 +110,40 @@ export default React.memo(
         }
         const mapSymbols = code => Array.isArray(code) ? code.map(mapSymbol) : mapSymbol(code)
         let columns = React.useMemo(
-            () => [
-                {
-                    isHeader: true,
-                    value: `${rowHeaders.join('')}\\${columnHeaders.join('')}`,
-                    // variables: columnHeaders,
-                    keys: null
-                },
-                ...columnGrayCode.map((gray, i) => (
+            () => {
+                let headerValue
+                if(columnHeaders.length === 0) {
+                    // Single variable
+                    headerValue = rowHeaders[0]
+                } else {
+                    // Normal case
+                    headerValue = `${rowHeaders.join('')}\\${columnHeaders.join('')}`
+                }
+
+                return [
                     {
                         isHeader: true,
-                        value: mapSymbols(gray).join(''),
-                        variables: columnHeaders,
-                        keys: columnHeaders.map((h, j) => `${h}${mapSymbol(gray[j])}`)
-                    }
-                ))
-            ],
+                        value: headerValue,
+                        keys: null
+                    },
+                    ...columnGrayCode.map((gray, i) => (
+                        {
+                            isHeader: true,
+                            value: mapSymbols(gray).join(''),
+                            variables: columnHeaders,
+                            keys: columnHeaders.map((h, j) => `${h}${mapSymbol(gray[j])}`)
+                        }
+                    ))
+                ]
+            },
             [table.rows]
         )
         let data = React.useMemo(
             () => rowGrayCode.map((rowCode, i) => {
                 const cell = [
                     {
-                        isHeader: true,
+                        // Fix case where with single variable it looks like evals are headers
+                        isHeader: columnGrayCode.length !== 0,
                         value: mapSymbols(rowCode).join(''),
                         variables: rowHeaders,
                         keys: rowHeaders.map((h, k) => `${h}${mapSymbol(rowCode[k])}`)
@@ -176,19 +187,20 @@ export default React.memo(
                 </thead>
                 <tbody>
                 {
-                    data.map((row,i) => {
+                    data.map((row, i) => {
                         return (
                             <tr>
-                                {row.map((cell,j) => {
+                                {row.map((cell, j) => {
                                     return (
                                         <CellRender
+                                            style={{backgroundColor: columnGrayCode.length === 0 ? "initial" : null}}
                                             key={j}
-                                            cellKey={i+columns.length}
+                                            cellKey={i + columns.length}
                                             naSymbol={na}
                                             cell={cell}
                                             refs={!tableRefs || (onlyHeaders && j !== 0) ? null : tableRefs.evals}
-                                            show={!onlyHeaders || (onlyHeaders && j===0)}
-                                            isLast={j !== 0 && i===data.length-1 && j===row.length-1}
+                                            show={!onlyHeaders || (onlyHeaders && j === 0)}
+                                            isLast={j !== 0 && i === data.length - 1 && j === row.length - 1}
                                         />
                                     )
                                 })}
