@@ -13,6 +13,10 @@ const initialState = {
 }
 
 function generateTable(state, statement) {
+    if (!statement) {
+        console.warn("No statement supplied for table generation!")
+        return;
+    }
     if (state.memoTruthTable && state.memoTruthTable.input === statement.statement.trim()) {
         console.log("truth table same as last time, abort")
         return state.memoTruthTable
@@ -26,15 +30,43 @@ function generateTable(state, statement) {
     console.log("saving table: ",)
     return memoTruthTable
 }
+/**
+ * @typedef {{current: HTMLElement | undefined}} ReactRef
+ */
 
-const TruthTableJsx = React.memo(({statement, onChange, symbols={t: "T", f: "F"}, returnRefs}) => {
+/**
+ * @typedef TableRefs
+ * @property {Object.<string, Array.<HTMLElement>>} evals
+ * @property {Array.<ReactRef>} headers
+ */
+
+/**
+ * @typedef {function(): null} OnChange
+ */
+
+/**
+ * Truth table component.
+ */
+const TruthTableJsx = React.memo((props) => {
+    let {statement, /** @type {OnChange}*/ onChange, symbols={t: "T", f: "F"}, returnRefs} = props
     console.group("generating truth table", statement)
+    if(!statement) {
+        // Can happen on going back
+        console.log("Tried rendering truth table with empty statement!")
+        return;
+    }
     let truthTable = generateTable(initialState, statement).table
     console.log("truthTable: ", truthTable)
     const headerEvalRef = useRef()
-    // refs.headers should be an array in case there are multiple variables
-    // with the same name, otherwise animation is broken, where only the first element
-    // gets animated
+    /** @type {TableRefs} refs
+     * `refs.headers` should be an array in case there are multiple variables
+     * with the same name, otherwise animation is broken, where only the first element
+     * gets animated.
+     *
+     * refs.headers - are made available to top-left-most header, to animate variable headers from table
+     *      to top-left
+     * refs.evals - for everything else, including row/column headers
+     */
     const refs = {evals: {}, headers: []}
     useEffect(
         () => {
@@ -68,8 +100,6 @@ const TruthTableJsx = React.memo(({statement, onChange, symbols={t: "T", f: "F"}
             <tr key={i} className={!rowEval ? styles.tableFalseRow : ''}>
                 {
                     row.map((someEval, j) => {
-                        // let newRef = useRef()
-                        // FIXME: use right refs for right elements
                         let newRef = elRefs.current[i*(truthTable.variables.length + 1)+j]
                         let newRefKey = `${someEval.name}${someEval.eval ? symbols.t : symbols.f}`
                         if(!refs.evals[newRefKey]) {
@@ -95,6 +125,8 @@ const TruthTableJsx = React.memo(({statement, onChange, symbols={t: "T", f: "F"}
                     {
                         truthTable.variables.map((variable, i) => {
                             let newRef = elRefs.current[refsNonHeadersLength + i]
+                            // In CellRender this will not be transformed in any way and used
+                            // as-is.
                             refs.headers.push({ref: newRef, variableName: variable, i})
 
                             return (<th key={i} ref={newRef}>{variable}</th>)

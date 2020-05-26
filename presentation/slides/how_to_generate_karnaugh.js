@@ -5,10 +5,13 @@ import {BasicAnimation, SimpleOpacityAnimation} from "../animations"
 import TruthTableJsx from "../../components/truth_table"
 import KarnaughMap from "../../components/karnaugh_map/karnaugh_map"
 
+const steps = 4
+
 function HowToGenerateKarnaugh(props) {
+    //FIXME: statement empty on back step
     const [statement, setStatement] = useState('')
     let [table, setTable] = useState(null)
-    let [tableRefs, setTableRefs] = useState(null)
+    let [tableRefs, setTableRefs] = useState('placeholder')
     const onStatementChange = (statement) => {
         setStatement(statement)
     }
@@ -29,9 +32,9 @@ function HowToGenerateKarnaugh(props) {
     }, [props.step, statement])
 
     const getKarnaughHeader = () => {
-        if(props.step === 3) {
+        if (props.step === 3) {
             return "We generate the headers."
-        } else if(props.step >= 4) {
+        } else if (props.step >= 4) {
             return "And then copy the values!"
         }
     }
@@ -62,11 +65,14 @@ function HowToGenerateKarnaugh(props) {
                             <SimpleOpacityAnimation>
                                 <div>
                                     <li>Second, we generate the truth table.</li>
-                                    <TruthTableJsx
-                                        onChange={onTableGenerate}
-                                        statement={statement}
-                                        returnRefs={onReturnedTableRefs}
-                                    />
+                                    {
+                                        statement &&
+                                        <TruthTableJsx
+                                            onChange={onTableGenerate}
+                                            statement={statement}
+                                            returnRefs={onReturnedTableRefs}
+                                        />
+                                    }
                                 </div>
                             </SimpleOpacityAnimation>
 
@@ -76,19 +82,27 @@ function HowToGenerateKarnaugh(props) {
                                     <div style={{width: "50%"}}>
 
                                         <li>{getKarnaughHeader()}</li>
-                                        <KarnaughMap
-                                            table={table}
-                                            symbols={{t: "T", f: "F", na: "*"}}
-                                            tableRefs={tableRefs}
-                                            onlyHeaders={props.step < 4}
-                                            style={
-                                                {
-                                                    background: props.step >= 4 ? "white" : "none",
-                                                    width: "66.6%",
-                                                    transition: "background 1s"
+                                        {
+                                            table &&
+                                            <KarnaughMap
+                                                table={table}
+                                                symbols={{t: "T", f: "F", na: "*"}}
+                                                // tableRefs={tableRefs}
+                                                tableRefs={
+                                                    props.direction === -1 && props.step === steps
+                                                        ? null : tableRefs
                                                 }
-                                            }
-                                        />
+                                                onlyHeaders={props.step < 4}
+                                                style={
+                                                    {
+                                                        background: props.step >= 4 ? "white" : "none",
+                                                        width: "66.6%",
+                                                        transition: "background 1s"
+                                                    }
+                                                }
+                                            />
+                                        }
+
                                     </div>
                                 </SimpleOpacityAnimation>
                             }
@@ -102,5 +116,5 @@ function HowToGenerateKarnaugh(props) {
 
 export default {
     Slide: HowToGenerateKarnaugh,
-    steps: 4
+    steps
 }

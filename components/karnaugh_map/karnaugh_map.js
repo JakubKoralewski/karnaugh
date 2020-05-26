@@ -2,6 +2,8 @@ import React, {useState} from "react"
 import inputStyles from "../input_formula.module.scss"
 import styles from "./karnaugh_map.module.scss"
 import {CellRender} from "./karnaugh_render"
+import {getRectangles} from "../../project/dnf"
+import {Rectangles} from "../../project/rectangle"
 
 /*
 * Animate from truth table: https://github.com/framer/motion/issues/550
@@ -81,14 +83,18 @@ function transformTable(tableRows, rows, columns) {
     return rv
 }
 
-
+/** Whether the animation happens is controlled by the `tableRefs` property
+ *  if it's null, then there is no animation, since there is no input table elements,
+ *  that would provide the necessary position information for the animation in `CellRender`.
+ */
 export default React.memo(
     function KarnaughMap(
         {
             table,
             symbols: {t, f, na} = {t: "T", f: "F", na: "*"},
             tableRefs,
-            onlyHeaders=false,
+            onlyHeaders = false,
+            dnf = false,
             ...props
         }
     ) {
@@ -99,7 +105,23 @@ export default React.memo(
             [rowHeaders, columnHeaders]
                 .map(grayCode)
         const transformedTable = transformTable(table.rows, rowHeaders, columnHeaders)
+
+        /** @type Rectangles */
+        let rectangles
+        if (dnf) {
+            rectangles = getRectangles(
+                {
+                    transformedTable,
+                    rowGrayCode,
+                    columnGrayCode,
+                    rowHeaders,
+                    columnHeaders
+                }
+            )
+            rectangles = new Rectangles({rectangles, rowLength: rowGrayCode.length})
+        }
         const mapSymbol = code => {
+            // is == not === since they are possibly strings as well
             if (code == 0) {
                 return f
             } else if (code == 1) {
@@ -140,11 +162,15 @@ export default React.memo(
                 ]
                 columnGrayCode.forEach((columnCode, j) => {
                     const value = mapSymbols(transformedTable[rowCode.join('')][columnCode.join('')])
+                    let rectangle = undefined
+                    if (dnf) {
+                        rectangle = rectangles.get(i, j)
+                    }
                     cell.push(
                         {
                             isHeader: false,
                             value,
-                            variables: rowHeaders,
+                            rectangle,
                             keys: [`eval${mapSymbols(rowCode).join('')}${mapSymbols(columnCode).join('')}${value}`]
                         }
                     )
@@ -168,7 +194,9 @@ export default React.memo(
                                 key={i}
                                 cellKey={i}
                                 cell={column}
-                                refs={tableRefs ? i === 0 ? tableRefs.headers : tableRefs.evals : null}
+                                refs={
+                                    tableRefs ? i === 0 ? tableRefs.headers : tableRefs.evals : null
+                                }
                             />
                         ))
                     }
@@ -176,22 +204,33 @@ export default React.memo(
                 </thead>
                 <tbody>
                 {
-                    data.map((row,i) => {
+                    data.map((row, i) => {
                         return (
                             <tr>
-                                {row.map((cell,j) => {
-                                    return (
-                                        <CellRender
-                                            key={j}
-                                            cellKey={i+columns.length}
-                                            naSymbol={na}
-                                            cell={cell}
-                                            refs={!tableRefs || (onlyHeaders && j !== 0) ? null : tableRefs.evals}
-                                            show={!onlyHeaders || (onlyHeaders && j===0)}
-                                            isLast={j !== 0 && i===data.length-1 && j===row.length-1}
-                                        />
-                                    )
-                                })}
+                                {
+                                    row.map((cell, j) => {
+                                        return (
+                                            <CellRender
+                                                key={j}
+                                                cellKey={i + columns.length}
+                                                naSymbol={na}
+                                                cell={cell}
+                                                refs={
+                                                    (!tableRefs || (onlyHeaders && j !== 0)) ?
+                                                        null : tableRefs.evals
+                                                }
+                                                show={
+                                                    !onlyHeaders || (onlyHeaders && j === 0)
+                                                }
+                                                isLast={
+                                                    j !== 0 &&
+                                                    i === data.length - 1 &&
+                                                    j === row.length - 1
+                                                }
+                                            />
+                                        )
+                                    })
+                                }
                             </tr>
                         )
                     })
