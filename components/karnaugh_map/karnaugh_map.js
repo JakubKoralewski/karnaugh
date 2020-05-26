@@ -1,9 +1,10 @@
-import React, {useState} from "react"
+import React, {useRef, useState} from "react"
 import inputStyles from "../input_formula.module.scss"
 import styles from "./karnaugh_map.module.scss"
 import {CellRender} from "./karnaugh_render"
-import {getRectangles} from "../../project/dnf"
+import {getDnf, getRectangles} from "../../project/dnf"
 import {Rectangles} from "../../project/rectangle"
+import SVGRectangles from "./rectangles"
 
 /*
 * Animate from truth table: https://github.com/framer/motion/issues/550
@@ -95,6 +96,7 @@ export default React.memo(
             tableRefs,
             onlyHeaders = false,
             dnf = false,
+            returnDNF,
             ...props
         }
     ) {
@@ -118,7 +120,10 @@ export default React.memo(
                     columnHeaders
                 }
             )
-            rectangles = new Rectangles({rectangles, columnLength: columnGrayCode.length})
+            if (returnDNF) {
+                returnDNF(getDnf({rectangles, columnGrayCode, columnHeaders, rowGrayCode, rowHeaders}))
+            }
+            rectangles = new Rectangles({rectangles, rowLength: columnGrayCode.length})
         }
         const mapSymbol = code => {
             // is == not === since they are possibly strings as well
@@ -134,7 +139,7 @@ export default React.memo(
         let columns = React.useMemo(
             () => {
                 let headerValue
-                if(columnHeaders.length === 0) {
+                if (columnHeaders.length === 0) {
                     // Single variable
                     headerValue = rowHeaders[0]
                 } else {
@@ -190,15 +195,38 @@ export default React.memo(
             }),
             [table.rows]
         )
+        /** @type {{current: HTMLTableRowElement | null}}*/
+        let headRowRef = useRef(null)
+        const commonTableStyles = {
+            width: "100%"
+        }
 
         console.groupEnd()
         return (
             <table
                 {...props}
                 className={[inputStyles.truthTable, styles.karnaughMap].join(' ')}
+                style={
+                    dnf ?
+                        {
+                            position: "relative",
+                            tableLayout: "fixed",
+                            ...commonTableStyles
+                        } : commonTableStyles
+                }
             >
+                {
+                    dnf && headRowRef.current &&
+                    <SVGRectangles
+                        rectangles={rectangles}
+                        numRows={rowGrayCode.length + 1}
+                        numColumns={columnGrayCode.length + 1}
+                        rowWidth={headRowRef.current.scrollWidth}
+                        rowHeight={headRowRef.current.scrollHeight}
+                    />
+                }
                 <thead>
-                <tr>
+                <tr ref={dnf ? headRowRef : null}>
                     {
                         columns.map((column, i) => (
                             <CellRender
@@ -226,10 +254,10 @@ export default React.memo(
                                                     {
                                                         backgroundColor:
                                                             columnGrayCode.length === 0 ?
-                                                                "initial" : null
+                                                                "initial" : null,
                                                     }
                                                 }
-                                                key={j}
+                                                key={columns.length + i*data.length+j}
                                                 cellKey={i + columns.length}
                                                 naSymbol={na}
                                                 cell={cell}

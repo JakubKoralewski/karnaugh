@@ -7,6 +7,7 @@ import makeTruthTable from "../../project/truth_table";
 
 function DNF(props) {
     const [state, setState] = useState({statement: '', table: null})
+    const [DNF, setDNF] = useState('')
     const onStatementChange = (statement) => {
         setState(oldState => {
                 const truthTable = makeTruthTable(statement)
@@ -18,6 +19,11 @@ function DNF(props) {
             }
         )
     }
+
+    const onReturnDNF = (dnf) => {
+        setDNF(dnf)
+    }
+
     useEffect(() => {
         if (!state.statement) {
             props.canGoForward("Please input a formula")
@@ -53,6 +59,7 @@ function DNF(props) {
                                     <KarnaughMap
                                         table={state.table}
                                         symbols={{t: "T", f: "F", na: "*"}}
+                                        returnDNF={onReturnDNF}
                                         dnf={true}
                                         style={
                                             {
@@ -61,6 +68,10 @@ function DNF(props) {
                                             }
                                         }
                                     />
+                                }
+                                {
+                                    state.table && DNF &&
+                                    <div>{DNF}</div>
                                 }
                             </div>
                         </SimpleOpacityAnimation>

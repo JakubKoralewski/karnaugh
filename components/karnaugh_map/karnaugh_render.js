@@ -234,7 +234,8 @@ export function CellRender(props) {
     }
     if(cell.keys && cell.rectangle) {
         // DNF Rectangle supplied
-        style.backgroundColor = cell.rectangle.color;
+        style.backgroundColor = cell.rectangle.color.slice(0, cell.rectangle.color.length-1) + ',0.3)'
+        // style.backgroundColor = cell.rectangle.color
     }
 
 

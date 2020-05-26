@@ -1,11 +1,47 @@
-export class Rectangle {
-    constructor(array) {
-        this.cellArray = array
-        this.color = null
-    }
 
-    assignColor(color) {
+/**
+ * @property {Array.<number>} cellArray - array of cells in 1D notation
+ * @property {string} color
+ * @property {{x: number, y: number}} pos - the position
+ * @property {number} width
+ * @property {number} height
+ */
+export class Rectangle {
+    /**
+     * @param {Array.<number>} array
+     * @param {string} color
+     * @param {number} rowLength
+     */
+    constructor(array, color, rowLength) {
+        const getY = cell => Math.floor(cell / rowLength)
+        const getX = cell => cell % rowLength
+
         this.color = color
+        //FIXME: no need to sort
+        //Possible when #17 is closed
+        this.cellArray = array.sort()
+        this.pos = {x: getX(this.cellArray[0]), y: getY(this.cellArray[0])}
+        let lastPos = this.cellArray[0]
+        for (const cell of this.cellArray.slice(1)) {
+            if(cell -1 % rowLength !== lastPos) {
+                this.width = cell - this.cellArray[0] + 1
+            }
+            lastPos = cell % rowLength
+        }
+        if(this.width === undefined) {
+            // No break between cells in array
+            //FIXME
+            this.width = this.cellArray[this.cellArray.length-1] - this.cellArray[0] + 1
+            if(this.width > rowLength) {
+                // If no breaks, because spans whole multiple rows
+                this.width = rowLength
+            }
+            this.height = 1
+        } else {
+            // Width was found with a break, meaning more than one row of rectangle
+            //FIXME
+            this.height = getY(this.cellArray[this.cellArray.length-1]) - getY(this.cellArray[0]) + 1
+        }
     }
 
     * [Symbol.iterator]() {
@@ -14,22 +50,13 @@ export class Rectangle {
         }
     }
 }
-
 export class Rectangles {
-    constructor({rectangles: arrays, columnLength}) {
-        this.columnLength = columnLength
+    constructor({rectangles: arrays, rowLength}) {
+        this.rowLength = rowLength
         this.colors = new Colors()
-        this.color = ''
         this.usedColors = new Set()
-        this.rectangles = arrays.map(r => new Rectangle(r))
-        this.assignColors()
+        this.rectangles = arrays.map(r => new Rectangle(r, this.colors.getRandom(), rowLength))
         this.map = this.generateMap()
-    }
-
-    assignColors() {
-        for (const rect of this.rectangles) {
-            rect.assignColor(this.colors.getRandom())
-        }
     }
 
     /**
@@ -48,7 +75,7 @@ export class Rectangles {
 
 
     get(row, column) {
-        const index = row * this.columnLength + column
+        const index = row * this.rowLength + column
         return this.map[index]
     }
 }
@@ -57,31 +84,30 @@ class Colors {
     usedColors = new Set();
 
     names = {
-        aqua: "#00ffff",
-        blue: "#0000ff",
-        brown: "#a52a2a",
-        darkcyan: "#008b8b",
-        darkgreen: "#006400",
-        darkkhaki: "#bdb76b",
-        darkmagenta: "#8b008b",
-        darkolivegreen: "#556b2f",
-        darkorange: "#ff8c00",
-        darkred: "#8b0000",
-        darksalmon: "#e9967a",
-        darkviolet: "#9400d3",
-        fuchsia: "#ff00ff",
-        gold: "#ffd700",
-        green: "#008000",
-        khaki: "#f0e68c",
-        lightblue: "#add8e6",
-        lightpink: "#ffb6c1",
-        lime: "#00ff00",
-        olive: "#808000",
-        orange: "#ffa500",
-        pink: "#ffc0cb",
-        purple: "#800080",
-        red: "#ff0000",
-        yellow: "#ffff00"
+        aqua: "rgb(65,180,180)",
+        blue: "rgb(0,0,255)",
+        brown: "rgb(165,58,42)",
+        darkcyan: "rgb(0,139,139)",
+        darkgreen: "rgb(0,100,0)",
+        darkkhaki: "rgb(189,183,107)",
+        darkmagenta: "rgb(139,0,139)",
+        darkolivegreen: "rgb(85,107,47)",
+        darkorange: "rgb(255,140,0)",
+        darkred: "rgb(139,0,0)",
+        darksalmon: "rgb(233,150,122)",
+        darkviolet: "rgb(148,0,211)",
+        fuchsia: "rgb(255,0,255)",
+        gold: "rgb(255,215,0)",
+        green: "rgb(0,128,0)",
+        khaki: "rgb(240,230,140)",
+        lightblue: "rgb(173,216,230)",
+        lime: "rgb(0,255,0)",
+        olive: "rgb(128,128,0)",
+        orange: "rgb(255,165,0)",
+        pink: "rgb(255,192,203)",
+        purple: "rgb(128,0,128)",
+        red: "rgb(255,0,0)",
+        yellow: "rgb(255,255,0)"
     };
 
     getRandom() {
