@@ -128,7 +128,8 @@ export default React.memo(
         }
         useEffect(() => {
             if (dnf && returnDNF) {
-                returnDNF(getDnf({rectangles, columnGrayCode, columnHeaders, rowGrayCode, rowHeaders}))
+                console.log("returning dnf")
+                returnDNF(getDnf({rectangles: rectangles.rectangles, columnGrayCode, columnHeaders, rowGrayCode, rowHeaders}))
             }
         }, [table])
         const mapSymbol = code => {
