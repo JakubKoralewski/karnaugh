@@ -118,7 +118,7 @@ export default React.memo(
                     columnHeaders
                 }
             )
-            rectangles = new Rectangles({rectangles, rowLength: rowGrayCode.length})
+            rectangles = new Rectangles({rectangles, columnLength: columnGrayCode.length})
         }
         const mapSymbol = code => {
             // is == not === since they are possibly strings as well

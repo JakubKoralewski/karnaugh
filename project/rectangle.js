@@ -16,8 +16,8 @@ export class Rectangle {
 }
 
 export class Rectangles {
-    constructor({rectangles: arrays, rowLength}) {
-        this.rowLength = rowLength
+    constructor({rectangles: arrays, columnLength}) {
+        this.columnLength = columnLength
         this.colors = new Colors()
         this.color = ''
         this.usedColors = new Set()
@@ -48,7 +48,7 @@ export class Rectangles {
 
 
     get(row, column) {
-        const index = row * this.rowLength + column
+        const index = row * this.columnLength + column
         return this.map[index]
     }
 }
