@@ -158,7 +158,7 @@ export default React.memo(function ParseTree({statement}) {
                 <motion.g ref={mainGroupRef} className={styles.svgGroup}>
                     {
                         state.links ? state.links.map((l, i) => {
-                            const key = [l.source.data.name, l.target.data.name]
+                            const key = [i, l.source.data.name, l.target.data.name]
                             let x = [l.target]
                             while (x.length !== 0) {
                                 let node = x.pop()

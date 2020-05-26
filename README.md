@@ -14,6 +14,24 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 
 You can start editing the page by modifying `pages/index.js`. The page auto-updates as you edit the file.
 
+## Deploy as if on GitHub
+
+GitHub has a prefix URL `/karnaugh` which has to be taken into account
+when changing the URL and linking static files. This is automatically assumed
+unless the `ASSET_PREFIX` environment variable is overwritten.
+
+To see GitHub's output:
+
+```bash
+npm run export
+```
+
+To see Netlify's output:
+
+```bash
+ASSET_PREFIX="" KARNAUGH_PATH="" npm run export
+```
+
 ## Learn More
 
 To learn more about Next.js, take a look at the following resources:

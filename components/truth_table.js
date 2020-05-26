@@ -1,4 +1,4 @@
-import React, {useEffect, useRef} from "react"
+import React, {createRef, useEffect, useRef} from "react"
 import styles from "./input_formula.module.scss"
 import makeTruthTable from "../project/truth_table"
 
@@ -32,7 +32,10 @@ const TruthTableJsx = React.memo(({statement, onChange, symbols={t: "T", f: "F"}
     let truthTable = generateTable(initialState, statement).table
     console.log("truthTable: ", truthTable)
     const headerEvalRef = useRef()
-    const refs = {evals: {}, headers: {}}
+    // refs.headers should be an array in case there are multiple variables
+    // with the same name, otherwise animation is broken, where only the first element
+    // gets animated
+    const refs = {evals: {}, headers: []}
     useEffect(
         () => {
             onChange(truthTable)
@@ -42,6 +45,15 @@ const TruthTableJsx = React.memo(({statement, onChange, symbols={t: "T", f: "F"}
         },
         [statement]
     )
+    let elRefs = React.useRef([])
+    let refsNonHeadersLength = truthTable.rows.length * (truthTable.variables.length+1)
+    let refsLength = refsNonHeadersLength + truthTable.variables.length
+
+    if (refsLength !== elRefs.current.length) {
+        elRefs.current = Array(refsLength)
+            .fill(0)
+            .map((_, i) => elRefs[i] || createRef())
+    }
 
     let rows = []
     for (let i = 0; i < truthTable.rows.length; ++i) {
@@ -56,13 +68,15 @@ const TruthTableJsx = React.memo(({statement, onChange, symbols={t: "T", f: "F"}
             <tr key={i} className={!rowEval ? styles.tableFalseRow : ''}>
                 {
                     row.map((someEval, j) => {
-                        let newRef = useRef()
+                        // let newRef = useRef()
+                        // FIXME: use right refs for right elements
+                        let newRef = elRefs.current[i*(truthTable.variables.length + 1)+j]
                         let newRefKey = `${someEval.name}${someEval.eval ? symbols.t : symbols.f}`
                         if(!refs.evals[newRefKey]) {
                             refs.evals[newRefKey] = []
                         }
                         refs.evals[newRefKey].push(newRef)
-                        return (<td ref={newRef}>
+                        return (<td ref={newRef} key={`${j}${newRefKey}`}>
                             {
                                 someEval.eval ? symbols.t : symbols.f
                             }
@@ -80,8 +94,8 @@ const TruthTableJsx = React.memo(({statement, onChange, symbols={t: "T", f: "F"}
                 <tr>
                     {
                         truthTable.variables.map((variable, i) => {
-                            let newRef = useRef()
-                            refs.headers[variable] = newRef
+                            let newRef = elRefs.current[refsNonHeadersLength + i]
+                            refs.headers.push({ref: newRef, variableName: variable, i})
 
                             return (<th key={i} ref={newRef}>{variable}</th>)
                         })
