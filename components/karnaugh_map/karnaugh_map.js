@@ -227,8 +227,7 @@ export default React.memo(
                         rectangles={rectangles}
                         numRows={rowGrayCode.length + 1}
                         numColumns={columnGrayCode.length + 1}
-                        rowWidth={headRowRef.current.scrollWidth}
-                        rowHeight={headRowRef.current.scrollHeight}
+                        rowRef={headRowRef.current}
                     />
                 }
                 <thead>
