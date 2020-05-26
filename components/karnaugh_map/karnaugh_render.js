@@ -30,7 +30,17 @@ const zip = (arr, ...arrs) => {
  *
  */
 export function CellRender(props) {
-    let {cell, refs, cellKey, isLast, show=true, naSymbol="*"} = props
+    let {
+        cell,
+        refs,
+        cellKey,
+        isLast,
+        show=true,
+        naSymbol="*",
+        style: parentStyle,
+        ...restOfProps
+    } = props
+
     console.log("cell render key: ", cellKey)
     let thisRef = useRef(null)
     let thisRefCallback = useCallback((node) => {
@@ -219,7 +229,8 @@ export function CellRender(props) {
     let style = {
         // invisible at first if animation, otherwise just show it
         opacity: refs ? 0 : show ? 1 : 0,
-        transition: "opacity 0.25s"
+        transition: "opacity 0.25s",
+        ...parentStyle
     }
     if(cell.keys && cell.rectangle) {
         // DNF Rectangle supplied
@@ -229,11 +240,11 @@ export function CellRender(props) {
 
     return (
         cell.isHeader ?
-            <th ref={refs ? thisRefCallback : null} style={style} key={cellKey}>
+            <th ref={refs ? thisRefCallback : null} style={style} key={cellKey} {...restOfProps}>
                 {cell.value}
             </th>
             :
-            <td ref={refs ? thisRefCallback : null} style={style} key={cellKey}>
+            <td ref={refs ? thisRefCallback : null} style={style} key={cellKey} {...restOfProps}>
                 {cell.value}
             </td>
     )
