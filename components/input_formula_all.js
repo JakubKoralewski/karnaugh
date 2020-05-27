@@ -28,9 +28,6 @@ export default function InputFormulaAll(
     console.log("rendering inputformulaall statement: ", statement)
     /** @param {string} stat*/
     const onInnerChange = (stat) => {
-        if(stat instanceof String) {
-            stat = stat.trim()
-        }
         setStatement(stat)
         if(onChange)
             onChange(stat)

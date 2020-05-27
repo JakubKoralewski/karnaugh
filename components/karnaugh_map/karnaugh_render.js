@@ -29,7 +29,7 @@ const zip = (arr, ...arrs) => {
  *  @param {boolean} props.show - based on `KarnaughMap`'s `onlyHeaders` prop, whether to show cell
  *
  */
-export function CellRender(props) {
+export default React.memo(function CellRender(props) {
     let {
         cell,
         refs,
@@ -41,7 +41,7 @@ export function CellRender(props) {
         ...restOfProps
     } = props
 
-    console.group("cell render key: ", cellKey)
+    console.group("cell render ", props)
     let thisRef = useRef(null)
     let thisRefCallback = useCallback((node) => {
         if (node !== null) {
@@ -232,7 +232,7 @@ export function CellRender(props) {
         transition: "opacity 0.25s",
         ...parentStyle
     }
-    if(cell.keys && cell.rectangle) {
+    if(cell.rectangle) {
         // DNF Rectangle supplied
         style.backgroundColor = cell.rectangle.color.slice(0, cell.rectangle.color.length-1) + ',0.3)'
         // style.backgroundColor = cell.rectangle.color
@@ -241,12 +241,12 @@ export function CellRender(props) {
     console.groupEnd()
     return (
         cell.isHeader ?
-            <th ref={refs ? thisRefCallback : null} style={style} key={cellKey} {...restOfProps}>
+            <th ref={refs ? thisRefCallback : null} style={style} {...restOfProps}>
                 {cell.value}
             </th>
             :
-            <td ref={refs ? thisRefCallback : null} style={style} key={cellKey} {...restOfProps}>
+            <td ref={refs ? thisRefCallback : null} style={style} {...restOfProps}>
                 {cell.value}
             </td>
     )
-}
+})

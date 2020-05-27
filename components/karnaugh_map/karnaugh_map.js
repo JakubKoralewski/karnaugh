@@ -1,7 +1,7 @@
 import React, {useEffect, useRef, useState} from "react"
 import inputStyles from "../input_formula.module.scss"
 import styles from "./karnaugh_map.module.scss"
-import {CellRender} from "./karnaugh_render"
+import CellRender from "./karnaugh_render"
 import {getDnf, getRectangles} from "../../project/dnf"
 import {Rectangles} from "../../project/rectangle"
 import SVGRectangles from "./rectangles"
@@ -87,6 +87,10 @@ function transformTable(tableRows, rows, columns) {
 /** Whether the animation happens is controlled by the `tableRefs` property
  *  if it's null, then there is no animation, since there is no input table elements,
  *  that would provide the necessary position information for the animation in `CellRender`.
+ *
+ *  @param {Object} props
+ *  @param {boolean} props.dnf - FIXME: changing this after initial render will return in error
+ *      as this property being true adds 2 additional useMemo hooks
  */
 export default React.memo(
     function KarnaughMap(
@@ -107,30 +111,42 @@ export default React.memo(
             [rowHeaders, columnHeaders]
                 .map(grayCode)
         const transformedTable = transformTable(table.rows, rowHeaders, columnHeaders)
+        const memoJsonTable = JSON.stringify(transformedTable)
 
         /** @type Rectangles */
         let rectangles
         if (dnf) {
             rectangles = React.useMemo(
                 () => getRectangles(
-                {
-                    transformedTable,
-                    rowGrayCode,
-                    columnGrayCode,
-                    rowHeaders,
-                    columnHeaders
-                }
-            ), [table])
+                    {
+                        transformedTable,
+                        rowGrayCode,
+                        columnGrayCode,
+                        rowHeaders,
+                        columnHeaders
+                    }
+                ), [memoJsonTable]
+            )
             console.table(rectangles)
 
             rectangles = React.useMemo(
-                () => new Rectangles({rectangles, rowLength: columnGrayCode.length}), [table]
+                () => {
+                    console.log("generating new rectangles, because transformedTable changed: ", transformedTable)
+                    return new Rectangles({rectangles, rowLength: columnGrayCode.length})
+                },
+                [memoJsonTable]
             )
         }
         useEffect(() => {
             if (dnf && returnDNF) {
                 console.log("returning dnf")
-                returnDNF(getDnf({rectangles: rectangles.rectangles.map(r => r.cellArray), columnGrayCode, columnHeaders, rowGrayCode, rowHeaders}))
+                returnDNF(getDnf({
+                    rectangles: rectangles.rectangles.map(r => r.cellArray),
+                    columnGrayCode,
+                    columnHeaders,
+                    rowGrayCode,
+                    rowHeaders
+                }))
             }
         }, [table])
         const mapSymbol = code => {
@@ -166,12 +182,12 @@ export default React.memo(
                             isHeader: true,
                             value: mapSymbols(gray).join(''),
                             variables: columnHeaders,
-                            keys: columnHeaders.map((h, j) => `${h}${mapSymbol(gray[j])}`)
+                            keys: tableRefs ? columnHeaders.map((h, j) => `${h}${mapSymbol(gray[j])}`) : ['']
                         }
                     ))
                 ]
             },
-            [table.rows]
+            [memoJsonTable, tableRefs, table.variables]
         )
         let data = React.useMemo(
             () => rowGrayCode.map((rowCode, i) => {
@@ -181,7 +197,7 @@ export default React.memo(
                         isHeader: columnGrayCode.length !== 0,
                         value: mapSymbols(rowCode).join(''),
                         variables: rowHeaders,
-                        keys: rowHeaders.map((h, k) => `${h}${mapSymbol(rowCode[k])}`)
+                        keys: tableRefs ? rowHeaders.map((h, k) => `${h}${mapSymbol(rowCode[k])}`) : ['']
                     }
                 ]
                 columnGrayCode.forEach((columnCode, j) => {
@@ -195,19 +211,26 @@ export default React.memo(
                             isHeader: false,
                             value,
                             rectangle,
-                            keys: [`eval${mapSymbols(rowCode).join('')}${mapSymbols(columnCode).join('')}${value}`]
+                            keys: tableRefs ?
+                                [`eval${mapSymbols(rowCode).join('')}${mapSymbols(columnCode).join('')}${value}`]
+                                : ['']
                         }
                     )
                 })
                 return cell
             }),
-            [table.rows]
+            [memoJsonTable, tableRefs]
         )
         /** @type {{current: HTMLTableRowElement | null}}*/
         let headRowRef = useRef(null)
         const commonTableStyles = {
             width: "100%"
         }
+        const cellStyle = React.useMemo(() => ({
+            backgroundColor:
+                columnGrayCode.length === 0 ?
+                    "initial" : null,
+        }), [columnGrayCode.length])
 
         console.groupEnd()
         return (
@@ -257,15 +280,9 @@ export default React.memo(
                                     row.map((cell, j) => {
                                         return (
                                             <CellRender
-                                                style={
-                                                    {
-                                                        backgroundColor:
-                                                            columnGrayCode.length === 0 ?
-                                                                "initial" : null,
-                                                    }
-                                                }
-                                                key={columns.length + i*(data.length-1)+j}
-                                                cellKey={i + columns.length}
+                                                style={cellStyle}
+                                                key={columns.length + i * (data.length - 1) + j}
+                                                cellKey={columns.length + i * (data.length - 1) + j}
                                                 naSymbol={na}
                                                 cell={cell}
                                                 refs={
