@@ -1,6 +1,6 @@
-import React, {useCallback, useEffect, useReducer, useRef, useState} from "react"
+import React, {useCallback, useEffect, useReducer, useRef} from "react"
 import {motion} from "framer-motion"
-import {Rectangle, Rectangles} from "../../project/rectangle"
+import {Rectangles} from "../../project/rectangle"
 import {debounce} from "lodash";
 
 export default React.memo(function SVGRectangles(props) {
@@ -61,7 +61,7 @@ export default React.memo(function SVGRectangles(props) {
             {
                 rectangles.rectangles.map((rect, i) => {
                     console.log("Drawing rectangle number ", i, "with rect", rect)
-                    return React.useMemo(() => (
+                    return (
                         <motion.rect
                             width={(rect.width * sizes.columnWidth) - sizes.strokeWidth}
                             height={(sizes.rowHeight * rect.height) - sizes.strokeWidth}
@@ -74,7 +74,7 @@ export default React.memo(function SVGRectangles(props) {
                             stroke={rect.color}
                             key={i}
                         >
-                        </motion.rect>), [sizes.columnWidth, sizes.rowHeight]
+                        </motion.rect>
                     )
                 })
             }
