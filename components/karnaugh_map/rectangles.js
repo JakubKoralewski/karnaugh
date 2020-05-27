@@ -1,50 +1,49 @@
-import React, {useCallback, useEffect, useReducer, useRef} from "react"
+import React, {useCallback, useEffect, useReducer, useRef, useState} from "react"
 import {motion} from "framer-motion"
 import {Rectangles} from "../../project/rectangle"
 import {debounce} from "lodash";
 
 export default React.memo(function SVGRectangles(props) {
-    const {/** @type {Rectangles} */rectangles, numRows, numColumns, /** @type {HTMLTableRowElement}*/rowRef} = props
-    const watcherSizes = (state) => {
-        const columnWidth = state.rowWidth / numColumns
+    const {
+        /** @type {Rectangles} */rectangles,
+        numRows,
+        numColumns,
+        /** @type {HTMLTableRowElement}*/rowRef
+    } = props
+    console.groupCollapsed("Drawing rectangles, ", props)
+
+    const initSizes = (numColumns) => {
+        console.log("Setting column width with numColumns = ", numColumns)
+        console.log("rowref width", rowRef.scrollWidth)
+        const rowWidth= rowRef.scrollWidth
+        const columnWidth = rowWidth / numColumns
         return {
-            ...state,
+            rowHeight: rowRef.scrollHeight,
+            rowWidth,
             columnWidth,
             strokeWidth: 4 + columnWidth / 80
         }
     }
-    const sizesReducer = () => {
-        const newState = {
-            rowHeight: rowRef.scrollHeight,
-            rowWidth: rowRef.scrollWidth,
-        }
-        return watcherSizes(newState)
 
-    }
-    const initSizes = (init) => {
-        return watcherSizes(init)
-    }
-
-    let [sizes, dispatch] = useReducer(
-        sizesReducer,
-        {
-            rowHeight: rowRef.scrollHeight,
-            rowWidth: rowRef.scrollWidth
-        },
-        initSizes
+    let [sizes, setSizes] = useState(
+        initSizes(numColumns)
     )
+    useEffect(() => {
+        setSizes(initSizes(numColumns))
+    }, [numColumns])
 
     const svgRef = useRef(null)
 
-    console.group("Drawing SVG rectangles: ", props)
     const onRowRefResize = useCallback(debounce(() => {
-        console.log("resize")
-        dispatch()
+        console.log("resize table in rectangles")
+        setSizes(initSizes(numColumns))
     }, 50), [])
+
     useEffect(() => {
-        window.addEventListener("resize", onRowRefResize)
+        window.addEventListener("resize", () => onRowRefResize)
         return () => window.removeEventListener("resize", onRowRefResize)
     }, [])
+
     const rv = (
         <motion.svg
             viewBox={`0 0 ${sizes.rowWidth} ${sizes.rowHeight * numRows}`}

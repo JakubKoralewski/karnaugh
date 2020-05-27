@@ -121,6 +121,7 @@ export default React.memo(
                     columnHeaders
                 }
             ), [table])
+            console.table(rectangles)
 
             rectangles = React.useMemo(
                 () => new Rectangles({rectangles, rowLength: columnGrayCode.length}), [table]
