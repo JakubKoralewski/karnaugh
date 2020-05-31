@@ -39,7 +39,8 @@ expect.extend({
                 pass: false,
                 message: () =>
                         `Length of expected (${expected.length}) was different from actual length (${actual.length}).
-                        Expected was: "${JSON.stringify(expected)}". Actual was: "${JSON.stringify(actual)}".`
+                        Expected was: "${JSON.stringify(expected)}". 
+                        Actual was: "${JSON.stringify(actual)}".`
             }
         }
 
