@@ -8,7 +8,13 @@ export function abstractTo1D(inputFixtures) {
         for(const fixture of inputFixtures) {
             assertValid2DFixture(fixture)
             const oneD = new Array(fixture.input.length*fixture.input.length)
+            fixture.input.forEach((row, i) => {
+                row.forEach((val, j) => {
+                    oneD[i*row.length + j] = val
+                })
+            })
             yield {
+                colCount: fixture.input[0].length,
                 values: oneD,
                 ...fixture
             }
