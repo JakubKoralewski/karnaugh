@@ -69,13 +69,13 @@ export function getRectangles({transformedTable, rowHeaders, columnHeaders, rowG
 
     let value = [];
     let cell = 0;
-    for (i = 0; i < rowGrayCode.length; i++) {
-        for (j = 0; j < columnGrayCode.length; j++) {
+    for (let i = 0; i < rowGrayCode.length; i++) {
+        for (let j = 0; j < columnGrayCode.length; j++) {
             value[cell] = "";
-            for (k = 0; k < rowCount; k++) {
+            for (let k = 0; k < rowCount; k++) {
                 value[cell] = value[cell].concat(rowGrayCode[i][k]);
             }
-            for (k = 0; k < colCount; k++) {
+            for (let k = 0; k < colCount; k++) {
                 value[cell] = value[cell].concat(columnGrayCode[j][k]);
             }
             let t = allValues[0].indexOf(value[cell]);
@@ -107,7 +107,6 @@ export function getRectangles({transformedTable, rowHeaders, columnHeaders, rowG
             let secondStart = base;
             let n = 1;
             let s = 1; // The number of rows to be checked
-            let step = 1;
             let allTrue = 1;
             let tempCount = 1;
             let tempArray = [];
@@ -228,34 +227,14 @@ export function getRectangles({transformedTable, rowHeaders, columnHeaders, rowG
             }
             base = base + 1;
 
-            if (rectangles.length > 0) {
-                let donew = 0;
-                for (let i = 0; i < rectangles.length; i++) {
-                    for (let j = 0; j < rect.length; j++) {
-                        if (rectangles[i].includes) {
-
-                        } else {
-                            donew++;
-                            break;
-                        }
-                    }
-                }
-                // If a rectangle is generated it is pushed to a function named rectangles in which all the rectangles are stored.
-                if (rect.length > 0 && donew < rectangles.length) {
-                    rectangles.push(rect);
-                    rect = [];
-                }
-            } else {
-                if (rect.length > 0) {
-                    rectangles.push(rect);
-                    rect = [];
-                }
-            }
+            // If a rectangle is generated it is pushed to an array named rectangles in which all the rectangles are stored.
+            rectangles.push(rect);
+            rect = [];
         }
         base = base + 1;
     }
 
-    // Remove rectangles that are a set of another rectangle
+    // Remove rectangles that are subsets of other rectangles
     for (let i = 0; i < rectangles.length; i++) {
         for (let j = 0; j < rectangles.length; j++) {
             let isIncluded = 1;
@@ -263,6 +242,7 @@ export function getRectangles({transformedTable, rowHeaders, columnHeaders, rowG
                 for (let k = 0; k < rectangles[i].length; k++) {
                     if (rectangles[j].indexOf(rectangles[i][k]) === -1) {
                         isIncluded = 0;
+                        break;
                     }
                 }
                 if (isIncluded === 1) {
@@ -276,7 +256,6 @@ export function getRectangles({transformedTable, rowHeaders, columnHeaders, rowG
     for (let i = 0; i < rectangles.length; i++) {
         rectangles[i].sort(function (x, y) {  return x - y;  });
     }
-    console.log(rectangles);
     return rectangles;
 }
 
@@ -304,7 +283,7 @@ export function getDnf({rectangles, rowHeaders, columnHeaders, rowGrayCode, colu
                     added.push(arr[i][0]);
                 }
             } else if (count === 0) {
-                str = "~";
+                let str = "~";
                 str = str.concat(arr[i][0])
                 if (added.includes(str)) {
 
