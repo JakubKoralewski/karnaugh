@@ -18,6 +18,10 @@ function get1DCellNumber(row, column, numColumns) {
 }
 
 /**
+ * Description: This function gets necessary data from karnaugh map
+ * Input: Properties from the karnaugh map
+ * Output: Necessary information to generate rectangles and disjunctive normal form
+ *
  * @param {Object} obj
  * @param {Array.<Array.<number>>} obj.rowGrayCode
  * @param {Array.<Array.<number>>} obj.columnGrayCode
@@ -46,7 +50,9 @@ function getArr({rowHeaders, columnHeaders, rowGrayCode, columnGrayCode}) {
         return newVars
     }
     return [
+        // Push row headers and the table cells on which their values are true to an array
         ...generateVars(rowVarCount, rowCount, colCount, rowHeaders, rowGrayCode),
+        // Push column headers and the table cells on which their values are true to the array
         ...generateVars(colVarCount, colCount, rowCount, columnHeaders, columnGrayCode)
     ]
 }
@@ -62,110 +68,165 @@ function _getRectangles({values, colCount}) {
     const rectangles = [];
 
     while (base < values.length) {
-        while (values[base] && !done.includes(base)) {
+        while (values[base]) {
             let right = true;
             let down = true;
             let temporary = [];
             temporary.push(base);
-            let rect = temporary;
+            let rect = [];
+            rect.push(base);
             let rightCount = 1;
             let downCount = 0;
-            let len = values.length;
+            let len = values.length; // The total number of cells in the karnaugh map
             let start = base;
             let secondStart = base;
             let n = 1;
+            let s = 1; // The number of rows to be checked
             let allTrue = true;
             let tempCount = 1;
             let tempArray = [];
+            let isExec = false;
 
-            while (right) {
-                if (Math.floor(start / colCount) === Math.floor((start + n) / colCount) && (start + n < len)) {
-                    for (let i = 1; i <= n; i++) {
-                        if (values[start + i]) {
-                            tempArray.push(start + i);
-                            tempCount++;
-                        } else {
-                            allTrue = false;
-                            right = false;
-                            break;
-                        }
-                    }
-                    if (allTrue) {
-                        temporary.push(...tempArray);
-                        tempArray = [];
-                    }
-                } else {
-                    right = false;
-                }
-                if (!right) {
-                    temporary = rect;
-                    break;
-                } else {
-                    rect = temporary;
-                    rightCount = tempCount;
-                }
-                start += n;
-                n *= 2;
-            }
 
-            n = rightCount;
-            let s = 1;
-            tempArray = [];
+            while (right || down) {
+                if (right) {
+                    if (
+                        Math.floor(start / colCount) === Math.floor((start + n) / colCount)
+                        && (start + n < len)
+                    ) {
 
-            while (down) {
-                downCount = 0;
-                if (secondStart + get1DCellNumber(s, n, colCount) <= len) {
-                    for (let j = 0; j < rightCount; j++) {
-                        for (let i = 1; i <= s; i++) {
-                            if (values[secondStart + get1DCellNumber(i, j, colCount)]) {
-                                tempArray.push(secondStart + get1DCellNumber(i, j, colCount));
-                                downCount++;
+                        // Check if the n number of columns rightward are true
+                        for (let i = 1; i <= n; i++) {
+                            if (values[start + i]) {
+                                tempArray.push(start + i);
+                                tempCount++;
                             } else {
                                 allTrue = false;
-                                down = false;
+                                right = false;
                                 break;
                             }
                         }
-                    }
-                    if (allTrue) {
-                        temporary.push(...tempArray);
-                        tempArray = [];
-                    }
-                } else {
-                    down = false;
-                }
-                if (!down) {
-                    temporary = rect;
-                    break;
-                } else {
-                    if (downCount === rightCount * s) {
-                        rect = temporary;
-                        secondStart += (colCount * s);
-                        s *= 2;
+                        // If n number of columns are true then push them into a temporary array other
+                        if (allTrue) {
+                            temporary.push(...tempArray);
+                            tempArray = [];
+                        }
                     } else {
-                        temporary = rect;
+                        right = false;
+                    }
+                    if (!right) {
+                        temporary = [];
+                        for (let i = 0; i < rect.length; i++) {
+                            temporary[i] = rect[i];
+                        }
+                    } else {
+                        // rect = temporary;
+                        rightCount = tempCount;
+                    }
+                    start += n;
+                    n *= 2;
+                }
+
+                n = rightCount; // The number of columns that are true
+                tempArray = []; // The indexes of cells that are true will be pushed to this array
+                allTrue = 1;
+
+                if (!right && isExec) {
+                    s *= 2;
+                    secondStart = get1DCellNumber(s, base, colCount);
+                } else {
+                    secondStart = get1DCellNumber(s, base, colCount) + downCount;
+                }
+
+                if (down) {
+                    isExec = true
+                    let lastCell = 0;
+                    if (rightCount > downCount) {
+                        lastCell = secondStart + (rightCount - downCount);
+                    } else {
+                        lastCell = secondStart + (s * col);
+                    }
+                    if (lastCell <= len) {
+                        for (let i = 0; i < s; i++) {
+                            let first = secondStart + ((i - 1) * colCount);
+                            let last = lastCell - ((s - i) * colCount);
+                            if (last > first + rightCount) {
+                                last = first + rightCount;
+                            }
+                            for (let j = first; j < last; j++) {
+                                if (values[j] === 1) {
+                                    tempArray.push(j);
+                                    downCount++;
+                                } else {
+                                    allTrue = false;
+                                    down = false;
+                                    break;
+                                }
+                            }
+                        }
+                        if (allTrue) {
+                            temporary.push(...tempArray);
+                            tempArray = [];
+                        }
+                    } else {
+                        down = false;
+                    }
+                    if (!down && downCount > 0) {
+                        temporary = [];
+                        for (let i = 0; i < rect.length; i++) {
+                            temporary[i] = rect[i];
+                        }
+                    } else if (down) {
+                        rect = [];
+                        for (let i = 0; i < temporary.length; i++) {
+                            rect[i] = temporary[i];
+                        }
+                        secondStart = downCount + get1DCellNumber(s, base, col);
+                    }
+                }
+                done.push(...rect)
+                base++;
+
+                // If a rectangle is generated it is pushed to an array named rectangles in which all
+                // the rectangles are stored.
+                rectangles.push(rect.sort((a, b) => a - b));
+                rect = [];
+            }
+            base++;
+        }
+        // Remove rectangles that are subsets of other rectangles
+        for (let i = 0; i < rectangles.length; i++) {
+            for (let j = 0; j < rectangles.length; j++) {
+                let isIncluded = 1;
+                if (j !== i && rectangles[i].length < rectangles[j].length) {
+                    for (let k = 0; k < rectangles[i].length; k++) {
+                        if (rectangles[j].indexOf(rectangles[i][k]) === -1) {
+                            isIncluded = 0;
+                            break;
+                        }
+                    }
+                    if (isIncluded === 1) {
+                        rectangles.splice(i, 1);
+                        i--;
                         break;
                     }
                 }
             }
-            done.push(...rect)
-            base++;
-
-            if (rect.length > 0) {
-                rectangles.push(rect.sort((a,b) => a - b));
-                rect = [];
-            }
         }
-        base++;
     }
     return rectangles;
 }
 
 /**
+ * Generate all the rectangles of a given Karnaugh map
+ * Input: Karnaugh map row and column headers, gray code, all true and false values
+ * Output: All the rectangles in a given Karnaugh map
+ *
  * @param {Object} obj
  * @param {Object.<string, Object.<string, boolean>>} obj.transformedTable
  * @param {Array.<Array.<number>>} obj.rowGrayCode
  * @param {Array.<Array.<number>>} obj.columnGrayCode
+ * @return {Array.<Array.<number>>}
  */
 export function getRectangles(
     {
@@ -192,6 +253,7 @@ export function getRectangles(
 }
 
 /**
+ * Description: This function takes rectangles as an input and generate a disjunctive normal form.
  * @param {Object} obj
  * @param {Array.<Array.<number>>} obj.rectangles
  * @param {Array.<string>} obj.rowHeaders
