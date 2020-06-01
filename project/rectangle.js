@@ -23,15 +23,15 @@ export class Rectangle {
         this.pos = {x: getX(this.cellArray[0]), y: getY(this.cellArray[0])}
         let lastPos = this.cellArray[0]
         for (const cell of this.cellArray.slice(1)) {
-            if(((cell -1) % rowLength) !== (lastPos % rowLength)) {
-                this.width = getX(cell) - getX(this.cellArray[0]) + 1
+            if(((cell - 1) % rowLength) !== (lastPos % rowLength)) {
+                // cells change rows without spanning whole width
+                this.width = getX(lastPos) - getX(cell) + 1
                 break;
             }
-            lastPos = cell % rowLength
+            lastPos = cell
         }
         if(this.width === undefined) {
             // No break between cells in array
-            //FIXME
             this.width = this.cellArray[this.cellArray.length-1] - this.cellArray[0] + 1
             if(this.width > rowLength) {
                 // If no breaks, because spans whole multiple rows
