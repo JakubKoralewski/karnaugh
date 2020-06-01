@@ -55,8 +55,8 @@ export function getRectangles({transformedTable, rowHeaders, columnHeaders, rowG
     let allValues = [];
     allValues[0] = [];
     allValues[1] = [];
-    for (keys in transformedTable) {
-        for (key in transformedTable[keys]) {
+    for (let keys in transformedTable) {
+        for (let key in transformedTable[keys]) {
             allValues[0].push(keys.concat(key));
             if (transformedTable[keys][key] === true) {
                 allValues[1].push(1);
