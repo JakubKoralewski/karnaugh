@@ -70,10 +70,8 @@ function _getRectangles({values, colCount}) {
         while (values[base]) {
             let right = true;
             let down = true;
-            let temporary = [];
-            temporary.push(base);
-            let rect = [];
-            rect.push(base);
+            let temporary = [base];
+            let rect = [base];
             let rightCount = 1;
             let downCount = 0;
             let len = values.length; // The total number of cells in the karnaugh map
@@ -114,10 +112,7 @@ function _getRectangles({values, colCount}) {
                         right = false;
                     }
                     if (!right) {
-                        temporary = [];
-                        for (let i = 0; i < rect.length; i++) {
-                            temporary[i] = rect[i];
-                        }
+                        temporary = rect.slice(0)
                     } else {
                         // rect = temporary;
                         rightCount = tempCount;
@@ -128,7 +123,7 @@ function _getRectangles({values, colCount}) {
 
                 n = rightCount; // The number of columns that are true
                 tempArray = []; // The indexes of cells that are true will be pushed to this array
-                allTrue = 1;
+                allTrue = true;
 
                 if (!right && isExec) {
                     s *= 2;
@@ -146,7 +141,7 @@ function _getRectangles({values, colCount}) {
                         lastCell = secondStart + (s * colCount);
                     }
                     if (lastCell <= len) {
-                        for (let i = 0; i < s; i++) {
+                        for (let i = 1; i <= s; i++) {
                             let first = secondStart + ((i - 1) * colCount);
                             let last = lastCell - ((s - i) * colCount);
                             if (last > first + rightCount) {
@@ -171,28 +166,26 @@ function _getRectangles({values, colCount}) {
                         down = false;
                     }
                     if (!down && downCount > 0) {
-                        temporary = [];
-                        for (let i = 0; i < rect.length; i++) {
-                            temporary[i] = rect[i];
-                        }
+                        temporary = rect.slice(0)
                     } else if (down) {
-                        rect = [];
-                        for (let i = 0; i < temporary.length; i++) {
-                            rect[i] = temporary[i];
-                        }
+                        rect = temporary.slice(0)
                         secondStart = downCount + get1DCellNumber(s, base, colCount);
                     }
                 }
-                base++;
-
-                // If a rectangle is generated it is pushed to an array named rectangles in which all
-                // the rectangles are stored.
-                rectangles.push(rect.sort((a, b) => a - b));
-                rect = [];
+                if (downCount === 0 && right && rightCount > 1) {
+                    rect = temporary.slice(0)
+                }
             }
+            base++;
+
+            // If a rectangle is generated it is pushed to an array named rectangles in which all
+            // the rectangles are stored.
+            rectangles.push(rect.sort((a, b) => a - b));
+            rect = [];
         }
         base++;
     }
+
     // Remove rectangles that are subsets of other rectangles
     for (let i = 0; i < rectangles.length; i++) {
         for (let j = 0; j < rectangles.length; j++) {
