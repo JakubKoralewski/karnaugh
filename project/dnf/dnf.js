@@ -64,7 +64,6 @@ function getArr({rowHeaders, columnHeaders, rowGrayCode, columnGrayCode}) {
  */
 function _getRectangles({values, colCount}) {
     let base = 0;
-    const done = [];
     const rectangles = [];
 
     while (base < values.length) {
@@ -144,7 +143,7 @@ function _getRectangles({values, colCount}) {
                     if (rightCount > downCount) {
                         lastCell = secondStart + (rightCount - downCount);
                     } else {
-                        lastCell = secondStart + (s * col);
+                        lastCell = secondStart + (s * colCount);
                     }
                     if (lastCell <= len) {
                         for (let i = 0; i < s; i++) {
@@ -154,7 +153,7 @@ function _getRectangles({values, colCount}) {
                                 last = first + rightCount;
                             }
                             for (let j = first; j < last; j++) {
-                                if (values[j] === 1) {
+                                if (values[j]) {
                                     tempArray.push(j);
                                     downCount++;
                                 } else {
@@ -181,10 +180,9 @@ function _getRectangles({values, colCount}) {
                         for (let i = 0; i < temporary.length; i++) {
                             rect[i] = temporary[i];
                         }
-                        secondStart = downCount + get1DCellNumber(s, base, col);
+                        secondStart = downCount + get1DCellNumber(s, base, colCount);
                     }
                 }
-                done.push(...rect)
                 base++;
 
                 // If a rectangle is generated it is pushed to an array named rectangles in which all
@@ -192,24 +190,24 @@ function _getRectangles({values, colCount}) {
                 rectangles.push(rect.sort((a, b) => a - b));
                 rect = [];
             }
-            base++;
         }
-        // Remove rectangles that are subsets of other rectangles
-        for (let i = 0; i < rectangles.length; i++) {
-            for (let j = 0; j < rectangles.length; j++) {
-                let isIncluded = 1;
-                if (j !== i && rectangles[i].length < rectangles[j].length) {
-                    for (let k = 0; k < rectangles[i].length; k++) {
-                        if (rectangles[j].indexOf(rectangles[i][k]) === -1) {
-                            isIncluded = 0;
-                            break;
-                        }
-                    }
-                    if (isIncluded === 1) {
-                        rectangles.splice(i, 1);
-                        i--;
+        base++;
+    }
+    // Remove rectangles that are subsets of other rectangles
+    for (let i = 0; i < rectangles.length; i++) {
+        for (let j = 0; j < rectangles.length; j++) {
+            let isIncluded = 1;
+            if (j !== i && rectangles[i].length < rectangles[j].length) {
+                for (let k = 0; k < rectangles[i].length; k++) {
+                    if (rectangles[j].indexOf(rectangles[i][k]) === -1) {
+                        isIncluded = 0;
                         break;
                     }
+                }
+                if (isIncluded === 1) {
+                    rectangles.splice(i, 1);
+                    i--;
+                    break;
                 }
             }
         }
