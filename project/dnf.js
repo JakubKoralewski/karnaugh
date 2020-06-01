@@ -118,7 +118,7 @@ export function getRectangles({transformedTable, rowHeaders, columnHeaders, rowG
                     if (Math.floor(start / col) === Math.floor((start + n) / col) && (start + n < len)) {
 
                         // Check if the n number of columns rightward are true
-                        for (i = 1; i <= n; i++) {
+                        for (let i = 1; i <= n; i++) {
                             if (values[start+i] === 1) {
                                 tempArray.push(start+i);
                                 tempCount++;
@@ -130,7 +130,7 @@ export function getRectangles({transformedTable, rowHeaders, columnHeaders, rowG
                         }
                         // If n number of columns are true then push them into a temporary array other
                         if (allTrue === 1) {
-                            for (i = 0; i < tempArray.length; i++) {
+                            for (let i = 0; i < tempArray.length; i++) {
                                 temporary.push(tempArray[i]);
                             }
                             tempArray = [];
@@ -140,7 +140,7 @@ export function getRectangles({transformedTable, rowHeaders, columnHeaders, rowG
                     }
                     if (right === 0) {
                         temporary = [];
-                        for (i = 0; i < rect.length; i++) {
+                        for (let i = 0; i < rect.length; i++) {
                             temporary[i] = rect[i];
                         }
                     } else if (right === 1) {
@@ -172,14 +172,14 @@ export function getRectangles({transformedTable, rowHeaders, columnHeaders, rowG
                     }
                     if (lastCell <= len) {
 
-                        for (i = 1; i <= s; i++) {
+                        for (let i = 1; i <= s; i++) {
                             let first = secondStart + ((i - 1) * col);
                             let last = lastCell - ((s - i) * col);
                             if (last > first + rightCount) {
                                 last = first + rightCount;
                             }
 
-                            for (j = first; j < last; j++) {
+                            for (let j = first; j < last; j++) {
                                 if (values[j] === 1) {
                                     tempArray.push(j);
                                     downCount++;
@@ -193,7 +193,7 @@ export function getRectangles({transformedTable, rowHeaders, columnHeaders, rowG
 
                         if (allTrue === 1) {
 
-                            for (i = 0; i < tempArray.length; i++) {
+                            for (let i = 0; i < tempArray.length; i++) {
                                 temporary.push(tempArray[i]);
                             }
                             tempArray = [];
@@ -203,12 +203,12 @@ export function getRectangles({transformedTable, rowHeaders, columnHeaders, rowG
                     }
                     if (down === 0 && downCount > 0) {
                         temporary = [];
-                        for (i = 0; i < rect.length; i++) {
+                        for (let i = 0; i < rect.length; i++) {
                             temporary[i] = rect[i];
                         }
                     } else if (down === 1) {
                         rect = [];
-                        for (i = 0; i < temporary.length; i++) {
+                        for (let i = 0; i < temporary.length; i++) {
                             rect[i] = temporary[i];
                         }
                         secondStart = downCount + base + (col * s);
@@ -216,13 +216,13 @@ export function getRectangles({transformedTable, rowHeaders, columnHeaders, rowG
                 }
                 if (downCount === 0 && right === 1 && rightCount > 1) {
                     rect = [];
-                    for (i = 0; i < temporary.length; i++) {
+                    for (let i = 0; i < temporary.length; i++) {
                         rect[i] = temporary[i];
                     }
                 }
             }
 
-            for (i = 0; i < rect.length; i++) {
+            for (let i = 0; i < rect.length; i++) {
                 done.push(rect[i]);
             }
             base = base + 1;
@@ -268,10 +268,10 @@ export function getDnf({rectangles, rowHeaders, columnHeaders, rowGrayCode, colu
     let dnf = "";
     let result = "";
 
-    for (k = 0; k < rectangles.length; k++) {
-        for (i = 0; i < arr.length; i++) {
+    for (let k = 0; k < rectangles.length; k++) {
+        for (let i = 0; i < arr.length; i++) {
             count = 0;
-            for (j = 0; j < rectangles[k].length; j++) {
+            for (let j = 0; j < rectangles[k].length; j++) {
                 if (arr[i].includes(rectangles[k][j])) {
                     count++;
                 }
