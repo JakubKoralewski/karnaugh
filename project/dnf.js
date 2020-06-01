@@ -270,7 +270,7 @@ export function getDnf({rectangles, rowHeaders, columnHeaders, rowGrayCode, colu
 
     for (let k = 0; k < rectangles.length; k++) {
         for (let i = 0; i < arr.length; i++) {
-            count = 0;
+            let count = 0;
             for (let j = 0; j < rectangles[k].length; j++) {
                 if (arr[i].includes(rectangles[k][j])) {
                     count++;
