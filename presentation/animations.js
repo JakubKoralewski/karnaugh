@@ -1,6 +1,9 @@
 import React, {useRef, useEffect} from "react"
 import {motion} from "framer-motion"
-
+/**
+ * This is an *abstract* element that makes it easy to build upon,
+ * since it will become any element you pass in as the child.
+ */
 export const Animation = React.forwardRef((props, ref) => {
     let child = props.children
     let type = child.type
@@ -57,6 +60,9 @@ export const ScrollIntoViewAnimation = React.forwardRef((props, ref) => {
         </Animation>
     )
 })
+/**
+ * Simple opacity animation that also scrolls the animation into view.
+ */
 export function SimpleOpacityAnimation(props) {
     let ref = useRef()
     return (
@@ -71,7 +77,7 @@ export function SimpleOpacityAnimation(props) {
         </ScrollIntoViewAnimation>
     )
 }
-
+/** Both opacity and small `y` direction animation. */
 export function BasicAnimation(props) {
     let ref = useRef()
     return (

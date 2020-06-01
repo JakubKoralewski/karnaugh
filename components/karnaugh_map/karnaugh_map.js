@@ -1,7 +1,10 @@
-import React, {useState} from "react"
+import React, {useEffect, useRef, useState} from "react"
 import inputStyles from "../input_formula.module.scss"
 import styles from "./karnaugh_map.module.scss"
-import {CellRender} from "./karnaugh_render"
+import CellRender from "./karnaugh_render"
+import {getDnf, getRectangles} from "../../project/dnf"
+import {Rectangles} from "../../project/rectangle"
+import SVGRectangles from "./rectangles"
 
 /*
 * Animate from truth table: https://github.com/framer/motion/issues/550
@@ -81,7 +84,14 @@ function transformTable(tableRows, rows, columns) {
     return rv
 }
 
-
+/** Whether the animation happens is controlled by the `tableRefs` property
+ *  if it's null, then there is no animation, since there is no input table elements,
+ *  that would provide the necessary position information for the animation in `CellRender`.
+ *
+ *  @param {Object} props
+ *  @param {boolean} props.dnf - FIXME: changing this after initial render will return in error
+ *      as this property being true adds 2 additional useMemo hooks
+ */
 export default React.memo(
     function KarnaughMap(
         {
@@ -89,6 +99,8 @@ export default React.memo(
             symbols: {t, f, na} = {t: "T", f: "F", na: "*"},
             tableRefs,
             onlyHeaders = false,
+            dnf = false,
+            returnDNF,
             ...props
         }
     ) {
@@ -99,7 +111,46 @@ export default React.memo(
             [rowHeaders, columnHeaders]
                 .map(grayCode)
         const transformedTable = transformTable(table.rows, rowHeaders, columnHeaders)
+        const memoJsonTable = JSON.stringify(transformedTable)
+
+        /** @type Rectangles */
+        let rectangles
+        if (dnf) {
+            rectangles = React.useMemo(
+                () => getRectangles(
+                    {
+                        transformedTable,
+                        rowGrayCode,
+                        columnGrayCode,
+                        rowHeaders,
+                        columnHeaders
+                    }
+                ), [memoJsonTable]
+            )
+            console.table(rectangles)
+
+            rectangles = React.useMemo(
+                () => {
+                    console.log("generating new rectangles, because transformedTable changed: ", transformedTable)
+                    return new Rectangles({rectangles, rowLength: columnGrayCode.length})
+                },
+                [memoJsonTable]
+            )
+        }
+        useEffect(() => {
+            if (dnf && returnDNF) {
+                console.log("returning dnf")
+                returnDNF(getDnf({
+                    rectangles: rectangles.rectangles.map(r => r.cellArray),
+                    columnGrayCode,
+                    columnHeaders,
+                    rowGrayCode,
+                    rowHeaders
+                }))
+            }
+        }, [table])
         const mapSymbol = code => {
+            // is == not === since they are possibly strings as well
             if (code == 0) {
                 return f
             } else if (code == 1) {
@@ -112,7 +163,7 @@ export default React.memo(
         let columns = React.useMemo(
             () => {
                 let headerValue
-                if(columnHeaders.length === 0) {
+                if (columnHeaders.length === 0) {
                     // Single variable
                     headerValue = rowHeaders[0]
                 } else {
@@ -131,12 +182,12 @@ export default React.memo(
                             isHeader: true,
                             value: mapSymbols(gray).join(''),
                             variables: columnHeaders,
-                            keys: columnHeaders.map((h, j) => `${h}${mapSymbol(gray[j])}`)
+                            keys: tableRefs ? columnHeaders.map((h, j) => `${h}${mapSymbol(gray[j])}`) : ['']
                         }
                     ))
                 ]
             },
-            [table.rows]
+            [memoJsonTable, tableRefs, table.variables]
         )
         let data = React.useMemo(
             () => rowGrayCode.map((rowCode, i) => {
@@ -146,40 +197,75 @@ export default React.memo(
                         isHeader: columnGrayCode.length !== 0,
                         value: mapSymbols(rowCode).join(''),
                         variables: rowHeaders,
-                        keys: rowHeaders.map((h, k) => `${h}${mapSymbol(rowCode[k])}`)
+                        keys: tableRefs ? rowHeaders.map((h, k) => `${h}${mapSymbol(rowCode[k])}`) : ['']
                     }
                 ]
                 columnGrayCode.forEach((columnCode, j) => {
                     const value = mapSymbols(transformedTable[rowCode.join('')][columnCode.join('')])
+                    let rectangle = undefined
+                    if (dnf) {
+                        rectangle = rectangles.get(i, j)
+                    }
                     cell.push(
                         {
                             isHeader: false,
                             value,
-                            variables: rowHeaders,
-                            keys: [`eval${mapSymbols(rowCode).join('')}${mapSymbols(columnCode).join('')}${value}`]
+                            rectangle,
+                            keys: tableRefs ?
+                                [`eval${mapSymbols(rowCode).join('')}${mapSymbols(columnCode).join('')}${value}`]
+                                : ['']
                         }
                     )
                 })
                 return cell
             }),
-            [table.rows]
+            [memoJsonTable, tableRefs]
         )
+        /** @type {{current: HTMLTableRowElement | null}}*/
+        let headRowRef = useRef(null)
+        const commonTableStyles = {
+            width: "100%"
+        }
+        const cellStyle = React.useMemo(() => ({
+            backgroundColor:
+                columnGrayCode.length === 0 ?
+                    "initial" : null,
+        }), [columnGrayCode.length])
 
         console.groupEnd()
         return (
             <table
                 {...props}
                 className={[inputStyles.truthTable, styles.karnaughMap].join(' ')}
+                style={
+                    dnf ?
+                        {
+                            position: "relative",
+                            tableLayout: "fixed",
+                            ...commonTableStyles
+                        } : commonTableStyles
+                }
             >
+                {
+                    dnf && headRowRef.current &&
+                    <SVGRectangles
+                        rectangles={rectangles}
+                        numRows={rowGrayCode.length + 1}
+                        numColumns={columnGrayCode.length + 1}
+                        rowRef={headRowRef.current}
+                    />
+                }
                 <thead>
-                <tr>
+                <tr ref={dnf ? headRowRef : null}>
                     {
                         columns.map((column, i) => (
                             <CellRender
                                 key={i}
                                 cellKey={i}
                                 cell={column}
-                                refs={tableRefs ? i === 0 ? tableRefs.headers : tableRefs.evals : null}
+                                refs={
+                                    tableRefs ? i === 0 ? tableRefs.headers : tableRefs.evals : null
+                                }
                             />
                         ))
                     }
@@ -189,21 +275,32 @@ export default React.memo(
                 {
                     data.map((row, i) => {
                         return (
-                            <tr>
-                                {row.map((cell, j) => {
-                                    return (
-                                        <CellRender
-                                            style={{backgroundColor: columnGrayCode.length === 0 ? "initial" : null}}
-                                            key={j}
-                                            cellKey={i + columns.length}
-                                            naSymbol={na}
-                                            cell={cell}
-                                            refs={!tableRefs || (onlyHeaders && j !== 0) ? null : tableRefs.evals}
-                                            show={!onlyHeaders || (onlyHeaders && j === 0)}
-                                            isLast={j !== 0 && i === data.length - 1 && j === row.length - 1}
-                                        />
-                                    )
-                                })}
+                            <tr key={i}>
+                                {
+                                    row.map((cell, j) => {
+                                        return (
+                                            <CellRender
+                                                style={cellStyle}
+                                                key={columns.length + i * (data.length - 1) + j}
+                                                cellKey={columns.length + i * (data.length - 1) + j}
+                                                naSymbol={na}
+                                                cell={cell}
+                                                refs={
+                                                    (!tableRefs || (onlyHeaders && j !== 0)) ?
+                                                        null : tableRefs.evals
+                                                }
+                                                show={
+                                                    !onlyHeaders || (onlyHeaders && j === 0)
+                                                }
+                                                isLast={
+                                                    j !== 0 &&
+                                                    i === data.length - 1 &&
+                                                    j === row.length - 1
+                                                }
+                                            />
+                                        )
+                                    })
+                                }
                             </tr>
                         )
                     })

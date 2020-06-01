@@ -6,10 +6,42 @@ import inputFormulaStyles from "../input_formula.module.scss"
 const zip = (arr, ...arrs) => {
     return arr.map((val, i) => arrs.reduce((a, arr) => [...a, arr[i]], [val]));
 }
+/** Cell Render. Can return both `<th>` and `<td>` elements.
+ *  @param {Object} props
+ *
+ *  @param {Object} props.cell
+ *  @param {Array.<string> | null} props.cell.keys - identifier of particular cell, possibly corresponding to
+ *      a table cell, if keys is null then the cell is top-left-most variable header.
+ *      Keys have the following structure:
+ *      a) `${variableNames}${variableValues}`
+ *      b) `eval${variableValues}${evalValue}`
+ *  @param {boolean} props.cell.isHeader - whether to display `<th>` or `<td>`
+ *  @param {string} props.cell.value - text value to be displayed inside element
+ *  @param {Array.<string>} props.cell.variables - list of variables in that column/row header
+ *      It is used for animation target position, when a particular row/column has more than one T/F
+ *      variable, to accurately animate to the correct position.
+ *  @param {Rectangle | undefined} props.cell.rectangle - if we're not a header,
+ *      corresponding rectangle, used to extract color information about current cell
+ *
+ *  @param {Object.<{current: HTMLElement | undefined}>} props.refs - all refs (including those not related
+ *      to this particular cell!)
+ *
+ *  @param {boolean} props.show - based on `KarnaughMap`'s `onlyHeaders` prop, whether to show cell
+ *
+ */
+export default React.memo(function CellRender(props) {
+    let {
+        cell,
+        refs,
+        cellKey,
+        isLast,
+        show=true,
+        naSymbol="*",
+        style: parentStyle,
+        ...restOfProps
+    } = props
 
-export function CellRender(props) {
-    let {cell, refs, cellKey, isLast, show, naSymbol="*", style: parentStyle, ...restOfProps} = props
-    console.log("cell render key: ", cellKey)
+    console.group("cell render ", props)
     let thisRef = useRef(null)
     let thisRefCallback = useCallback((node) => {
         if (node !== null) {
@@ -26,9 +58,9 @@ export function CellRender(props) {
         //         Need to check if ref has ref to elem, cuz it can have null current
         // refs - make sure refs were passed
         // !allRefs[0].ref - grant access if this cell is the top-left most header
-        // allRefs[0] - before checking the next two make sure the first element even exists
-        // allRefs[0].current, allRefs[0][0].current - make sure refs are not null
-        if (refs && (allRefs[0].ref || (allRefs[0] && (allRefs[0].current || allRefs[0][0].current)))) {
+        // allRefs[0] - before checking the next make sure the first element even exists
+        // allRefs[0][0].current - make sure refs are not null
+        if (refs && (allRefs[0].ref || (allRefs[0] && (allRefs[0][0].current)))) {
             const parent = document.body.querySelector(`.${slideStyles.slide}`)
             table = parent.querySelector(`.${slideStyles.slide} > table`)
             if (!table) {
@@ -66,9 +98,7 @@ export function CellRender(props) {
                     thisRef.current.style.opacity = 1;
                 }
             } else {
-                // cell.keys is null therefore the current cell is the top, left header with variable names
-                //FIXME: when variable names are duplicated, only one variable is sent
-                // problem with assigning key as variable name
+                // cell.keys is null; therefore the current cell is the top left header with variable names
                 correspondingRefs = refs
             }
             let row = document.createElement('tr')
@@ -84,7 +114,7 @@ export function CellRender(props) {
                     // of each variable in the headers for more accurate animation
                     const textNode = thisElem.childNodes[0]
                     let textPos = textNode.nodeValue.indexOf(elem.innerText.trim())
-                    if (cell.variables) {
+                    if (cell.variables && cell.isHeader) {
                         // Fix problem when header is, e.g.: `FF`
                         let newTextPos = cell.variables.indexOf(variableName)
                         if(newTextPos !== -1) {
@@ -175,7 +205,7 @@ export function CellRender(props) {
                         if (table.parentNode) {
                             // Remove the whole animated table which in this scope should be
                             // invisible now anyway
-                            // table.parentNode.removeChild(table)
+                            table.parentNode.removeChild(table)
                         }
                     }
                 }, 3000 + correspondingRefs.length * 100 + cellWait)
@@ -196,21 +226,27 @@ export function CellRender(props) {
         }
     }, [show])
 
-    const style = {
-        opacity: 0,
+    let style = {
+        // invisible at first if animation, otherwise just show it
+        opacity: refs ? 0 : show ? 1 : 0,
         transition: "opacity 0.25s",
         ...parentStyle
     }
+    if(cell.rectangle) {
+        // DNF Rectangle supplied
+        style.backgroundColor = cell.rectangle.color.slice(0, cell.rectangle.color.length-1) + ',0.3)'
+        // style.backgroundColor = cell.rectangle.color
+    }
 
-
+    console.groupEnd()
     return (
         cell.isHeader ?
-            <th ref={refs ? thisRefCallback : null} style={style} key={cellKey} {...restOfProps}>
+            <th ref={refs ? thisRefCallback : null} style={style} {...restOfProps}>
                 {cell.value}
             </th>
             :
-            <td ref={refs ? thisRefCallback : null} style={style} key={cellKey} {...restOfProps}>
+            <td ref={refs ? thisRefCallback : null} style={style} {...restOfProps}>
                 {cell.value}
             </td>
     )
-}
+})

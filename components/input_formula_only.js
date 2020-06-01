@@ -10,7 +10,13 @@ const initialState = {
     errorMessage: "text",
     showErrorMessage: false
 }
-
+/**
+ * @param {Object} state
+ * @param {Object} action
+ * @param {string} action.type
+ * @param {'add'|'show_error'} action.text - statement text
+ * @param {boolean} action.show - should show error message?
+ */
 function reducer(state, {type, text, show}) {
     switch (type) {
         case 'add': {
@@ -18,7 +24,7 @@ function reducer(state, {type, text, show}) {
             let isValid = true
             let statement
             try {
-                statement = new Statement(text)
+                statement = new Statement(text.trim())
             } catch (error) {
                 isValid = false
                 errorMessage = error
@@ -84,9 +90,11 @@ export default function InputFormula({onChange}) {
                 spellCheck="false"
                 className={[state.isValid ? styles.valid : styles.invalid, styles.inputFormula].join(' ')}
                 onChange={(event) => {
-                    let text = event.target.value
-                    setText(text.trim())
-                    debouncedHandler(text)
+                    let newText = event.target.value.trim()
+                    if(newText !== text) {
+                        setText(newText)
+                        debouncedHandler(newText)
+                    }
                 }}
                 ref={inputElem}
                 onMouseEnter={() => {
