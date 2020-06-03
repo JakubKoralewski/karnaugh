@@ -2,7 +2,7 @@ import React, {useEffect, useRef, useState} from "react"
 import inputStyles from "../input_formula.module.scss"
 import styles from "./karnaugh_map.module.scss"
 import CellRender from "./karnaugh_render"
-import {getDnf, getRectangles} from "../../project/dnf"
+import {getDnf, getRectangles} from "../../project/dnf/dnf"
 import {Rectangles} from "../../project/rectangle"
 import SVGRectangles from "./rectangles"
 
