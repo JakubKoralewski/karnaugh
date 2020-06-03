@@ -4,9 +4,18 @@ import InputFormula from "./input_formula_only"
 import TruthTableJsx from "./truth_table"
 import ParseTree from "./parse_tree"
 
+/** @author https://blog.hackages.io/conditionally-wrap-an-element-in-react-a8b9a47fab2 */
 const ConditionalWrapper = ({ condition, wrapper, children }) =>
     condition ? wrapper(children) : children;
 
+/**
+ * Wrapper around `InputFormula`, `TruthTable` and `ParseTree`, making it
+ *  easy to show them all as one component.
+ *
+ *  @param {Object} obj - input object
+ *  @param {boolean} obj.animate - a function that will return an animation object, so you can
+ *      specify from parent what animation you want to be used
+ */
 export default function InputFormulaAll(
     {
         shouldGenerateParseTree = false,
@@ -15,8 +24,9 @@ export default function InputFormulaAll(
         onChange,
         animate = false
     }) {
-    let [statement, setStatement] = useState()
+    let [statement, setStatement] = useState('')
     console.log("rendering inputformulaall statement: ", statement)
+    /** @param {string} stat*/
     const onInnerChange = (stat) => {
         setStatement(stat)
         if(onChange)

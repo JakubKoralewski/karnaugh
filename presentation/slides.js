@@ -1,11 +1,13 @@
 import Intro from "./slides/intro"
 import WhatIsKarnaugh from "./slides/what_is_karnaugh"
 import HowToGenerateKarnaugh from "./slides/how_to_generate_karnaugh"
+import DNF from "./slides/dnf"
 
 const slideOrder = [
     Intro,
     WhatIsKarnaugh,
-    HowToGenerateKarnaugh
+    HowToGenerateKarnaugh,
+    DNF
 ]
 export default slideOrder.map(createWithRef)
 
@@ -24,6 +26,7 @@ function createWithRef({Slide, steps=0}) {
         }
 
         useImperativeHandle(ref, () => ({
+            /** Return true if does not allow to go to next slide. */
             prevStep() {
                 if(step === 0) {
                     return;
@@ -32,6 +35,9 @@ function createWithRef({Slide, steps=0}) {
                 console.log("prev step in intro")
                 return true
             },
+            /** Return true if does not allow to go to next slide.
+             *  `slideAllowsMeToGoForward` allows the slide itself to decide whether all
+             */
             nextStep() {
                 if(slideAllowsMeToGoForward !== true) {
                     return slideAllowsMeToGoForward;
@@ -51,7 +57,11 @@ function createWithRef({Slide, steps=0}) {
             }
         }))
 
-        return  <Slide step={step} canGoForward={canGoForward} {...props}/>
+        return  <Slide
+            step={step}
+            canGoForward={canGoForward}
+            {...props}
+        />
     })
     return <SlideWithRef/>
 }

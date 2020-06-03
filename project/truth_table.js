@@ -56,18 +56,24 @@ function getCases (variables) {
  *
  * @returns {Object} - The table representation.
  */
-function statementToTable (s) {
-    var table = {}
+ function statementToTable (s) {
+     var table = {}
 
-    table['statement'] = s.statement
-    table['variables'] = s.variables
-    table['rows'] = getCases(table['variables'])
-    for (var i = 0; i < table['rows'].length; ++i) {
-        table['rows'][i]['eval'] = s.evaluate(table['rows'][i])
-    }
+     table['statement'] = s.statement
+     let uniqueVars = [];
+     for (let i = 0; i < s.variables.length; i++) {
+         if (uniqueVars.indexOf(s.variables[i]) === -1) {
+             uniqueVars.push(s.variables[i]);
+         }
+     }
+     table['variables'] = uniqueVars;
+     table['rows'] = getCases(table['variables'])
+     for (var i = 0; i < table['rows'].length; ++i) {
+         table['rows'][i]['eval'] = s.evaluate(table['rows'][i])
+     }
 
-    return table
-}
+     return table
+ }
 
 /**
  * Create a Markdown-formatted truth table.
