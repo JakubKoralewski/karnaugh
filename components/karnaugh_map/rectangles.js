@@ -4,12 +4,12 @@ import {Rectangles} from "../../project/rectangle"
 import {debounce} from "lodash";
 import karnaughStyles from "./karnaugh_map.module.scss"
 
-export default React.memo(function SVGRectangles(props) {
+export default function SVGRectangles(props) {
     const {
         /** @type {Rectangles} */rectangles,
         numRows,
         numColumns,
-        /** @type {HTMLTableRowElement}*/rowRef,
+        /** @type {{current: HTMLTableRowElement}}*/rowRef,
 
         /** @type {number|null|undefined}*/highlightRectangleIndex
     } = props
@@ -17,11 +17,11 @@ export default React.memo(function SVGRectangles(props) {
 
     const initSizes = (numColumns) => {
         console.log("Setting column width with numColumns = ", numColumns)
-        console.log("rowref width", rowRef.scrollWidth)
-        const rowWidth = rowRef.scrollWidth
+        console.log("rowref width", rowRef.current.scrollWidth)
+        const rowWidth = rowRef.current.scrollWidth
         const columnWidth = rowWidth / numColumns
         return {
-            rowHeight: rowRef.scrollHeight,
+            rowHeight: rowRef.current.scrollHeight,
             rowWidth,
             columnWidth,
             strokeWidth: 4 + columnWidth / 80
@@ -33,14 +33,14 @@ export default React.memo(function SVGRectangles(props) {
     )
     useEffect(() => {
         setSizes(initSizes(numColumns))
-    }, [numColumns])
+    }, [numColumns, rowRef.current.scrollWidth])
 
     const svgRef = useRef(null)
 
     const onRowRefResize = useCallback(debounce(() => {
         console.log("resize table in rectangles")
         setSizes(initSizes(numColumns))
-    }, 50), [])
+    }, 50), [rowRef.current.scrollWidth])
 
     useEffect(() => {
         window.addEventListener("resize", () => onRowRefResize)
@@ -82,6 +82,8 @@ export default React.memo(function SVGRectangles(props) {
                             strokeWidth={sizes.strokeWidth}
                             stroke={rect.color}
                             key={i}
+                            initial={{pathLength: 0}}
+                            animate={{pathLength: 1}}
                         >
                         </motion.rect>
                     )
@@ -91,4 +93,5 @@ export default React.memo(function SVGRectangles(props) {
     )
     console.groupEnd()
     return rv
-})
+}
+

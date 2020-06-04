@@ -100,8 +100,9 @@ export class Rectangles {
         })
         for (const key of Object.keys(map)) {
             // the less cells the higher the cell should be
-            map[key] = map[key].sort((
-                rect1, rect2) => rect1.rect.cellArray.length - rect2.rect.cellArray.length
+            map[key] = map[key].sort(
+                (rect1, rect2) =>
+                    rect1.rect.cellArray.length - rect2.rect.cellArray.length
             )
         }
         return map
@@ -158,7 +159,7 @@ class Colors {
         // while this color is repeated, do
         while (this.usedColors.has(colors[randomColorNumber])) {
             // Try other color, sorted by similarity so should be different
-            randomColorNumber += colors.length / 2
+            randomColorNumber += Math.floor(colors.length / 2) - 1
             // Make sure it's not larger than available colors
             randomColorNumber %= colors.length
             if (randomColorNumber === firstRandomColorNumber) {
@@ -167,7 +168,12 @@ class Colors {
                 this.usedColors = new Set()
             }
         }
-        this.usedColors.add(colors[randomColorNumber])
-        return this.names[colors[randomColorNumber]];
+        const newColorName = colors[randomColorNumber]
+        this.usedColors.add(newColorName)
+        const newColor = this.names[newColorName]
+        if(!newColor) {
+            debugger;
+        }
+        return newColor;
     }
 }

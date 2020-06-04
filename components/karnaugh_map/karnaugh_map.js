@@ -298,7 +298,7 @@ export default React.memo(
                         rectangles={rectangles}
                         numRows={rowGrayCode.length + 1}
                         numColumns={columnGrayCode.length + 1}
-                        rowRef={headRowRef.current}
+                        rowRef={headRowRef}
                     />
                 }
                 <thead>

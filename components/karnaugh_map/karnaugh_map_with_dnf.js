@@ -128,10 +128,11 @@ export default React.memo(
                             return (
                                 <>
                                   <span
+                                      key={i * 2}
                                       className={karnaughStyles.dnfBlock}
                                       style={{
                                           borderColor: rect.color,
-                                          '--wiggle': ref.current ? window.innerWidth/ref.current.scrollWidth/4 : 15,
+                                          '--wiggle': ref.current ? window.innerWidth / ref.current.scrollWidth / 4 : 15,
                                       }}
                                       ref={ref}
                                       onMouseEnter={onBlockHover(b, ref, true)}
@@ -143,6 +144,7 @@ export default React.memo(
                                     {
                                         text ? (
                                             <span
+                                                key={i * 2 + 1}
                                                 style={{fontWeight: `bold`}}
                                             >
                                                 {text}
@@ -156,4 +158,5 @@ export default React.memo(
                 </div>
             }
         </div>)
-    })
+    }
+)

@@ -236,6 +236,10 @@ export default React.memo(
             // DNF Rectangle supplied
 
             // Get colors
+            if(!cell.rectangle.color) {
+                //throws error on hmr?
+                console.log("cell rectangle has no color: ", cell)
+            }
             let colors = cell.rectangle.color.split(",")
             // remove `rgb(`
             colors[0] = colors[0].slice(4)
