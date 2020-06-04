@@ -258,7 +258,6 @@ export default React.memo(
             const secondaryColors = colors.map(x => Math.min(255, x + offset))
             style["--sec-bg"] = toRGBA(...secondaryColors, 0.8)
             style["--offset"] = cell.rectangle.pos.x - cell.pos.x
-            style["--offset-percent"] = `${50 + (cell.pos.x - cell.rectangle.pos.x) * 10}%`
         }
         let touchProps = {}
         if (onCellHover && cell.rectangle) {
