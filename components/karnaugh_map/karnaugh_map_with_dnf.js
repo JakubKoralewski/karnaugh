@@ -61,7 +61,7 @@ export default React.memo(
                         const blockInfos = highlightedRectangles.map(r => rectangleIndexToDNFBlockMap.current[r.i])
                         console.log("on cell hover ", on, event, highlightedRectangles)
                         console.log("blocks", blockInfos)
-                        for(const blockInfo of blockInfos) {
+                        for (const blockInfo of blockInfos) {
                             if (on === "toggle") {
                                 blockInfo.active = !blockInfo.active
                             } else {
@@ -77,9 +77,6 @@ export default React.memo(
                             } else {
                                 blockInfo.ref.current.classList.remove(karnaughStyles.dnfBlockActive)
                                 blockInfo.ref.current.classList.remove(karnaughStyles.dnfBlockResetAnim)
-                                // window.requestAnimationFrame(() => {
-                                //     blockInfo.ref.current.classList.(karnaughStyles.dnfBlockResetAnim)
-                                // })
                             }
                         }
                     }
@@ -104,6 +101,61 @@ export default React.memo(
         /** Multiple rectangles in that cell*/
         const onCellHover = (rectangles) => {
             return onCellHoverDecisionFactory(rectangles)
+        }
+        const DNFBlocks = () => {
+            return DNF.blocks.map((/** @type {DNFBlock}*/b, i) => {
+                let ref = dnfRefs.current[i]
+                let rect
+                if (rectangles) {
+                    rect = rectangles.rectangles[b.rectangleIndex]
+                    rectangleIndexToDNFBlockMap.current[b.rectangleIndex] = {
+                        block: b,
+                        ref,
+                        active: false
+                    }
+                }
+                let text = null
+                if (i !== DNF.blocks.length - 1) {
+                    text = " || "
+                }
+                return (
+                    <React.Fragment key={i}>
+                        <span
+                            className={karnaughStyles.dnfBlock}
+                            style={{
+                                borderColor: rect.color,
+                                '--wiggle': ref.current ? window.innerWidth / ref.current.scrollWidth / 4 : 15,
+                            }}
+                            ref={ref}
+                            onMouseEnter={onBlockHover(b, ref, true)}
+                            onMouseLeave={onBlockHover(b, ref, false)}
+                            onTouchStart={onBlockHover(b, ref, "!b.active")}
+                        >
+                            {b.text}
+                        </span>
+                        {
+                            text ? (
+                                <span
+                                    style={{fontWeight: `bold`}}
+                                >
+                                    {text}
+                                </span>
+                            ) : null
+                        }
+                    </React.Fragment>
+                )
+            })
+        }
+
+        let DNFBlocksOutput = ""
+        if(table && DNF) {
+            if(rectangles.isTautology) {
+                DNFBlocksOutput = "tautology"
+            } else if(rectangles.isContradiction) {
+                DNFBlocksOutput = "contradiction"
+            } else {
+                DNFBlocksOutput = DNFBlocks()
+            }
         }
 
         return (
@@ -130,48 +182,7 @@ export default React.memo(
                     table && DNF &&
                     <div style={{marginTop: `1rem`}}>
                         {
-                            DNF.blocks.map((/** @type {DNFBlock}*/b, i) => {
-                                let ref = dnfRefs.current[i]
-                                let rect
-                                if (rectangles) {
-                                    rect = rectangles.rectangles[b.rectangleIndex]
-                                    rectangleIndexToDNFBlockMap.current[b.rectangleIndex] = {
-                                        block: b,
-                                        ref,
-                                        active: false
-                                    }
-                                }
-                                let text = null
-                                if (i !== DNF.blocks.length - 1) {
-                                    text = " || "
-                                }
-                                return (
-                                    <React.Fragment key={i}>
-                                        <span
-                                            className={karnaughStyles.dnfBlock}
-                                            style={{
-                                                borderColor: rect.color,
-                                                '--wiggle': ref.current ? window.innerWidth / ref.current.scrollWidth / 4 : 15,
-                                            }}
-                                            ref={ref}
-                                            onMouseEnter={onBlockHover(b, ref, true)}
-                                            onMouseLeave={onBlockHover(b, ref, false)}
-                                            onTouchStart={onBlockHover(b, ref, "!b.active")}
-                                        >
-                                            {b.text}
-                                        </span>
-                                              {
-                                                  text ? (
-                                                      <span
-                                                          style={{fontWeight: `bold`}}
-                                                      >
-                                                      {text}
-                                                  </span>
-                                                  ) : null
-                                              }
-                                    </React.Fragment>
-                                )
-                            })
+                            DNFBlocksOutput
                         }
                     </div>
                 }

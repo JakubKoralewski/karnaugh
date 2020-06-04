@@ -157,7 +157,7 @@ export default React.memo(
             rectangles = React.useMemo(
                 () => {
                     console.log("generating new rectangles, because transformedTable changed: ", transformedTable)
-                    return new Rectangles({rectangles, rowLength: columnGrayCode.length})
+                    return new Rectangles({rectangles, rowLength: columnGrayCode.length, columnHeight: rowGrayCode.length})
                 },
                 [memoJsonTable]
             )
