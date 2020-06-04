@@ -1,13 +1,13 @@
-import React, {useRef, useEffect, useCallback, useState} from "react"
+import React, {useEffect, useState} from "react"
 import styles from "./slides.module.scss"
 import InputFormulaAll from "../../components/input_formula_all"
 import {BasicAnimation, SimpleOpacityAnimation} from "../animations"
-import KarnaughMap from "../../components/karnaugh_map/karnaugh_map"
-import makeTruthTable from "../../project/truth_table";
+import makeTruthTable from "../../project/truth_table"
+import KarnaughMapWithDNF from "../../components/karnaugh_map/karnaugh_map_with_dnf"
 
 function DNF(props) {
     const [state, setState] = useState({statement: '', table: null})
-    const [DNF, setDNF] = useState('')
+
     const onStatementChange = (statement) => {
         setState(oldState => {
                 const truthTable = makeTruthTable(statement)
@@ -18,10 +18,6 @@ function DNF(props) {
                 }
             }
         )
-    }
-
-    const onReturnDNF = (dnf) => {
-        setDNF(dnf)
     }
 
     useEffect(() => {
@@ -38,6 +34,7 @@ function DNF(props) {
         return () => document.body.style.backgroundColor = prevBG
     }, [])
 
+
     return (
         <div className={styles.titular} style={{background: "coral"}}>
             <BasicAnimation>
@@ -53,33 +50,16 @@ function DNF(props) {
                     </SimpleOpacityAnimation>
                     <div style={{display: "flex", width: "100%", justifyContent: "center"}}>
                         <SimpleOpacityAnimation style={{width: "66.6%"}}>
-                            <div>
-                                {
-                                    state.table &&
-                                    <KarnaughMap
-                                        table={state.table}
-                                        symbols={{t: "T", f: "F", na: "*"}}
-                                        returnDNF={onReturnDNF}
-                                        dnf={true}
-                                        style={
-                                            {
-                                                width: "100%",
-                                                tableLayout: "fixed"
-                                            }
-                                        }
-                                    />
-                                }
-                                {
-                                    state.table && DNF &&
-                                    <div>{DNF}</div>
-                                }
-                            </div>
+                            <KarnaughMapWithDNF
+                                table={state.table}
+                            />
                         </SimpleOpacityAnimation>
                     </div>
                 </ol>
             </main>
         </div>
-    );
+    )
+        ;
 }
 
 export default {

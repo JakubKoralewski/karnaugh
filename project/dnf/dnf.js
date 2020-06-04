@@ -32,7 +32,7 @@ function getArr({rowHeaders, columnHeaders, rowGrayCode, columnGrayCode}) {
             }
             for (let gcIndex = 0; gcIndex < code.length; gcIndex++) {
                 if (code[gcIndex][varIndex] === 1) {
-                    if(row) {
+                    if (row) {
                         for (let columnIndex = 0; columnIndex < otherCount; columnIndex++) {
                             // For row gray code index is row, columnIndex, column count is otherCount(columns)
                             newVar.cells.push(get1DCellNumber(gcIndex, columnIndex, otherCount));
@@ -243,6 +243,45 @@ export function getRectangles(
     return _getRectangles({values, colCount})
 }
 
+/** Intermediate DNF representation used to be able to group together
+ *  blocks of variables with corresponding rectangles for
+ *  hovering applications.
+ */
+export class DNFIntermediate {
+    /**
+     * @typedef {
+     *      {
+     *          variables: number[],
+     *          rectangleIndex: number,
+     *          text: string
+     *      }
+     * } DNFBlock
+     */
+    constructor() {
+        /** @type {DNFBlock[]} */
+        this.blocks = []
+        this.isFirstBlock = true
+        this.finalDNF = ""
+    }
+
+    /** @param {DNFBlock} block */
+    add(block) {
+        if(block.variables.length === 0) {
+            console.log(`Empty DNF. Ignoring. Rectangle: ${block.rectangleIndex}.`)
+            return
+        }
+        let blockJoined = block.variables.join(" & ")
+        if(block.variables.length > 1) {
+            // Don't add parentheses when only single variable
+            blockJoined = `(${blockJoined})`
+        }
+        this.blocks.push({
+            text: blockJoined,
+            ...block
+        })
+    }
+}
+
 /**
  * Description: This function takes rectangles as an input and generate a disjunctive normal form.
  * @param {Object} obj
@@ -251,6 +290,8 @@ export function getRectangles(
  * @param {Array.<string>} obj.columnHeaders
  * @param {Array.<Array.<number>>} obj.rowGrayCode
  * @param {Array.<Array.<number>>} obj.columnGrayCode
+ *
+ * @returns {DNFIntermediate}
  */
 export function getDnf(
     {
@@ -263,8 +304,8 @@ export function getDnf(
 ) {
     let vars = getArr({rowHeaders, columnHeaders, rowGrayCode, columnGrayCode});
     const dependentVars = new Set();
-    let dnf = "";
-    let result = "";
+    // final dnf return
+    let dnf = new DNFIntermediate();
 
     rectangles.forEach((rectangle, r) => {
         vars.forEach(variable => {
@@ -280,13 +321,13 @@ export function getDnf(
                 dependentVars.add(`~${variable.variable}`)
             }
         })
-        result = Array.from(dependentVars).join(" & ");
+        dnf.add(
+            {
+                variables: Array.from(dependentVars),
+                rectangleIndex: r
+            }
+        )
         dependentVars.clear();
-        if (r === 0) {
-            dnf = dnf.concat(`(${result})`);
-        } else {
-            dnf = dnf.concat(` || (${result})`);
-        }
 
     })
     return dnf;

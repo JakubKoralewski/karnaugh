@@ -1,4 +1,4 @@
-import {useRef, useEffect, useCallback, useState} from "react"
+import React, {useRef, useEffect, useCallback, useState, createRef} from "react"
 import styles from "./slides.module.scss"
 import InputFormulaAll from "../../components/input_formula_all"
 import {BasicAnimation, SimpleOpacityAnimation} from "../animations"
@@ -8,7 +8,6 @@ import KarnaughMap from "../../components/karnaugh_map/karnaugh_map"
 const steps = 4
 
 function HowToGenerateKarnaugh(props) {
-    //FIXME: statement empty on back step
     const [statement, setStatement] = useState('')
     let [table, setTable] = useState(null)
     let [tableRefs, setTableRefs] = useState('placeholder')
@@ -87,7 +86,6 @@ function HowToGenerateKarnaugh(props) {
                                             <KarnaughMap
                                                 table={table}
                                                 symbols={{t: "T", f: "F", na: "*"}}
-                                                // tableRefs={tableRefs}
                                                 tableRefs={
                                                     props.direction === -1 && props.step === steps
                                                         ? null : tableRefs

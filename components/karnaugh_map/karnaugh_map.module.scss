@@ -1,8 +1,74 @@
 @import "components/input_formula.module";
 
-.karnaughMap {
-  td:first-child {
-    font-weight: bold;
-    @extend .tableHeader;
-  }
+@keyframes BGHighlight {
+    0%{background-position: 0% 0%}
+    100%{background-position: -200% 0%}
 }
+
+
+.karnaughMap {
+    td {
+        &:first-child {
+            font-weight: bold;
+            @extend .tableHeader;
+        }
+        &.tableDataActive {
+            background: linear-gradient(
+                            90deg,
+                            var(--main-bg) 0%,
+                            var(--sec-bg) 50%,
+                            var(--main-bg) 100%
+            );
+            background-size: 200% 100%;
+            animation-name: BGHighlight;
+            animation-duration: 3s;
+            animation-delay: calc(-1s * var(--offset));
+            animation-timing-function: ease-in-out;
+            animation-iteration-count: infinite;
+            animation-play-state: running;
+        }
+    }
+}
+
+.svgRect {
+    transition: all 1s ease-out;
+    opacity: 1;
+}
+
+.svgHighlight {
+    transition: all 0.2s ease-out;
+    opacity: 0;
+}
+
+@keyframes wiggle {
+    0% {transform: rotate(0deg);}
+    20% {transform: rotate(calc(-1deg * var(--wiggle)));}
+    40% {transform: rotate(calc(1deg * var(--wiggle)))}
+    50% {transform: rotate(calc(-0.5deg * var(--wiggle)));}
+    60% {transform: rotate(calc(0.5deg * var(--wiggle)));}
+    73% {transform: rotate(calc(-0.25deg * var(--wiggle)));}
+    86% {transform: rotate(calc(0.25deg * var(--wiggle)));}
+    100% {transform: rotate(0deg);}
+}
+
+.dnfBlock {
+    transform-origin: 50% 50%;
+    will-change: transform;
+
+    padding: 2px 8px;
+    cursor: pointer;
+    background: white;
+    border-radius: 8px;
+    border-width: 5px;
+    border-style: solid;
+    box-shadow: 3px 3px 10px rgba(0,0,0,0.1);
+    display: inline-block;
+    &.dnfBlockActive {
+        animation: wiggle 2s ease-in-out;
+    }
+    &.dnfBlockResetAnim {
+        animation: none !important;
+    }
+}
+
+

@@ -1,4 +1,3 @@
-
 /**
  * @property {Array.<number>} cellArray - array of cells in 1D notation
  * @property {string} color
@@ -17,34 +16,45 @@ export class Rectangle {
         const getX = cell => cell % rowLength
 
         this.color = color
-        //FIXME: no need to sort
-        //Possible when #17 is closed
-        this.cellArray = array.sort((a, b) => a - b)
+        this.cellArray = array
+
+        /** @description Starting from 0, left-top */
         this.pos = {x: getX(this.cellArray[0]), y: getY(this.cellArray[0])}
         let lastPos = this.cellArray[0]
         for (const cell of this.cellArray.slice(1)) {
-            if(((cell - 1) % rowLength) !== (lastPos % rowLength)) {
+            if (((cell - 1) % rowLength) !== (lastPos % rowLength)) {
                 // cells change rows without spanning whole width
                 this.width = getX(lastPos) - getX(cell) + 1
                 break;
             }
             lastPos = cell
         }
-        if(this.width === undefined) {
+        if (this.width === undefined) {
             // No break between cells in array
-            this.width = this.cellArray[this.cellArray.length-1] - this.cellArray[0] + 1
-            if(this.width > rowLength) {
+            this.width = this.cellArray[this.cellArray.length - 1] - this.cellArray[0] + 1
+            if (this.width > rowLength) {
                 // If no breaks, because spans whole multiple rows
                 this.width = rowLength
-                this.height = getY(this.cellArray[this.cellArray.length-1]) - getY(this.cellArray[0]) + 1
+                this.height = getY(this.cellArray[this.cellArray.length - 1]) - getY(this.cellArray[0]) + 1
             } else {
                 this.height = 1
             }
         } else {
             // Width was found with a break, meaning more than one row of rectangle
-            //FIXME
-            this.height = getY(this.cellArray[this.cellArray.length-1]) - getY(this.cellArray[0]) + 1
+            //FIXME?
+            this.height = getY(this.cellArray[this.cellArray.length - 1]) - getY(this.cellArray[0]) + 1
         }
+    }
+
+    /** Check if 2D coordinates are inside this rectangle.
+     * @param {number} x
+     * @param {number} y
+     */
+    checkIfInBounds(x, y) {
+        return (
+            x >= this.pos.x && x < this.pos.x + this.width &&
+            y >= this.pos.y && y < this.pos.y + this.height
+        )
     }
 
     * [Symbol.iterator]() {
@@ -53,12 +63,13 @@ export class Rectangle {
         }
     }
 }
+
 /**
  * @property {Colors} colors
  * @property {number} rowLength
  * @property {Set.<string>} usedColors
  * @property {Array.<Rectangle>} rectangles
- * @property {Object.<number, Array.<Rectangle>>} map
+ * @property {Object.<number, {rect: Rectangle, i:number}[]>} map
  * */
 export class Rectangles {
     constructor({rectangles: arrays, rowLength}) {
@@ -73,33 +84,40 @@ export class Rectangles {
      * Rectangles sorted from smallest to largest, so that the top most are
      * the ones with least cells.
      *
-     * @return {Object.<int, Array.<Rectangle>>}
+     * @return {Object.<int, {rect: Rectangle, i:number}[]>}
      */
     generateMap() {
-        /** @type {Object.<int, Array.<Rectangle>>}*/
+        /** @type {Object.<int, {rect: Rectangle, i:number}[]>}*/
         let map = {}
-        for (const rect of this.rectangles) {
+        this.rectangles.forEach((rect, i) => {
             for (const cell of rect) {
-                if(!map[cell]) {
-                    map[cell] = [rect]
+                if (!map[cell]) {
+                    map[cell] = [{rect, i}]
                 } else {
-                    map[cell].push(rect)
+                    map[cell].push({rect, i})
                 }
             }
-        }
-        for(const key of Object.keys(map)) {
+        })
+        for (const key of Object.keys(map)) {
             // the less cells the higher the cell should be
-            map[key] = map[key].sort((
-                rect1, rect2) => rect1.cellArray.length - rect2.cellArray.length
+            map[key] = map[key].sort(
+                (rect1, rect2) =>
+                    rect1.rect.cellArray.length - rect2.rect.cellArray.length
             )
         }
         return map
     }
 
 
-    get(row, column) {
+    get(row, column, {all = false} = {}) {
         const index = row * this.rowLength + column
-        if(this.map[index]) return this.map[index][0]
+        if (this.map[index]) {
+            if (all) {
+                return this.map[index]
+            } else {
+                return this.map[index][0]
+            }
+        }
     }
 }
 
@@ -115,14 +133,13 @@ class Colors {
         green: "rgb(0,128,0)",
         darkkhaki: "rgb(189,183,107)",
         khaki: "rgb(240,230,140)",
-        yellow: "rgb(255,255,0)",
+        yellow: "rgb(154,154,12)",
         lime: "rgb(0,255,0)",
         gold: "rgb(255,215,0)",
         red: "rgb(255,0,0)",
         darkred: "rgb(139,0,0)",
         brown: "rgb(165,58,42)",
         darkorange: "rgb(255,140,0)",
-        darksalmon: "rgb(233,150,122)",
         orange: "rgb(255,165,0)",
         pink: "rgb(255,192,203)",
         darkviolet: "rgb(148,0,211)",
@@ -146,7 +163,7 @@ class Colors {
         // while this color is repeated, do
         while (this.usedColors.has(colors[randomColorNumber])) {
             // Try other color, sorted by similarity so should be different
-            randomColorNumber += colors.length/2
+            randomColorNumber += Math.floor(colors.length / 2) - 1
             // Make sure it's not larger than available colors
             randomColorNumber %= colors.length
             if (randomColorNumber === firstRandomColorNumber) {
@@ -155,7 +172,12 @@ class Colors {
                 this.usedColors = new Set()
             }
         }
-        this.usedColors.add(colors[randomColorNumber])
-        return this.names[colors[randomColorNumber]];
+        const newColorName = colors[randomColorNumber]
+        this.usedColors.add(newColorName)
+        const newColor = this.names[newColorName]
+        if (!newColor) {
+            debugger;
+        }
+        return newColor;
     }
 }
