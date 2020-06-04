@@ -1,5 +1,5 @@
-import React, {useCallback, useEffect, useRef, useState} from "react"
-import {motion} from "framer-motion"
+import React, {createRef, useCallback, useEffect, useRef, useState} from "react"
+import {AnimatePresence, motion, useMotionValue} from "framer-motion"
 import {Rectangles} from "../../project/rectangle"
 import {debounce} from "lodash";
 import karnaughStyles from "./karnaugh_map.module.scss"
@@ -47,6 +47,35 @@ export default function SVGRectangles(props) {
         return () => window.removeEventListener("resize", onRowRefResize)
     }, [])
 
+    const getPos = (x, y, width, height) => {
+        return {
+            width: (width * sizes.columnWidth) - sizes.strokeWidth * 3,
+            height: (sizes.rowHeight * height) - sizes.strokeWidth * 3,
+            x: sizes.strokeWidth * 1.5 + ((x + 1) * sizes.columnWidth),
+            y: ((y + 1) * sizes.rowHeight) + sizes.strokeWidth / 2
+        }
+    }
+    const drawRectPath = ({x, y, width: w, height: h}, r = sizes.strokeWidth) => {
+        return `M${x},${y} h${w} a${r},${r} 0 0 1 ${r},${r} v${h} a${r},${r} 0 0 1 -${r},${r} h-${w} a${r},${r} 0 0 1 -${r},-${r} v-${h} a${r},${r} 0 0 1 ${r},-${r} z`
+    }
+
+    const container = {
+        hidden: { opacity: 0 },
+        show: {
+            opacity: 1,
+            transition: {
+                duration: 5,
+                delayChildren: 0.5,
+                staggerChildren: 0.25
+            }
+        }
+    }
+
+    const item = {
+        hidden: { pathLength: 0 },
+        show: { pathLength: 1}
+    }
+
     const rv = (
         <motion.svg
             viewBox={`0 0 ${sizes.rowWidth} ${sizes.rowHeight * numRows}`}
@@ -59,12 +88,19 @@ export default function SVGRectangles(props) {
                 height: `${sizes.rowHeight * numRows}px`,
                 pointerEvents: "none"
             }}
+            variants={container}
+            initial="hidden"
+            animate="show"
         >
             {
                 rectangles.rectangles.map((rect, i) => {
-                    console.log("Drawing rectangle number ", i, "with rect", rect)
+                    console.group("Drawing rectangle number ", i, "with rect", rect)
+                    const pathLength = 10
+                    const pos = getPos(rect.pos.x, rect.pos.y, rect.width, rect.height)
+                    const d = drawRectPath(pos)
+                    console.groupEnd()
                     return (
-                        <motion.rect
+                        <motion.path
                             className={
                                 [
                                     highlightRectangleIndex !== null &&
@@ -72,20 +108,13 @@ export default function SVGRectangles(props) {
                                     karnaughStyles.svgRect
                                 ].join(' ')
                             }
-                            width={(rect.width * sizes.columnWidth) - sizes.strokeWidth}
-                            height={(sizes.rowHeight * rect.height) - sizes.strokeWidth}
-                            x={sizes.strokeWidth / 2 + ((rect.pos.x + 1) * sizes.columnWidth)}
-                            y={sizes.strokeWidth / 2 + ((rect.pos.y + 1) * sizes.rowHeight)}
-                            rx={sizes.strokeWidth}
-                            ry={sizes.strokeWidth}
+                            d={d}
                             fill="none"
                             strokeWidth={sizes.strokeWidth}
                             stroke={rect.color}
                             key={i}
-                            initial={{pathLength: 0}}
-                            animate={{pathLength: 1}}
-                        >
-                        </motion.rect>
+                            variants={item}
+                        />
                     )
                 })
             }
