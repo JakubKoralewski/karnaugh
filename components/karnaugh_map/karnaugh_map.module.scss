@@ -1,8 +1,37 @@
 @import "components/input_formula.module";
 
-.karnaughMap {
-  td:first-child {
-    font-weight: bold;
-    @extend .tableHeader;
-  }
+@keyframes BGHighlight {
+    0%{background-position: 0% 0%}
+    100%{background-position: -200% 0%}
 }
+
+
+.karnaughMap {
+    td {
+        &:first-child {
+            font-weight: bold;
+            @extend .tableHeader;
+        }
+        &.tableDataActive {
+            background: linear-gradient(90deg, var(--main-bg) 0%, var(--sec-bg) var(--offset-percent), var(--main-bg) 100%);
+            background-size: 200% 100%;
+            animation-play-state: running;
+        }
+        animation-delay: var(--offset);
+        animation-name: BGHighlight;
+        animation-duration: 3s;
+        animation-timing-function: ease-in-out;
+        animation-iteration-count: infinite;
+        animation-play-state: paused;
+    }
+}
+.svgRect {
+    transition: all 1s ease-out;
+    opacity: 1;
+}
+.svgHighlight {
+    transition: all 0.2s ease-out;
+    opacity: 0;
+}
+
+
