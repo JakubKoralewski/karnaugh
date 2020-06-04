@@ -97,6 +97,7 @@ function transformTable(tableRows, rows, columns) {
  *      variable, to accurately animate to the correct position.
  *  @property {Rectangle | undefined} rectangle - if we're not a header,
  *      corresponding rectangle, used to extract color information about current cell
+ *  @property {number | undefined} rectangleIndex
  */
 
 /** Whether the animation happens is controlled by the `tableRefs` property
@@ -117,9 +118,13 @@ export default React.memo(
             dnf = false,
             returnDNF,
 
-            // DNF highlighting
             returnRectangles,
+
+            // rectangle highlighting (on dnf hover)
             highlightRectangleIndex=null,
+
+            // dnf highlighting (on cell hover)
+            onCellHover,
 
             ...props
         }
@@ -354,6 +359,7 @@ export default React.memo(
                                                 cellKey={key}
                                                 naSymbol={na}
                                                 cell={cell}
+                                                onCellHover={onCellHover}
                                                 shouldHighlight={shouldHighlight}
                                                 isHighlighting={!!highlightRectangle}
                                                 refs={

@@ -27,8 +27,14 @@ export default React.memo(
             show = true,
             naSymbol = "*",
             style: parentStyle,
+
+            // rectangle highlighting on dnf hover
             shouldHighlight = false,
             isHighlighting = false,
+
+            // dnf highlighting on rectangle hover
+            onCellHover,
+
             ...restOfProps
         } = props
 
@@ -228,15 +234,6 @@ export default React.memo(
         }
         if (cell.rectangle) {
             // DNF Rectangle supplied
-            style.borderRadius = `10px`
-            if(isHighlighting && !shouldHighlight) {
-                style.borderRadius = `0px`
-            }
-            // if(shouldHighlight) {
-            //     style.borderRadius = `10px`
-            // } else {
-            //     style.borderRadius = `0px`
-            // }
 
             // Get colors
             let colors = cell.rectangle.color.split(",")
@@ -252,16 +249,29 @@ export default React.memo(
             // Make normal background a bit transparent
             style.backgroundColor = toRGBA(...colors)
 
-            style["--main-bg"] = toRGBA(...colors.map(x => Math.max(0, x-50)))
+            style["--main-bg"] = toRGBA(...colors.map(x => Math.max(0, x - 50)))
             let offset = 55
-            const avg = colors.reduce((prev, cur) => prev += cur)/3
+            const avg = colors.reduce((prev, cur) => prev += cur) / 3
             offset = 255 - avg
 
             // Exponentially increase offset
-            const secondaryColors = colors.map(x => Math.min(255, x+offset))
+            const secondaryColors = colors.map(x => Math.min(255, x + offset))
             style["--sec-bg"] = toRGBA(...secondaryColors, 0.8)
-            style["--offset"] = `${cell.rectangle.pos.x - cell.pos.x + 0.5}s`
-            style["--offset-percent"] = `${50 + (cell.pos.x - cell.rectangle.pos.x)*10}%`
+            style["--offset"] = cell.rectangle.pos.x - cell.pos.x
+            style["--offset-percent"] = `${50 + (cell.pos.x - cell.rectangle.pos.x) * 10}%`
+        }
+        let touchProps = {}
+        if (onCellHover && cell.rectangle) {
+            const toggle = onCellHover.toggle(cell.rectangleIndex)
+            const on = onCellHover.on(cell.rectangleIndex)
+            const off = onCellHover.off(cell.rectangleIndex)
+            touchProps = {
+                onMouseEnter: on,
+                onTouchStart: toggle,
+
+                onMouseLeave: off,
+                onTouchCancel: off,
+            }
         }
 
         console.groupEnd()
@@ -276,6 +286,7 @@ export default React.memo(
                     style={style}
                     {...restOfProps}
                     className={shouldHighlight ? karnaughStyles.tableDataActive : null}
+                    {...touchProps}
                 >
                     {cell.value}
                 </td>
