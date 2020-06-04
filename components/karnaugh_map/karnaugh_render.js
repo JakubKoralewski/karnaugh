@@ -265,9 +265,9 @@ export default React.memo(
         }
         let touchProps = {}
         if (onCellHover && cell.rectangle) {
-            const toggle = onCellHover.toggle(cell.rectangleIndex)
-            const on = onCellHover.on(cell.rectangleIndex)
-            const off = onCellHover.off(cell.rectangleIndex)
+            const toggle = onCellHover.toggle()
+            const on = onCellHover.on()
+            const off = onCellHover.off()
             touchProps = {
                 onMouseEnter: on,
                 onTouchStart: toggle,

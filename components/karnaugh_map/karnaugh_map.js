@@ -352,6 +352,15 @@ export default React.memo(
                                                 shouldHighlight = true
                                             }
                                         }
+                                        let onCellHoverResolvedRectangles
+
+                                        if(cell.rectangle) {
+                                            const foundRectangles = rectangles.get(i, j-1, {all: true})
+                                            if(foundRectangles) {
+                                                onCellHoverResolvedRectangles = onCellHover(foundRectangles)
+                                            }
+                                        }
+
                                         return (
                                             <CellRender
                                                 style={cellStyle}
@@ -359,7 +368,7 @@ export default React.memo(
                                                 cellKey={key}
                                                 naSymbol={na}
                                                 cell={cell}
-                                                onCellHover={onCellHover}
+                                                onCellHover={onCellHoverResolvedRectangles}
                                                 shouldHighlight={shouldHighlight}
                                                 isHighlighting={!!highlightRectangle}
                                                 refs={

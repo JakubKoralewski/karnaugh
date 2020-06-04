@@ -109,10 +109,14 @@ export class Rectangles {
     }
 
 
-    get(row, column) {
+    get(row, column, {all = false} = {}) {
         const index = row * this.rowLength + column
         if (this.map[index]) {
-            return this.map[index][0]
+            if (all) {
+                return this.map[index]
+            } else {
+                return this.map[index][0]
+            }
         }
     }
 }
@@ -171,7 +175,7 @@ class Colors {
         const newColorName = colors[randomColorNumber]
         this.usedColors.add(newColorName)
         const newColor = this.names[newColorName]
-        if(!newColor) {
+        if (!newColor) {
             debugger;
         }
         return newColor;

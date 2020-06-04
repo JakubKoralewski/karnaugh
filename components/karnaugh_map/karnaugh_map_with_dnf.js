@@ -54,39 +54,50 @@ export default React.memo(
         }
         /** @type {{current: Object.<number, {block: DNFBlock, ref: {current: HTMLSpanElement}, active: boolean}>}}*/
         const rectangleIndexToDNFBlockMap = useRef({})
-        let onCellHover = {
-            both(rectangleIndex, on) {
-                return (event) => {
-                    const blockInfo = rectangleIndexToDNFBlockMap.current[rectangleIndex]
-                    console.log("on cell hover ", on, event, rectangleIndex)
-                    console.log("block", blockInfo)
-                    if (on === "toggle") {
-                        blockInfo.active = !blockInfo.active
-                    } else {
-                        blockInfo.active = on
-                    }
+        const onCellHoverDecisionFactory = (highlightedRectangles) => {
+            let onCellHoverDecision = {
+                both(on) {
+                    return (event) => {
+                        const blockInfos = highlightedRectangles.map(r => rectangleIndexToDNFBlockMap.current[r.i])
+                        console.log("on cell hover ", on, event, highlightedRectangles)
+                        console.log("blocks", blockInfos)
+                        for(const blockInfo of blockInfos) {
+                            if (on === "toggle") {
+                                blockInfo.active = !blockInfo.active
+                            } else {
+                                blockInfo.active = on
+                            }
 
-                    if (blockInfo.active) {
-                        blockInfo.ref.current.classList.add(karnaughStyles.dnfBlockActive)
-                    } else {
-                        blockInfo.ref.current.classList.remove(karnaughStyles.dnfBlockActive)
+                            if (blockInfo.active) {
+                                blockInfo.ref.current.classList.add(karnaughStyles.dnfBlockActive)
+                            } else {
+                                blockInfo.ref.current.classList.remove(karnaughStyles.dnfBlockActive)
+                            }
+                        }
                     }
                 }
             }
+
+            onCellHoverDecision = {
+                ...onCellHoverDecision,
+                toggle() {
+                    return onCellHoverDecision.both("toggle")
+                },
+                on() {
+                    return onCellHoverDecision.both(true)
+                },
+                off() {
+                    return onCellHoverDecision.both(false)
+                }
+            }
+
+            return onCellHoverDecision
+        }
+        /** Multiple rectangles in that cell*/
+        const onCellHover = (rectangles) => {
+            return onCellHoverDecisionFactory(rectangles)
         }
 
-        onCellHover = {
-            ...onCellHover,
-            toggle(rectangleIndex) {
-                return onCellHover.both(rectangleIndex, "toggle")
-            },
-            on(rectangleIndex) {
-                return onCellHover.both(rectangleIndex, true)
-            },
-            off(rectangleIndex) {
-                return onCellHover.both(rectangleIndex, false)
-            }
-        }
         return (
             <div>
                 {

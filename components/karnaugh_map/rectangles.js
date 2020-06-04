@@ -1,10 +1,10 @@
-import React, {createRef, useCallback, useEffect, useRef, useState} from "react"
-import {AnimatePresence, motion, useMotionValue} from "framer-motion"
+import React, {useCallback, useEffect, useRef, useState} from "react"
+import {motion} from "framer-motion"
 import {Rectangles} from "../../project/rectangle"
 import {debounce} from "lodash";
 import karnaughStyles from "./karnaugh_map.module.scss"
 
-export default function SVGRectangles(props) {
+export default React.memo(function SVGRectangles(props) {
     const {
         /** @type {Rectangles} */rectangles,
         numRows,
@@ -31,8 +31,12 @@ export default function SVGRectangles(props) {
     let [sizes, setSizes] = useState(
         initSizes(numColumns)
     )
+    const firstLoad = useRef(true)
     useEffect(() => {
-        setSizes(initSizes(numColumns))
+        if (!firstLoad.current) {
+            console.log("setting sizes initSizes in rectangles")
+            setSizes(initSizes(numColumns))
+        }
     }, [numColumns, rowRef.current.scrollWidth])
 
     const svgRef = useRef(null)
@@ -55,25 +59,51 @@ export default function SVGRectangles(props) {
             y: ((y + 1) * sizes.rowHeight) + sizes.strokeWidth / 2
         }
     }
+    /** @author hmak.me https://stackoverflow.com/a/38118843 */
     const drawRectPath = ({x, y, width: w, height: h}, r = sizes.strokeWidth) => {
         return `M${x},${y} h${w} a${r},${r} 0 0 1 ${r},${r} v${h} a${r},${r} 0 0 1 -${r},${r} h-${w} a${r},${r} 0 0 1 -${r},-${r} v-${h} a${r},${r} 0 0 1 ${r},-${r} z`
     }
+    useEffect(() => {
+        return () => {
+            firstLoad.current = true
+        }
+    }, [])
 
     const container = {
-        hidden: {},
-        show: {
-            transition: {
-                duration: 5,
-                delayChildren: 0,
-                staggerChildren: 5/rectangles.rectangles.length,
-                ease: "easeIn"
+        hidden: () => {
+            console.log("container hidden animation:", firstLoad)
+            return {}
+        },
+        show: (x) => {
+            let duration = 5
+            let delayChildren = 0
+            let staggerChildren = (duration / rectangles.rectangles.length)
+            if (x.current) {
+                x.current = false
+                delayChildren = 0.5
+                staggerChildren = Math.max(0.2, staggerChildren - 0.5)
+            } else {
+                duration /= 2
+                staggerChildren = Math.max(0.2, staggerChildren - duration / 2)
             }
+            const rv = {
+                transition: {
+                    duration,
+                    delayChildren,
+                    staggerChildren,
+                    ease: "easeIn"
+                }
+            }
+
+            console.log("container animation: ", x, rv)
+            return rv
         }
     }
 
     const item = {
-        hidden: { pathLength: 0 },
-        show: { pathLength: 1}
+        hidden: {pathLength: 0},
+        show: {pathLength: 1},
+        exit: {pathLength: 0}
     }
 
     const rv = (
@@ -95,37 +125,38 @@ export default function SVGRectangles(props) {
                 variants={container}
                 initial="hidden"
                 animate="show"
-                >
-            {
-                rectangles.rectangles.map((rect, i) => {
-                    console.group("Drawing rectangle number ", i, "with rect", rect)
-                    const pathLength = 10
-                    const pos = getPos(rect.pos.x, rect.pos.y, rect.width, rect.height)
-                    const d = drawRectPath(pos)
-                    console.groupEnd()
-                    return (
-                        <motion.path
-                            className={
-                                [
-                                    highlightRectangleIndex !== null &&
-                                    highlightRectangleIndex !== i ? karnaughStyles.svgHighlight : null,
-                                    karnaughStyles.svgRect
-                                ].join(' ')
-                            }
-                            d={d}
-                            fill="none"
-                            strokeWidth={sizes.strokeWidth}
-                            stroke={rect.color}
-                            key={i}
-                            variants={item}
-                        />
-                    )
-                })
-            }
+                exit="hidden"
+                custom={firstLoad}
+            >
+                {
+                    rectangles.rectangles.map((rect, i) => {
+                        console.group("Drawing rectangle number ", i, "with rect", rect)
+                        const pos = getPos(rect.pos.x, rect.pos.y, rect.width, rect.height)
+                        const d = drawRectPath(pos)
+                        console.groupEnd()
+                        return (
+                            <motion.path
+                                className={
+                                    [
+                                        highlightRectangleIndex !== null &&
+                                        highlightRectangleIndex !== i ? karnaughStyles.svgHighlight : null,
+                                        karnaughStyles.svgRect
+                                    ].join(' ')
+                                }
+                                d={d}
+                                fill="none"
+                                strokeWidth={sizes.strokeWidth}
+                                stroke={rect.color}
+                                key={`${i}${d}`}
+                                variants={item}
+                            />
+                        )
+                    })
+                }
             </motion.g>
         </motion.svg>
     )
     console.groupEnd()
     return rv
-}
+})
 
