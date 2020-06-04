@@ -66,6 +66,9 @@
     &.dnfBlockActive {
         animation: wiggle 2s ease-in-out;
     }
+    &.dnfBlockResetAnim {
+        animation: none !important;
+    }
 }
 
 

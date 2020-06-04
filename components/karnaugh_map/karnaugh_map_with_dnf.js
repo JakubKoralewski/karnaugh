@@ -69,9 +69,17 @@ export default React.memo(
                             }
 
                             if (blockInfo.active) {
+                                blockInfo.ref.current.classList.add(karnaughStyles.dnfBlockResetAnim)
+                                window.requestAnimationFrame(() => {
+                                    blockInfo.ref.current.classList.remove(karnaughStyles.dnfBlockResetAnim)
+                                })
                                 blockInfo.ref.current.classList.add(karnaughStyles.dnfBlockActive)
                             } else {
                                 blockInfo.ref.current.classList.remove(karnaughStyles.dnfBlockActive)
+                                blockInfo.ref.current.classList.remove(karnaughStyles.dnfBlockResetAnim)
+                                // window.requestAnimationFrame(() => {
+                                //     blockInfo.ref.current.classList.(karnaughStyles.dnfBlockResetAnim)
+                                // })
                             }
                         }
                     }
