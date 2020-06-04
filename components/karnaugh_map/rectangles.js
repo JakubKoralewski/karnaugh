@@ -60,13 +60,13 @@ export default function SVGRectangles(props) {
     }
 
     const container = {
-        hidden: { opacity: 0 },
+        hidden: {},
         show: {
-            opacity: 1,
             transition: {
                 duration: 5,
-                delayChildren: 0.5,
-                staggerChildren: 0.25
+                delayChildren: 0,
+                staggerChildren: 5/rectangles.rectangles.length,
+                ease: "easeIn"
             }
         }
     }
@@ -88,10 +88,14 @@ export default function SVGRectangles(props) {
                 height: `${sizes.rowHeight * numRows}px`,
                 pointerEvents: "none"
             }}
-            variants={container}
-            initial="hidden"
-            animate="show"
+            initial={{opacity: 0}}
+            animate={{opacity: 1, transition: {duration: 0.25}}}
         >
+            <motion.g
+                variants={container}
+                initial="hidden"
+                animate="show"
+                >
             {
                 rectangles.rectangles.map((rect, i) => {
                     console.group("Drawing rectangle number ", i, "with rect", rect)
@@ -118,6 +122,7 @@ export default function SVGRectangles(props) {
                     )
                 })
             }
+            </motion.g>
         </motion.svg>
     )
     console.groupEnd()
