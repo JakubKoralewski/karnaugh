@@ -267,6 +267,7 @@ export function getDnf(
     const dependentVars = new Set();
     let dnf = "";
     let result = "";
+    let isEmpty = true;
 
     rectangles.forEach((rectangle, k) => {
         vars.forEach(variable => {
@@ -278,16 +279,21 @@ export function getDnf(
             }
             if (rectangle.length === count) {
                 dependentVars.add(variable.variable)
+                isEmpty = false;
             } else if (count === 0) {
                 dependentVars.add(`~${variable.variable}`)
+                isEmpty = false;
             }
         })
         result = Array.from(dependentVars).join(" & ");
         dependentVars.clear();
-        if (k === 0) {
-            dnf = dnf.concat(`(${result})`);
-        } else {
-            dnf = dnf.concat(` || (${result})`);
+        if (isEmpty === false) {
+            if (k === 0) {
+                dnf = dnf.concat(`(${result})`);
+            } else {
+                dnf = dnf.concat(` || (${result})`);
+            }
+            isEmpty = true;
         }
 
     })
