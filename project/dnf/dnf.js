@@ -66,6 +66,7 @@ function _getRectangles({values, colCount}) {
     let base = 0;
     const rectangles = [];
     let looped = false;
+    let len = values.length; // The total number of cells in the Karnaugh map
 
     while (base < values.length) {
         while (values[base]) {
@@ -75,7 +76,6 @@ function _getRectangles({values, colCount}) {
             let rect = [base];
             let rightCount = 1;
             let downCount = 0;
-            let len = values.length; // The total number of cells in the Karnaugh map
             let start = base;
             let secondStart = base;
             let n = 1;
@@ -215,6 +215,65 @@ function _getRectangles({values, colCount}) {
                     rectangles.splice(i, 1);
                     i--;
                     break;
+                }
+            }
+        }
+    }
+
+    let rowCount = len / colCount;
+    let rowEdges = [];
+    let possibleRectangles = [];
+    for (let i = 0; i < rowCount; i++) {
+        rowEdges.push((colCount * i) + colCount - 1);
+    }
+    for (let i = 0; i < rectangles.length; i++) {
+        possibleRectangles[i] = [];
+        for (let j = 0; j < rectangles[i].length; j++) {
+            if (rowEdges.includes(rectangles[i][j])) {
+                let rowCellCount = 1;
+                let colCellCount = 1;
+                for (let k = 1; k < colCount; k++) {
+                    if (rectangles[i].includes(rectangles[i][j]-k)) {
+                        rowCellCount++;
+                    } else {
+                        break;
+                    }
+                }
+                colCellCount = rectangles[i].length / rowCellCount;
+                for (let k = 0; k < colCellCount; k++) {
+                    for (let l = 0; l < rowCellCount; l++) {
+                        possibleRectangles[i].push( (rectangles[i][j] + (k * colCount) - colCount) + 1 + l);
+                    }
+                }
+            }
+            break;
+        }
+        possibleRectangles[i] = possibleRectangles[i].sort((a, b) => a - b);
+    }
+
+    let done = [];
+    for (let i = 0; i < rectangles.length; i++) {
+        if (possibleRectangles[i].length > 0) {
+            possibleRectangles[i] = possibleRectangles[i].sort((a, b) => a - b);
+            for (let j = 0; j < i; j++) {
+                let matches = 0;
+                if (rectangles[j].length === possibleRectangles[i].length) {
+                    for (let k = 0; k < rectangles[j].length; k++) {
+                        if (possibleRectangles[i][k] === rectangles[j][k]) {
+                            matches++;
+                        } else {
+                            matches = -1;
+                        }
+                    }
+                    if (matches === rectangles[j].length) {
+                        for (let k = 0; k < rectangles[j].length; k++) {
+                            rectangles[i].push(rectangles[j][k]);
+                        }
+                        rectangles[i] = rectangles[i].sort((a, b) => a - b);
+                        rectangles.splice(j, 1);
+                        break;
+                    }
+                    matches = 0;
                 }
             }
         }
