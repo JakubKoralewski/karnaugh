@@ -204,7 +204,7 @@ function _getRectangles({values, colCount}) {
     for (let i = 0; i < rectangles.length; i++) {
         for (let j = 0; j < rectangles.length; j++) {
             let isIncluded = 1;
-            if (j !== i && rectangles[i].length < rectangles[j].length) {
+            if (j !== i && rectangles[i].length <= rectangles[j].length) {
                 for (let k = 0; k < rectangles[i].length; k++) {
                     if (rectangles[j].indexOf(rectangles[i][k]) === -1) {
                         isIncluded = 0;
