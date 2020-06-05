@@ -66,6 +66,7 @@ function _getRectangles({values, colCount}) {
     let base = 0;
     const rectangles = [];
     let looped = false;
+
     while (base < values.length) {
         while (values[base]) {
             let right = true;
@@ -94,7 +95,7 @@ function _getRectangles({values, colCount}) {
                         Math.floor(start / colCount) === Math.floor((start + n) / colCount)
                         && (start + n < len)
                     ) {
-                        allTrue = 1;
+
                         // Check if the n number of columns rightward are true
                         for (let i = 1; i <= n; i++) {
                             if (values[start + i]) {
@@ -330,10 +331,8 @@ export function getDnf(
             }
             if (rectangle.length === count) {
                 dependentVars.add(variable.variable)
-                isEmpty = false;
             } else if (count === 0) {
                 dependentVars.add(`~${variable.variable}`)
-                isEmpty = false;
             }
         })
         dnf.add(
