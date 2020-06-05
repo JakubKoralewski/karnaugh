@@ -45,7 +45,7 @@ function Intro(props) {
                         props.step >= 5 &&
                         <ScrollIntoViewAnimation>
                             <p>
-                                Hasan Hur
+                                Hasan Hür
                             </p>
                         </ScrollIntoViewAnimation>
                     }
