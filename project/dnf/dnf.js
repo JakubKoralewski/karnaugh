@@ -80,7 +80,6 @@ function _getRectangles({values, colCount}) {
             let secondStart = base;
             let n = 1;
             let s = 1; // The number of rows to be checked
-            let allTrue = true;
             let tempCount = 1;
             let tempArray = [];
             let isExec = false;
@@ -90,6 +89,7 @@ function _getRectangles({values, colCount}) {
             }
 
             while (right || down) {
+                let allTrue = true;
                 if (right) {
                     if (
                         Math.floor(start / colCount) === Math.floor((start + n) / colCount)
@@ -129,13 +129,12 @@ function _getRectangles({values, colCount}) {
                 tempArray = []; // The indexes of cells that are true will be pushed to this array
                 allTrue = true;
 
-                if (!right && isExec) {
-                    s *= 2;
-                } else {
-                    secondStart = get1DCellNumber(s, base, colCount) + downCount;
-                }
-
                 if (down) {
+                    if (!right && isExec) {
+                        s *= 2;
+                    } else {
+                        secondStart = get1DCellNumber(s, base, colCount) + downCount;
+                    }
                     isExec = true
                     let lastCell = 0;
                     if (rightCount > downCount) {
@@ -233,7 +232,7 @@ function _getRectangles({values, colCount}) {
                 let rowCellCount = 1;
                 let colCellCount = 1;
                 for (let k = 1; k < colCount; k++) {
-                    if (rectangles[i].includes(rectangles[i][j]-k)) {
+                    if (rectangles[i].includes(rectangles[i][j] - k)) {
                         rowCellCount++;
                     } else {
                         break;
@@ -242,7 +241,7 @@ function _getRectangles({values, colCount}) {
                 colCellCount = rectangles[i].length / rowCellCount;
                 for (let k = 0; k < colCellCount; k++) {
                     for (let l = 0; l < rowCellCount; l++) {
-                        possibleRectangles[i].push( (rectangles[i][j] + (k * colCount) - colCount) + 1 + l);
+                        possibleRectangles[i].push((rectangles[i][j] + (k * colCount) - colCount) + 1 + l);
                     }
                 }
             }
@@ -251,7 +250,6 @@ function _getRectangles({values, colCount}) {
         possibleRectangles[i] = possibleRectangles[i].sort((a, b) => a - b);
     }
 
-    let done = [];
     for (let i = 0; i < rectangles.length; i++) {
         if (possibleRectangles[i].length > 0) {
             possibleRectangles[i] = possibleRectangles[i].sort((a, b) => a - b);
@@ -278,6 +276,65 @@ function _getRectangles({values, colCount}) {
             }
         }
     }
+
+    let colEdges = [];
+    let reverseRectangles = [];
+    for (let i = 0; i < colCount; i++) {
+        colEdges.push(len - colCount + i);
+    }
+    for (let i = 0; i < rectangles.length; i++) {
+        reverseRectangles[i] = [];
+        for (let j = 0; j < rectangles[i].length; j++) {
+            if (colEdges.includes(rectangles[i][j])) {
+                let rowCellCount = 1;
+                let colCellCount = 1;
+                for (let k = 1; k < rowCount; k++) {
+                    if (rectangles[i].includes(rectangles[i][j] - (k * colCount))) {
+                        colCellCount++;
+                    } else {
+                        break;
+                    }
+                }
+                rowCellCount = rectangles[i].length / rowCellCount;
+                for (let k = 0; k < rowCellCount; k++) {
+                    for (let l = 0; l < colCellCount; l++) {
+                        reverseRectangles[i].push((rectangles[i][j] - ((rowCount - 1) * colCount)) + k + (l * colCount));
+                    }
+                }
+            }
+            break;
+        }
+        reverseRectangles[i] = reverseRectangles[i].sort((a, b) => a - b);
+    }
+
+    for (let i = 0; i < rectangles.length; i++) {
+        if (reverseRectangles[i].length > 0) {
+            reverseRectangles[i] = reverseRectangles[i].sort((a, b) => a - b);
+            for (let j = 0; j < i; j++) {
+                let matches = 0;
+                if (rectangles[j].length === reverseRectangles[i].length) {
+                    for (let k = 0; k < rectangles[j].length; k++) {
+                        if (reverseRectangles[i][k] === rectangles[j][k]) {
+                            matches++;
+                        } else {
+                            matches = -1;
+                        }
+                    }
+                    if (matches === rectangles[j].length) {
+                        for (let k = 0; k < rectangles[j].length; k++) {
+                            rectangles[i].push(rectangles[j][k]);
+                        }
+                        rectangles[i] = rectangles[i].sort((a, b) => a - b);
+                        rectangles.splice(j, 1);
+                        break;
+                    }
+                    matches = 0;
+                }
+            }
+        }
+    }
+    console.log("askldjfjklashdflhasdfhl shadjsdkhafhjsdhjlhjlkdasjhlks djhlajlkhsdaflhjhs adjhjklsadfhjk dsfjsdf jhklsjkhldsla fjhkl sdajhjl hkdfsahjlk dsalj lhjkasdlhjka sdljl jhakdshjklads");
+    console.log({colEdges, reverseRectangles});
     return rectangles;
 }
 
