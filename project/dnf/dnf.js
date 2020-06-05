@@ -333,8 +333,6 @@ function _getRectangles({values, colCount}) {
             }
         }
     }
-    console.log("askldjfjklashdflhasdfhl shadjsdkhafhjsdhjlhjlkdasjhlks djhlajlkhsdaflhjhs adjhjklsadfhjk dsfjsdf jhklsjkhldsla fjhkl sdajhjl hkdfsahjlk dsalj lhjkasdlhjka sdljl jhakdshjklads");
-    console.log({colEdges, reverseRectangles});
     return rectangles;
 }
 
