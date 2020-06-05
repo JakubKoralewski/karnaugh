@@ -1,18 +1,3 @@
-/**
- * @param {Array.<Array.<number>>} rowGrayCode
- * @param {Array.<Array.<number>>} columnGrayCode
- * @param {Array.<string>} rowHeaders
- * @param {Array.<string>} columnHeaders
- */
-function getLength(rowHeaders, columnHeaders, rowGrayCode, columnGrayCode) {
-    return {
-        rowVarCount: rowHeaders.length,
-        colVarCount: columnHeaders.length,
-        rowCount: rowGrayCode.length,
-        colCount: columnGrayCode.length,
-    }
-}
-
 function get1DCellNumber(row, column, numColumns) {
     return (row * numColumns) + column
 }
@@ -30,18 +15,33 @@ function get1DCellNumber(row, column, numColumns) {
  * @return {Array.<{variable: string, cells: Array.<number>}>}
  */
 function getArr({rowHeaders, columnHeaders, rowGrayCode, columnGrayCode}) {
-    let {rowVarCount, colVarCount, rowCount, colCount} = getLength(rowHeaders, columnHeaders, rowGrayCode, columnGrayCode)
-    const generateVars = (varCount, count, otherCount, headers, code) => {
+    /** Generate an array of cells that are true for each given variable.
+     * @returns {{cells: number[], variable: string}[]}
+     *
+     * @param {number} otherCount - number of gray codes for other(row/column)
+     * @param {string[]} headers - array of variables, corresponding to each gray code element
+     * @param {number[][]} code - gray code for that row/column
+     * @param {boolean} row - whether is row
+     */
+    const generateVars = (otherCount, headers, code, row) => {
         const newVars = []
-        for (let i = 0; i < varCount; i++) {
+        for (let varIndex = 0; varIndex < headers.length; varIndex++) {
             const newVar = {
-                variable: headers[i],
+                variable: headers[varIndex],
                 cells: []
             }
-            for (let j = 0; j < count; j++) {
-                if (code[j][i] === 1) {
-                    for (let k = 0; k < otherCount; k++) {
-                        newVar.cells.push(get1DCellNumber(j, k, otherCount));
+            for (let gcIndex = 0; gcIndex < code.length; gcIndex++) {
+                if (code[gcIndex][varIndex] === 1) {
+                    if (row) {
+                        for (let columnIndex = 0; columnIndex < otherCount; columnIndex++) {
+                            // For row gray code index is row, columnIndex, column count is otherCount(columns)
+                            newVar.cells.push(get1DCellNumber(gcIndex, columnIndex, otherCount));
+                        }
+                    } else {
+                        for (let rowIndex = 0; rowIndex < otherCount; rowIndex++) {
+                            // For column gray code rowIndex is row, gray code is column, and columns is length of gray code
+                            newVar.cells.push(get1DCellNumber(rowIndex, gcIndex, code.length));
+                        }
                     }
                 }
             }
@@ -51,9 +51,9 @@ function getArr({rowHeaders, columnHeaders, rowGrayCode, columnGrayCode}) {
     }
     return [
         // Push row headers and the table cells on which their values are true to an array
-        ...generateVars(rowVarCount, rowCount, colCount, rowHeaders, rowGrayCode),
+        ...generateVars(columnGrayCode.length, rowHeaders, rowGrayCode, true),
         // Push column headers and the table cells on which their values are true to the array
-        ...generateVars(colVarCount, colCount, rowCount, columnHeaders, columnGrayCode)
+        ...generateVars(rowGrayCode.length, columnHeaders, columnGrayCode, false)
     ]
 }
 
@@ -74,7 +74,7 @@ function _getRectangles({values, colCount}) {
             let rect = [base];
             let rightCount = 1;
             let downCount = 0;
-            let len = values.length; // The total number of cells in the karnaugh map
+            let len = values.length; // The total number of cells in the Karnaugh map
             let start = base;
             let secondStart = base;
             let n = 1;
@@ -256,6 +256,45 @@ export function getRectangles(
     return _getRectangles({values, colCount})
 }
 
+/** Intermediate DNF representation used to be able to group together
+ *  blocks of variables with corresponding rectangles for
+ *  hovering applications.
+ */
+export class DNFIntermediate {
+    /**
+     * @typedef {
+     *      {
+     *          variables: number[],
+     *          rectangleIndex: number,
+     *          text: string
+     *      }
+     * } DNFBlock
+     */
+    constructor() {
+        /** @type {DNFBlock[]} */
+        this.blocks = []
+        this.isFirstBlock = true
+        this.finalDNF = ""
+    }
+
+    /** @param {DNFBlock} block */
+    add(block) {
+        if(block.variables.length === 0) {
+            console.log(`Empty DNF. Ignoring. Rectangle: ${block.rectangleIndex}.`)
+            return
+        }
+        let blockJoined = block.variables.join(" & ")
+        if(block.variables.length > 1) {
+            // Don't add parentheses when only single variable
+            blockJoined = `(${blockJoined})`
+        }
+        this.blocks.push({
+            text: blockJoined,
+            ...block
+        })
+    }
+}
+
 /**
  * Description: This function takes rectangles as an input and generate a disjunctive normal form.
  * @param {Object} obj
@@ -264,6 +303,8 @@ export function getRectangles(
  * @param {Array.<string>} obj.columnHeaders
  * @param {Array.<Array.<number>>} obj.rowGrayCode
  * @param {Array.<Array.<number>>} obj.columnGrayCode
+ *
+ * @returns {DNFIntermediate}
  */
 export function getDnf(
     {
@@ -276,11 +317,10 @@ export function getDnf(
 ) {
     let vars = getArr({rowHeaders, columnHeaders, rowGrayCode, columnGrayCode});
     const dependentVars = new Set();
-    let dnf = "";
-    let result = "";
-    let isEmpty = true;
+    // final dnf return
+    let dnf = new DNFIntermediate();
 
-    rectangles.forEach((rectangle, k) => {
+    rectangles.forEach((rectangle, r) => {
         vars.forEach(variable => {
             let count = 0;
             for (const cell of rectangle) {
@@ -296,16 +336,13 @@ export function getDnf(
                 isEmpty = false;
             }
         })
-        result = Array.from(dependentVars).join(" & ");
-        dependentVars.clear();
-        if (isEmpty === false) {
-            if (k === 0) {
-                dnf = dnf.concat(`(${result})`);
-            } else {
-                dnf = dnf.concat(` || (${result})`);
+        dnf.add(
+            {
+                variables: Array.from(dependentVars),
+                rectangleIndex: r
             }
-            isEmpty = true;
-        }
+        )
+        dependentVars.clear();
 
     })
     return dnf;

@@ -84,6 +84,22 @@ function transformTable(tableRows, rows, columns) {
     return rv
 }
 
+/** @typedef {Object} Cell
+ *  @property {Array.<string> | null} keys - identifier of particular cell, possibly corresponding to
+ *      a table cell, if keys is null then the cell is top-left-most variable header.
+ *      Keys have the following structure:
+ *      a) `${variableNames}${variableValues}`
+ *      b) `eval${variableValues}${evalValue}`
+ *  @property {boolean} isHeader - whether to display `<th>` or `<td>`
+ *  @property {string} value - text value to be displayed inside element
+ *  @property {Array.<string>} variables - list of variables in that column/row header
+ *      It is used for animation target position, when a particular row/column has more than one T/F
+ *      variable, to accurately animate to the correct position.
+ *  @property {Rectangle | undefined} rectangle - if we're not a header,
+ *      corresponding rectangle, used to extract color information about current cell
+ *  @property {number | undefined} rectangleIndex
+ */
+
 /** Whether the animation happens is controlled by the `tableRefs` property
  *  if it's null, then there is no animation, since there is no input table elements,
  *  that would provide the necessary position information for the animation in `CellRender`.
@@ -101,6 +117,15 @@ export default React.memo(
             onlyHeaders = false,
             dnf = false,
             returnDNF,
+
+            returnRectangles,
+
+            // rectangle highlighting (on dnf hover)
+            highlightRectangleIndex=null,
+
+            // dnf highlighting (on cell hover)
+            onCellHover,
+
             ...props
         }
     ) {
@@ -113,7 +138,7 @@ export default React.memo(
         const transformedTable = transformTable(table.rows, rowHeaders, columnHeaders)
         const memoJsonTable = JSON.stringify(transformedTable)
 
-        /** @type Rectangles */
+        /** @type {number[][] | Rectangles} */
         let rectangles
         if (dnf) {
             rectangles = React.useMemo(
@@ -147,6 +172,9 @@ export default React.memo(
                     rowGrayCode,
                     rowHeaders
                 }))
+            }
+            if (returnRectangles) {
+                returnRectangles(rectangles)
             }
         }, [table])
         const mapSymbol = code => {
@@ -191,6 +219,7 @@ export default React.memo(
         )
         let data = React.useMemo(
             () => rowGrayCode.map((rowCode, i) => {
+                /** @type {Cell[]} */
                 const cell = [
                     {
                         // Fix case where with single variable it looks like evals are headers
@@ -202,15 +231,22 @@ export default React.memo(
                 ]
                 columnGrayCode.forEach((columnCode, j) => {
                     const value = mapSymbols(transformedTable[rowCode.join('')][columnCode.join('')])
-                    let rectangle = undefined
+                    let rectangle, rectangleIndex;
                     if (dnf) {
-                        rectangle = rectangles.get(i, j)
+                        // Weird, React won't let me rename object destructuring as expected without `let`
+                        let output = rectangles.get(i, j)
+                        if (output) {
+                            rectangle = output.rect
+                            rectangleIndex = output.i
+                        }
                     }
                     cell.push(
                         {
                             isHeader: false,
                             value,
                             rectangle,
+                            rectangleIndex,
+                            pos: {x: j, y: i},
                             keys: tableRefs ?
                                 [`eval${mapSymbols(rowCode).join('')}${mapSymbols(columnCode).join('')}${value}`]
                                 : ['']
@@ -232,6 +268,15 @@ export default React.memo(
                     "initial" : null,
         }), [columnGrayCode.length])
 
+        /** @type {Rectangle|undefined}*/
+        let highlightRectangle
+
+        // For restore
+        const lastRectangle = useRef()
+        if(highlightRectangleIndex !== null) {
+            highlightRectangle = rectangles.rectangles[highlightRectangleIndex]
+        }
+
         console.groupEnd()
         return (
             <table
@@ -249,10 +294,11 @@ export default React.memo(
                 {
                     dnf && headRowRef.current &&
                     <SVGRectangles
+                        highlightRectangleIndex={highlightRectangleIndex}
                         rectangles={rectangles}
                         numRows={rowGrayCode.length + 1}
                         numColumns={columnGrayCode.length + 1}
-                        rowRef={headRowRef.current}
+                        rowRef={headRowRef}
                     />
                 }
                 <thead>
@@ -278,13 +324,53 @@ export default React.memo(
                             <tr key={i}>
                                 {
                                     row.map((cell, j) => {
+                                        const key = columns.length + i * row.length + j
+                                        let shouldHighlight = false
+                                        if(cell.rectangle && lastRectangle.current) {
+                                            // Restore previous rectangle which was on top
+                                            let {i: lastI, j: lastJ, rect: lastRect} = lastRectangle.current
+                                            if(i === lastI && j === lastJ) {
+                                                cell.rectangle = lastRect
+
+                                                // Reset
+                                                lastRectangle.current = null
+                                            }
+                                        }
+                                        if (highlightRectangle && cell.rectangle) {
+                                            // Check if current cell is in highlighted rectangle
+                                            const isCurrentCellInHighlightedRectangle = highlightRectangle.checkIfInBounds(j-1, i)
+                                            if (isCurrentCellInHighlightedRectangle) {
+                                                if(cell.rectangle.color !== highlightRectangle.color) {
+                                                    // If colors are different select the one which belongs to the currently highlighted
+                                                    console.log("Overriding rectangle", cell," with ", highlightRectangle, i-1,j-1)
+
+                                                    // Save current to restore on hover end
+                                                    lastRectangle.current = {i, j, rect: cell.rectangle}
+
+                                                    cell.rectangle = highlightRectangle
+                                                }
+                                                shouldHighlight = true
+                                            }
+                                        }
+                                        let onCellHoverResolvedRectangles
+
+                                        if(cell.rectangle) {
+                                            const foundRectangles = rectangles.get(i, j-1, {all: true})
+                                            if(foundRectangles) {
+                                                onCellHoverResolvedRectangles = onCellHover(foundRectangles)
+                                            }
+                                        }
+
                                         return (
                                             <CellRender
                                                 style={cellStyle}
-                                                key={columns.length + i * (data.length - 1) + j}
-                                                cellKey={columns.length + i * (data.length - 1) + j}
+                                                key={key}
+                                                cellKey={key}
                                                 naSymbol={na}
                                                 cell={cell}
+                                                onCellHover={onCellHoverResolvedRectangles}
+                                                shouldHighlight={shouldHighlight}
+                                                isHighlighting={!!highlightRectangle}
                                                 refs={
                                                     (!tableRefs || (onlyHeaders && j !== 0)) ?
                                                         null : tableRefs.evals
