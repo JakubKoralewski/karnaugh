@@ -91,7 +91,7 @@ function _getRectangles({values, colCount}) {
                         Math.floor(start / colCount) === Math.floor((start + n) / colCount)
                         && (start + n < len)
                     ) {
-
+                        allTrue = 1;
                         // Check if the n number of columns rightward are true
                         for (let i = 1; i <= n; i++) {
                             if (values[start + i]) {
@@ -127,7 +127,6 @@ function _getRectangles({values, colCount}) {
 
                 if (!right && isExec) {
                     s *= 2;
-                    secondStart = get1DCellNumber(s, base, colCount);
                 } else {
                     secondStart = get1DCellNumber(s, base, colCount) + downCount;
                 }
@@ -139,6 +138,9 @@ function _getRectangles({values, colCount}) {
                         lastCell = secondStart + (rightCount - downCount);
                     } else {
                         lastCell = secondStart + (s * colCount);
+                    }
+                    if (!right && isExec) {
+                        secondStart = get1DCellNumber(s, base, colCount);
                     }
                     if (lastCell <= len) {
                         for (let i = 1; i <= s; i++) {
