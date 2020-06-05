@@ -65,7 +65,7 @@ function getArr({rowHeaders, columnHeaders, rowGrayCode, columnGrayCode}) {
 function _getRectangles({values, colCount}) {
     let base = 0;
     const rectangles = [];
-
+    let looped = false;
     while (base < values.length) {
         while (values[base]) {
             let right = true;
@@ -83,7 +83,10 @@ function _getRectangles({values, colCount}) {
             let tempCount = 1;
             let tempArray = [];
             let isExec = false;
-
+            if (looped) {
+                right = false;
+                down = true;
+            }
 
             while (right || down) {
                 if (right) {
@@ -178,12 +181,20 @@ function _getRectangles({values, colCount}) {
                     rect = temporary.slice(0)
                 }
             }
-            base++;
 
             // If a rectangle is generated it is pushed to an array named rectangles in which all
             // the rectangles are stored.
             rectangles.push(rect.sort((a, b) => a - b));
             rect = [];
+
+            if (looped) {
+                base++;
+            }
+            if (!looped) {
+                looped = true;
+            } else {
+                looped = false;
+            }
         }
         base++;
     }
