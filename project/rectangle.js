@@ -82,7 +82,7 @@ export class Rectangles {
         this.rowLength = rowLength
         this.colors = new Colors()
         /** @type {Array.<number|null>}*/
-        let allCells = Array(rowLength*columnHeight).fill(0).map((_, i) => i)
+        let allCells = new Array(rowLength*columnHeight).fill(0).map((_, i) => i)
         this.rectangles = arrays.map(r => {
             r.forEach(c => {
                 allCells[c] = null

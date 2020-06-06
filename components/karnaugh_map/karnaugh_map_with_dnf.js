@@ -149,7 +149,9 @@ export default React.memo(
 
         let DNFBlocksOutput = ""
         if(table && DNF) {
-            if(rectangles.isTautology) {
+            if(rectangles.isTautology && rectangles.isContradiction) {
+                DNFBlocksOutput = table.statement
+            } else if(rectangles.isTautology) {
                 DNFBlocksOutput = "tautology"
             } else if(rectangles.isContradiction) {
                 DNFBlocksOutput = "contradiction"
