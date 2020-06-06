@@ -149,11 +149,21 @@ export default React.memo(
 
         let DNFBlocksOutput = ""
         if(table && DNF) {
-            if(rectangles.isTautology && rectangles.isContradiction) {
-                DNFBlocksOutput = table.variables[0]
-            } else if(rectangles.isTautology) {
+            let isTautology = rectangles.isTautology
+            let isContradiction = rectangles.isContradiction
+            if(isTautology && isContradiction) {
+                const isTautologyWithOneVariable = table.rows.every(x => x.eval)
+                const isContradictionWithOneVariable = table.rows.every(x => !x.eval)
+                if(isTautologyWithOneVariable) {
+                    DNFBlocksOutput = "tautology"
+                } else if(isContradictionWithOneVariable) {
+                    DNFBlocksOutput = "contradiction"
+                } else {
+                    DNFBlocksOutput = table.variables[0]
+                }
+            } else if(isTautology) {
                 DNFBlocksOutput = "tautology"
-            } else if(rectangles.isContradiction) {
+            } else if(isContradiction) {
                 DNFBlocksOutput = "contradiction"
             } else {
                 DNFBlocksOutput = DNFBlocks()
