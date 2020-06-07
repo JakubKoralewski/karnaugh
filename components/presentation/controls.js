@@ -23,16 +23,17 @@ function describeArc(x, y, radius, startAngle, endAngle) {
         "A", radius, radius, 0, arcSweep, 0, end.x, end.y,
     ].join(" ");
 }
+
 let lastStepsAmt = 0
 
 const arcVariants = {
-    hidden:  {
-            pathOffset: 1,
-            pathLength: 0,
-        }
+    hidden: {
+        pathOffset: 1,
+        pathLength: 0,
+    }
     ,
     visible: ({isFull, lastChanged}) => {
-        let anim =  {
+        let anim = {
             // opacity: 1,
             // pathSpacing: 1,
             pathLength: 1,
@@ -68,7 +69,7 @@ function AvailableSteps(props) {
             360 * (i + 1) / steps - 20
         )
     }
-    const createPath = (d, classes, i=0) => (
+    const createPath = (d, classes, i = 0) => (
         <motion.path
             fill="none"
             strokeWidth="2"
@@ -113,16 +114,16 @@ function AvailableSteps(props) {
 export default function Controls(props) {
     // https://remixicon.com/
     useEffect(() => {
-        return () => lastStepsAmt = props.stepsInSlide
+        return () => lastStepsAmt = props.stepsInSlide()
     })
     return (
         <div className={`${props.className} ${styles.controls}`}>
-            <AnimatePresence >
+            <AnimatePresence>
                 {
                     props.errorMessage !== null &&
                     <motion.div
                         initial={{y: "100%", opacity: 0}}
-                        animate={{y:0, opacity: 1}}
+                        animate={{y: 0, opacity: 1}}
                         exit={{y: "100%", opacity: 0}}
                         transition={{ease: "easeOut", duration: 3}}
                         className={styles.errorAlert}
@@ -134,22 +135,37 @@ export default function Controls(props) {
                         </span>
                         <motion.svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
                             <path fill="none" d="M0 0h24v24H0z"/>
-                            <path d="M12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10-4.477 10-10 10zm0-2a8 8 0 1 0 0-16 8 8 0 0 0 0 16zm0-9.414l2.828-2.829 1.415 1.415L13.414 12l2.829 2.828-1.415 1.415L12 13.414l-2.828 2.829-1.415-1.415L10.586 12 7.757 9.172l1.415-1.415L12 10.586z"/>
+                            <path
+                                d="M12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10-4.477 10-10 10zm0-2a8 8 0 1 0 0-16 8 8 0 0 0 0 16zm0-9.414l2.828-2.829 1.415 1.415L13.414 12l2.829 2.828-1.415 1.415L12 13.414l-2.828 2.829-1.415-1.415L10.586 12 7.757 9.172l1.415-1.415L12 10.586z"
+                            />
                         </motion.svg>
                     </motion.div>
                 }
             </AnimatePresence>
-            <div className={[styles.controlButton, props.canGoBack() ? styles.active : ''].join(' ')}
-                 onClick={props.goBack}>
-                <AvailableSteps steps={props.stepsInSlide} back={true} active={props.stepsInSlide - props.currentStep}/>
+            <div
+                className={[styles.controlButton, props.canGoBack() ? styles.active : ''].join(' ')}
+                onClick={props.goBack}
+            >
+                <AvailableSteps
+                    steps={props.stepsInSlide()}
+                    back={true}
+                    active={props.stepsInSlide() - props.currentStep}
+                />
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
                     <path fill="none" d="M0 0h24v24H0z"/>
                     <path d="M12 13v7l-8-8 8-8v7h8v2z"/>
                 </svg>
             </div>
-            <div className={[styles.controlButton, props.canGoForward() ? styles.active : ''].join(' ')}
-                 onClick={props.goForward}>
-                <AvailableSteps steps={props.stepsInSlide} back={false} active={props.currentStep}/>
+            <div
+                className={[styles.controlButton, props.canGoForward() ? styles.active : ''].join(' ')}
+                onClick={props.goForward}
+            >
+
+                <AvailableSteps
+                    steps={props.stepsInSlide()}
+                    back={false}
+                    active={props.currentStep}
+                />
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
                     <path fill="none" d="M0 0h24v24H0z"/>
                     <path d="M12 13H4v-2h8V4l8 8-8 8z"/>

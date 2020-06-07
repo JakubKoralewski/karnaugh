@@ -34,19 +34,30 @@ export const Animation = React.forwardRef((props, ref) => {
 
 export const ScrollIntoViewAnimation = React.forwardRef((props, ref) => {
     let scrollObj
+    /** @param {HTMLElement} elem*/
+    const scrollIntoView = (elem, backwards=false) => {
+        console.log("scrollintoview: ", elem)
+        window.focus()
+        if(backwards) {
+            window.document.body.scrollTo(0,  elem.offsetTop)
+        } else {
+            window.document.body.scrollTo(0, Math.max(0, elem.offsetTop - elem.offsetHeight/2))
+        }
+    }
     if (!ref) {
         ref = useRef()
         scrollObj = {
             onMount: () => {
-                ref.current.scrollIntoView()
-                return () => ref.current.scrollIntoView()
+                scrollIntoView(ref.current)
+                let offsetTop = ref.current.offsetTop
+                return () => scrollIntoView(offsetTop, true)
             },
         }
     } else {
         scrollObj = {
             onAnimationStart: () => {
                 console.log("ref on animation start", ref)
-                ref.current.scrollIntoView()
+                scrollIntoView(ref.current)
             }
         }
     }
