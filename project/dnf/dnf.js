@@ -85,13 +85,14 @@ function _getRectangles({values, colCount}) {
             let tempCount = 1;
             let tempArray = [];
             let isExec = false;
+            let allTrue = true;
             if (looped) {
                 right = false;
                 down = true;
             }
 
             while (right || down) {
-                let allTrue = true;
+                allTrue = true;
                 if (right) {
                     if (
                         Math.floor(start / colCount) === Math.floor((start + n) / colCount)
@@ -182,20 +183,64 @@ function _getRectangles({values, colCount}) {
                 }
             }
 
+            if (looped) {
+                // Add true values rightwards to rect in second loop
+                allTrue = true;
+                tempArray = [];
+                temporary = [];
+                let startNumber = 1;
+                let stopNumber = 2;
+                while (allTrue && stopNumber <= colCount) {
+                    for (let i = 0; i < rect.length; i++) {
+                        for (let j = startNumber; j < stopNumber; j++) {
+                            if (values[rect[i] + j]) {
+                                tempArray.push(rect[i] + j);
+                            } else {
+                                allTrue = false;
+                                break;
+                            }
+                        }
+                    }
+                    if (allTrue) {
+                        temporary.push(...tempArray);
+                        tempArray = [];
+                    }
+                    startNumber = stopNumber;
+                    stopNumber *= 2;
+                }
+                rect.push(...temporary);
+                base++;
+                looped = false;
+            } else {
+                looped = true;
+            }
+
             // If a rectangle is generated it is pushed to an array named rectangles in which all
             // the rectangles are stored.
             rectangles.push(rect.sort((a, b) => a - b));
             rect = [];
-            if (looped) {
-                base++;
-            }
-            if (!looped) {
-                looped = true;
-            } else {
-                looped = false;
-            }
         }
         base++;
+    }
+
+    // Remove rectangles that are subsets of other rectangles
+    for (let i = 0; i < rectangles.length; i++) {
+        for (let j = 0; j < rectangles.length; j++) {
+            let isIncluded = 1;
+            if (j !== i && rectangles[i].length <= rectangles[j].length) {
+                for (let k = 0; k < rectangles[i].length; k++) {
+                    if (rectangles[j].indexOf(rectangles[i][k]) === -1) {
+                        isIncluded = 0;
+                        break;
+                    }
+                }
+                if (isIncluded === 1) {
+                    rectangles.splice(i, 1);
+                    i--;
+                    break;
+                }
+            }
+        }
     }
 
     let rowCount = len / colCount;
@@ -313,25 +358,6 @@ function _getRectangles({values, colCount}) {
         }
     }
 
-    // Remove rectangles that are subsets of other rectangles
-    for (let i = 0; i < rectangles.length; i++) {
-        for (let j = 0; j < rectangles.length; j++) {
-            let isIncluded = 1;
-            if (j !== i && rectangles[i].length <= rectangles[j].length) {
-                for (let k = 0; k < rectangles[i].length; k++) {
-                    if (rectangles[j].indexOf(rectangles[i][k]) === -1) {
-                        isIncluded = 0;
-                        break;
-                    }
-                }
-                if (isIncluded === 1) {
-                    rectangles.splice(i, 1);
-                    i--;
-                    break;
-                }
-            }
-        }
-    }
     return rectangles;
 }
 
