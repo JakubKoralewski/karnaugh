@@ -193,7 +193,7 @@ function _getRectangles({values, colCount}) {
                 while (allTrue && stopNumber <= colCount) {
                     for (let i = 0; i < rect.length; i++) {
                         for (let j = startNumber; j < stopNumber; j++) {
-                            if (values[rect[i] + j]) {
+                            if (values[rect[i] + j] && Math.floor(rect[i] + j / colCount) === Math.floor(rect[i] / colCount) && (rect[i] + j < len)) {
                                 tempArray.push(rect[i] + j);
                             } else {
                                 allTrue = false;
@@ -215,8 +215,7 @@ function _getRectangles({values, colCount}) {
                 looped = true;
             }
 
-            // If a rectangle is generated it is pushed to an array named rectangles in which all
-            // the rectangles are stored.
+            // If a rectangle is generated it is pushed to an array named rectangles in which all the rectangles are stored.
             rectangles.push(rect.sort((a, b) => a - b));
             rect = [];
         }
@@ -268,8 +267,8 @@ function _getRectangles({values, colCount}) {
                         possibleRectangles[i].push((rectangles[i][j] + (k * colCount) - colCount) + 1 + l);
                     }
                 }
+                break;
             }
-            break;
         }
         possibleRectangles[i] = possibleRectangles[i].sort((a, b) => a - b);
     }
@@ -319,14 +318,14 @@ function _getRectangles({values, colCount}) {
                         break;
                     }
                 }
-                rowCellCount = rectangles[i].length / rowCellCount;
-                for (let k = 0; k < rowCellCount; k++) {
-                    for (let l = 0; l < colCellCount; l++) {
-                        reverseRectangles[i].push((rectangles[i][j] - ((rowCount - 1) * colCount)) + k + (l * colCount));
+                rowCellCount = rectangles[i].length / colCellCount;
+                for (let k = 1; k <= colCellCount; k++) {
+                    for (let l = 0; l < rowCellCount; l++) {
+                        reverseRectangles[i].push((rectangles[i][j] - ((rowCount - k) * colCount)) + l);
                     }
                 }
+                break;
             }
-            break;
         }
         reverseRectangles[i] = reverseRectangles[i].sort((a, b) => a - b);
     }
@@ -357,7 +356,7 @@ function _getRectangles({values, colCount}) {
             }
         }
     }
-
+    
     return rectangles;
 }
 
