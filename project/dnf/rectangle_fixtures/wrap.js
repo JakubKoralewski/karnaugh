@@ -4,6 +4,18 @@ const otherFixturesAbstracted = [
     {
         input: [
             [1, 1, 1, 1],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [1, 1, 1, 1],
+        ],
+        output: [
+            [0, 1, 2, 3, 12, 13, 14, 15]
+        ],
+        description: `Wrapping horizontally bottom to top`
+    },
+    {
+        input: [
+            [1, 1, 1, 1],
             [1, 1, 1, 1],
             [1, 1, 1, 1],
             [1, 1, 1, 1],
