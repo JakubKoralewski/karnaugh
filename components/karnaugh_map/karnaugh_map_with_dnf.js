@@ -1,20 +1,25 @@
-import KarnaughMap from "./karnaugh_map";
-import makeTruthTable from "../../project/truth_table";
-import React, {createRef, useRef, useState} from "react";
+import KarnaughMap from "./karnaugh_map"
+import React, {createRef, useRef, useState} from "react"
 import karnaughStyles from "./karnaugh_map.module.scss"
+import useStateWithLocalStorage from "../useStateWithLocalStorage"
 
 export default React.memo(
     function KarnaughMapWithDnf({
                                     table
                                 }) {
         /** @type {[DNFIntermediate, Function]} */
-        const [DNF, setDNF] = useState(null)
+        let DNF, setDNF
+        if (process.browser) {
+            [DNF, setDNF] = useStateWithLocalStorage(`${process.env.staticFolder}-dnf`)
+        } else {
+            [DNF, setDNF] = useState(null)
+        }
         const [rectangles, setRectangles] = useState(null)
         const [highlightRectangleIndex, setHLRect] = useState(null)
 
         /** @type {{current: {current: HTMLSpanElement}[]}}*/
         let dnfRefs = useRef([])
-        let dnfRefsLength = DNF ? DNF.blocks.length : 0
+        let dnfRefsLength = DNF && DNF.blocks ? DNF.blocks.length : 0
 
         if (dnfRefsLength !== dnfRefs.current.length) {
             dnfRefs.current = Array(dnfRefsLength)
@@ -53,11 +58,12 @@ export default React.memo(
             }
         }
         /** @type {{current: Object.<number, {block: DNFBlock, ref: {current: HTMLSpanElement}, active: boolean}>}}*/
-        const rectangleIndexToDNFBlockMap = useRef({})
+        const rectangleIndexToDNFBlockMap = useRef(null)
         const onCellHoverDecisionFactory = (highlightedRectangles) => {
             let onCellHoverDecision = {
                 both(on) {
                     return (event) => {
+                        if(!rectangleIndexToDNFBlockMap.current) {return;}
                         const blockInfos = highlightedRectangles.map(r => rectangleIndexToDNFBlockMap.current[r.i])
                         console.log("on cell hover ", on, event, highlightedRectangles)
                         console.log("blocks", blockInfos)
@@ -108,6 +114,9 @@ export default React.memo(
                 let rect
                 if (rectangles) {
                     rect = rectangles.rectangles[b.rectangleIndex]
+                    if(!rectangleIndexToDNFBlockMap.current) {
+                        rectangleIndexToDNFBlockMap.current = {}
+                    }
                     rectangleIndexToDNFBlockMap.current[b.rectangleIndex] = {
                         block: b,
                         ref,
@@ -148,7 +157,7 @@ export default React.memo(
         }
 
         let DNFBlocksOutput = ""
-        if(table && DNF) {
+        if(table && DNF && DNF.blocks) {
             let isTautology = rectangles.isTautology
             let isContradiction = rectangles.isContradiction
             if(isTautology && isContradiction) {
@@ -191,7 +200,7 @@ export default React.memo(
                     />
                 }
                 {
-                    table && DNF &&
+                    table && DNF && DNF.blocks &&
                     <div style={{marginTop: `1rem`}}>
                         {
                             DNFBlocksOutput
