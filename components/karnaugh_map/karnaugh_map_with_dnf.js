@@ -130,7 +130,12 @@ export default React.memo(
                 return (
                     <React.Fragment key={i}>
                         <span
-                            className={karnaughStyles.dnfBlock}
+                            className={
+                                [
+                                    karnaughStyles.dnfBlock,
+                                    karnaughStyles.dnfBlockActual
+                                ].join(' ')
+                            }
                             style={{
                                 borderColor: rect.color,
                                 '--wiggle': ref.current ? window.innerWidth / ref.current.scrollWidth / 4 : 15,
@@ -158,24 +163,33 @@ export default React.memo(
 
         let DNFBlocksOutput = ""
         if(table && DNF && DNF.blocks) {
+            let DNFBlocksText = ""
             let isTautology = rectangles.isTautology
             let isContradiction = rectangles.isContradiction
             if(isTautology && isContradiction) {
                 const isTautologyWithOneVariable = table.rows.every(x => x.eval)
                 const isContradictionWithOneVariable = table.rows.every(x => !x.eval)
                 if(isTautologyWithOneVariable) {
-                    DNFBlocksOutput = "tautology"
+                    DNFBlocksText = "tautology"
                 } else if(isContradictionWithOneVariable) {
-                    DNFBlocksOutput = "contradiction"
+                    DNFBlocksText = "contradiction"
                 } else {
-                    DNFBlocksOutput = table.variables[0]
+                    DNFBlocksText = table.variables[0]
                 }
             } else if(isTautology) {
-                DNFBlocksOutput = "tautology"
+                DNFBlocksText = "tautology"
             } else if(isContradiction) {
-                DNFBlocksOutput = "contradiction"
+                DNFBlocksText = "contradiction"
             } else {
                 DNFBlocksOutput = DNFBlocks()
+            }
+
+            if(!DNFBlocksOutput && DNFBlocksText) {
+                DNFBlocksOutput = (
+                    <span className={karnaughStyles.dnfBlock}>
+                        {DNFBlocksText}
+                    </span>
+                )
             }
         }
 
