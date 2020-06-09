@@ -14,9 +14,13 @@ const otherFixturesAbstracted = [
         ],
         output: [
             new Array(4*4).fill(0).map((_,i) => i),
-            [0,1,2,3, ...new Array(3*4).fill(0).map((_,i) => 5*4+i)],
+            new Array(2*4).fill(0).map((_,i) => 5*4+i),
+            [
+                ...new Array(2*4).fill(0).map((_,i) => i),
+                ...new Array(2*4).fill(0).map((_,i) => 6*4+i)
+            ],
         ],
-        description: `Wrapping vertically bottom to top`
+        description: `Wrapping vertically bottom to top with one rectangle weird`
     },
     {
         input: [
