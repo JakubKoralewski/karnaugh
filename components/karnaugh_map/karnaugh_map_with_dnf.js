@@ -160,6 +160,8 @@ export default React.memo(
                 )
             })
         }
+        const tautology = "true"
+        const contradiction = "false"
 
         let DNFBlocksOutput = ""
         if(table && DNF && DNF.blocks) {
@@ -170,16 +172,16 @@ export default React.memo(
                 const isTautologyWithOneVariable = table.rows.every(x => x.eval)
                 const isContradictionWithOneVariable = table.rows.every(x => !x.eval)
                 if(isTautologyWithOneVariable) {
-                    DNFBlocksText = "tautology"
+                    DNFBlocksText = tautology
                 } else if(isContradictionWithOneVariable) {
-                    DNFBlocksText = "contradiction"
+                    DNFBlocksText = contradiction
                 } else {
                     DNFBlocksText = table.variables[0]
                 }
             } else if(isTautology) {
-                DNFBlocksText = "tautology"
+                DNFBlocksText = tautology
             } else if(isContradiction) {
-                DNFBlocksText = "contradiction"
+                DNFBlocksText = contradiction
             } else {
                 DNFBlocksOutput = DNFBlocks()
             }
