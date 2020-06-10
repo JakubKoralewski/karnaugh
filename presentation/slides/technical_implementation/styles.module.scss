@@ -20,7 +20,12 @@ div.slide {
                     margin-bottom: 1rem;
                 }
             }
-            margin-top: 1rem;
+            &:not(:first-child) {
+                margin-top: calc(1rem + 5vh);
+            }
+            &:last-of-type {
+                margin-bottom: calc(1rem + 5vh);
+            }
         }
         .svgBGContainer {
             width: 100%;

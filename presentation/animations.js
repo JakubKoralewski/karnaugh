@@ -1,5 +1,6 @@
 import React, {useRef, useEffect} from "react"
 import {motion} from "framer-motion"
+
 /**
  * This is an *abstract* element that makes it easy to build upon,
  * since it will become any element you pass in as the child.
@@ -9,7 +10,7 @@ export const Animation = React.forwardRef((props, ref) => {
     let type = child.type
     let toRender
     let SomeTag
-    if(typeof type === "string"){
+    if (typeof type === "string") {
         SomeTag = motion[type]
         toRender = child.props.children
     } else {
@@ -18,8 +19,8 @@ export const Animation = React.forwardRef((props, ref) => {
     }
 
     // https://stackoverflow.com/questions/35152522/react-transferring-props-except-one
-    const {onMount, onUnMount, ...otherProps} = props
-    if(onMount) {
+    const {onMount, ...otherProps} = props
+    if (onMount) {
         useEffect(onMount, [])
     }
     return (
@@ -35,29 +36,23 @@ export const Animation = React.forwardRef((props, ref) => {
 export const ScrollIntoViewAnimation = React.forwardRef((props, ref) => {
     let scrollObj
     /** @param {HTMLElement} elem*/
-    const scrollIntoView = (elem, backwards=false) => {
+    const scrollIntoView = (elem, backwards = false) => {
         console.log("scrollintoview: ", elem)
-        window.focus()
-        if(backwards) {
-            window.document.body.scrollTo(0,  elem.offsetTop)
+        if (backwards) {
+            const margin = 50
+            window.document.body.scrollTo(0, Math.max(0, elem.offsetTop - margin))
         } else {
-            window.document.body.scrollTo(0, Math.max(0, elem.offsetTop - elem.offsetHeight/2))
+            window.document.body.scrollTo(0, Math.max(0, elem.offsetTop - elem.offsetHeight / 2))
         }
     }
-    if (!ref) {
-        ref = useRef()
-        scrollObj = {
-            onMount: () => {
-                scrollIntoView(ref.current)
-                let offsetTop = ref.current.offsetTop
-                return () => scrollIntoView(offsetTop, true)
-            },
-        }
-    } else {
-        scrollObj = {
-            onAnimationStart: () => {
-                console.log("ref on animation start", ref)
-                scrollIntoView(ref.current)
+    scrollObj = {
+        onAnimationStart: () => {
+            console.log("ref on animation start", ref)
+            scrollIntoView(ref.current)
+        },
+        onMount: () => {
+            return () => {
+                scrollIntoView(ref.current, true)
             }
         }
     }
@@ -71,6 +66,7 @@ export const ScrollIntoViewAnimation = React.forwardRef((props, ref) => {
         </Animation>
     )
 })
+
 /**
  * Simple opacity animation that also scrolls the animation into view.
  */
@@ -88,6 +84,7 @@ export function SimpleOpacityAnimation(props) {
         </ScrollIntoViewAnimation>
     )
 }
+
 /** Both opacity and small `y` direction animation. */
 export function BasicAnimation(props) {
     let ref = useRef()
