@@ -224,21 +224,18 @@ function _getRectangles({values, colCount}) {
 
     // Remove rectangles that are subsets of other rectangles
     for (let i = 0; i < rectangles.length; i++) {
-        for (let j = 0; j < rectangles.length; j++) {
-            let isIncluded = 1;
-            if (j !== i && rectangles[i].length <= rectangles[j].length) {
-                for (let k = 0; k < rectangles[i].length; k++) {
-                    if (rectangles[j].indexOf(rectangles[i][k]) === -1) {
-                        isIncluded = 0;
-                        break;
-                    }
-                }
-                if (isIncluded === 1) {
-                    rectangles.splice(i, 1);
-                    i--;
+        let counter = 0;
+        for (let j = 0; j < rectangles[i].length; j++) {
+            for (let k = 0; k < rectangles.length; k++) {
+                if (k !== i && rectangles[k].includes(rectangles[i][j])) {
+                    counter++;
                     break;
                 }
             }
+        }
+        if (counter === rectangles[i].length) {
+            rectangles.splice(i, 1);
+            i--;
         }
     }
 
@@ -276,26 +273,21 @@ function _getRectangles({values, colCount}) {
     for (let i = 0; i < rectangles.length; i++) {
         if (possibleRectangles[i].length > 0) {
             possibleRectangles[i] = possibleRectangles[i].sort((a, b) => a - b);
-            for (let j = 0; j < i; j++) {
-                let matches = 0;
-                if (rectangles[j].length === possibleRectangles[i].length) {
-                    for (let k = 0; k < rectangles[j].length; k++) {
-                        if (possibleRectangles[i][k] === rectangles[j][k]) {
-                            matches++;
-                        } else {
-                            matches = -1;
-                        }
-                    }
-                    if (matches === rectangles[j].length) {
-                        for (let k = 0; k < rectangles[j].length; k++) {
-                            rectangles[i].push(rectangles[j][k]);
-                        }
-                        rectangles[i] = rectangles[i].sort((a, b) => a - b);
-                        rectangles.splice(j, 1);
-                        break;
-                    }
-                    matches = 0;
+            let allTrue = true;
+            for (let j = 0; j < possibleRectangles[i].length; j++) {
+                if (!values[possibleRectangles[i][j]]) {
+                    allTrue = false;
+                    break;
                 }
+            }
+            if (allTrue) {
+                for (let k = 0; k < possibleRectangles[i].length; k++) {
+                    if (rectangles[i].includes(possibleRectangles[i][k])) {
+                    } else {
+                        rectangles[i].push(possibleRectangles[i][k]);
+                    }
+                }
+                rectangles[i] = rectangles[i].sort((a, b) => a - b);
             }
         }
     }
@@ -333,30 +325,142 @@ function _getRectangles({values, colCount}) {
     for (let i = 0; i < rectangles.length; i++) {
         if (reverseRectangles[i].length > 0) {
             reverseRectangles[i] = reverseRectangles[i].sort((a, b) => a - b);
-            for (let j = 0; j < i; j++) {
-                let matches = 0;
-                if (rectangles[j].length === reverseRectangles[i].length) {
-                    for (let k = 0; k < rectangles[j].length; k++) {
-                        if (reverseRectangles[i][k] === rectangles[j][k]) {
-                            matches++;
-                        } else {
-                            matches = -1;
-                        }
-                    }
-                    if (matches === rectangles[j].length) {
-                        for (let k = 0; k < rectangles[j].length; k++) {
-                            rectangles[i].push(rectangles[j][k]);
-                        }
-                        rectangles[i] = rectangles[i].sort((a, b) => a - b);
-                        rectangles.splice(j, 1);
-                        break;
-                    }
-                    matches = 0;
+            let allTrue = true;
+            for (let j = 0; j < reverseRectangles[i].length; j++) {
+                if (!values[reverseRectangles[i][j]]) {
+                    allTrue = false;
+                    break;
                 }
+            }
+            if (allTrue) {
+                for (let k = 0; k < reverseRectangles[i].length; k++) {
+                    if (rectangles[i].includes(reverseRectangles[i][k])) {
+                        break;
+                    } else {
+                        rectangles[i].push(reverseRectangles[i][k]);
+                    }
+                }
+                rectangles[i] = rectangles[i].sort((a, b) => a - b);
             }
         }
     }
-    
+
+    let corners = [0, colCount - 1, len - colCount, len - 1];
+    let trueCornerCells = [];
+    let tempArr = [];
+    let rowMax = [0, 0, 0, 0];
+    let colMax = [0, 0, 0, 0];
+    for (let i = 0; i < corners.length; i++) {
+        let cellToCheck = corners[i];
+
+        for (let k = 0; k < rowCount / 2; k++) {
+            if (i === 0 || i === 2) {
+                cellToCheck = corners[i] + k;
+            } else {
+                cellToCheck = corners[i] - k;
+            }
+            if (values[cellToCheck]) {
+                rowMax[i]++;
+            } else {
+                break;
+            }
+        }
+
+        for (let k = 0; k < colCount / 2; k++) {
+            if (i === 0 || i === 1) {
+                cellToCheck = corners[i] + (k * colCount);
+            } else {
+                cellToCheck = corners[i] - (k * colCount);
+            }
+            if (values[cellToCheck]) {
+                colMax[i]++;
+            } else {
+                break;
+            }
+        }
+    }
+
+    rowMax = rowMax.sort((a, b) => a - b);
+    colMax = colMax.sort((a, b) => a - b);
+
+    let lengths = [rowMax[0], colMax[0]];
+    for (let i = 0; i < 2; i++) {
+        let allValTrue = true;
+        tempArr[i] = [];
+        for (let j = 0; j < corners.length; j++) {
+            for (let k = 0; k < lengths[i]; k++) {
+                let cellToAdd = 0;
+                if (i === 0) {
+                    if (j === 0 || j === 2) {
+                        cellToAdd = corners[j] + k;
+                    } else {
+                        cellToAdd = corners[j] - k;
+                    }
+                } else if (i === 1) {
+                    if (j === 0 || j === 1) {
+                        cellToAdd = corners[j] + (k * colCount);
+                    } else {
+                        cellToAdd = corners[j] - (k * colCount);
+                    }
+                }
+                if (values[cellToAdd]) {
+                    tempArr[i].push(cellToAdd);
+                } else {
+                    allValTrue = false;
+                    break;
+                }
+            }
+        }
+        if (allValTrue && tempArr[i].length > 0) {
+            rectangles.push(tempArr[i]);
+        }
+    }
+    if (rowMax[0] > 1 && colMax[1] > 0) {
+        tempArr = [];
+        let smaller = rowMax[0] < colMax[0] ? rowMax[0] : colMax[0];
+        let cellToAdd = 0;
+        for (let j = 0; j < corners.length; j++) {
+            for (let k = 0; k < smaller; k++) {
+                for (let l = 0; l < smaller; l++) {
+                    if (j === 0) {
+                        cellToAdd = corners[j] + (k * colCount) + l;
+                    } else if (j === 1) {
+                        cellToAdd = corners[j] + (k * colCount) - l;
+                    } else if (j === 2) {
+                        cellToAdd = corners[j] - (k * colCount) + l;
+                    } else if (j === 3) {
+                        cellToAdd = corners[j] - (k * colCount) - l;
+                    }
+                    if (values[cellToAdd]) {
+                        tempArr.push(cellToAdd);
+                    } else {
+                        allValTrue = false;
+                        break;
+                    }
+                }
+            }
+        }
+        if (tempArr.length > 0) {
+            rectangles.push(tempArr);
+        }
+    }
+
+    // Remove rectangles that are subsets of other rectangles
+    for (let i = 0; i < rectangles.length; i++) {
+        let counter = 0;
+        for (let j = 0; j < rectangles[i].length; j++) {
+            for (let k = 0; k < rectangles.length; k++) {
+                if (k !== i && rectangles[k].includes(rectangles[i][j])) {
+                    counter++;
+                    break;
+                }
+            }
+        }
+        if (counter === rectangles[i].length) {
+            rectangles.splice(i, 1);
+            i--;
+        }
+    }
     return rectangles;
 }
 
