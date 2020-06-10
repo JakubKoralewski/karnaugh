@@ -51,8 +51,10 @@ export const ScrollIntoViewAnimation = React.forwardRef((props, ref) => {
             scrollIntoView(ref.current)
         },
         onMount: () => {
-            return () => {
-                scrollIntoView(ref.current, true)
+            if(ref) {
+                return () => {
+                    scrollIntoView(ref.current, true)
+                }
             }
         }
     }

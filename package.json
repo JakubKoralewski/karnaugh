@@ -10,11 +10,13 @@
     "test": "jest"
   },
   "dependencies": {
+    "babel-plugin-prismjs": "^2.0.1",
     "babel-plugin-transform-remove-console": "^6.9.4",
     "d3": "^5.16.0",
     "framer-motion": "^1.10.3",
     "lodash": "^4.17.15",
     "next": "9.4",
+    "prismjs": "^1.20.0",
     "react": "16.13.1",
     "react-dom": "16.13.1",
     "sass": "^1.26.5"
