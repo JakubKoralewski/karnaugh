@@ -126,21 +126,17 @@ function TechnicalImplementation(props) {
                                 </p>
                                 <Code>
                                     {
-                                        (() => {
-                                            let isValid = true
-                                            let statement
-                                            try {
-                                                statement = new Statement(text.trim());
-                                                // if no error we update the UI
-                                            } catch (error) {
-                                                // throws error if formula invalid
-                                                isValid = false
-                                            }
-                                        }).toString()
-                                            .split('\n')
-                                            .slice(1, -1)
-                                            .map(x => x.slice(4))
-                                            .join('\n')
+`{
+    let isValid = true
+    let statement
+    try {
+        statement = new Statement(text.trim());
+        // if no error we update the UI
+    } catch (error) {
+        // throws error if formula invalid
+        isValid = false
+    }
+}`
                                     }
                                 </Code>
                             </div>
