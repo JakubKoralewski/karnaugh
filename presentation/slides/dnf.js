@@ -46,6 +46,15 @@ function DNF(props) {
                         <InputFormulaAll
                             onChange={onStatementChange}
                             animate={children => <SimpleOpacityAnimation>{children}</SimpleOpacityAnimation>}
+                            dropdown={true}
+                            arrowColor={"coral"}
+                            dropDownStyle={{
+                                "--arrow-color": "rgb(255, 127, 80)",
+                                // "--secondary-color": "rgb(245,119,77)",
+                                "--secondary-color": "rgb(224,224,224)",
+                                "--separator-color": "rgb(255,247,247)",
+                                "--font-heading-color": "black"
+                            }}
                         />
                     </SimpleOpacityAnimation>
                     <div style={{display: "flex", width: "100%", justifyContent: "center"}}>
