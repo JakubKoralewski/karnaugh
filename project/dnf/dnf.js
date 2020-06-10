@@ -223,7 +223,9 @@ function _getRectangles({values, colCount}) {
     }
 
     // Remove rectangles that are subsets of other rectangles
+    rectangles.sort((a, b) => a.length - b.length);
     for (let i = 0; i < rectangles.length; i++) {
+        rectangles[i].sort((a, b) => a - b);
         let counter = 0;
         for (let j = 0; j < rectangles[i].length; j++) {
             for (let k = 0; k < rectangles.length; k++) {
@@ -446,7 +448,9 @@ function _getRectangles({values, colCount}) {
     }
 
     // Remove rectangles that are subsets of other rectangles
+    rectangles.sort((a, b) => a.length - b.length);
     for (let i = 0; i < rectangles.length; i++) {
+        rectangles[i].sort((a, b) => a - b);
         let counter = 0;
         for (let j = 0; j < rectangles[i].length; j++) {
             for (let k = 0; k < rectangles.length; k++) {
