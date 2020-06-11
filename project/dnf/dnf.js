@@ -240,6 +240,7 @@ function _getRectangles({values, colCount, rowGrayCode, columnGrayCode}) {
             i--;
         }
     }
+    rectangles.sort((a, b) => a[0] - b[0]);
 
     let rowCount = len / colCount;
     let rowEdges = [];
@@ -303,31 +304,35 @@ function _getRectangles({values, colCount, rowGrayCode, columnGrayCode}) {
         reverseRectangles[i] = [];
         for (let j = 0; j < rectangles[i].length; j++) {
             if (colEdges.includes(rectangles[i][j])) {
+
                 let rowCellCount = 1;
                 let colCellCount = 1;
-                for (let k = 1; k < rowCount; k++) {
-                    if (rectangles[i].includes(rectangles[i][j] - (k * colCount))) {
-                        colCellCount++;
+                for (let k = 1; k < colCount; k++) {
+                    if (rectangles[i].includes(rectangles[i][j] + k)) {
+                        rowCellCount++;
                     } else {
                         break;
                     }
                 }
-                rowCellCount = rectangles[i].length / colCellCount;
+                if (rectangles[i].length / rowCellCount === rowCount) {
+                    break;
+                }
+
+                colCellCount = rectangles[i].length / rowCellCount;
                 for (let k = 1; k <= colCellCount; k++) {
                     for (let l = 0; l < rowCellCount; l++) {
                         reverseRectangles[i].push((rectangles[i][j] - ((rowCount - k) * colCount)) + l);
                     }
                 }
+                reverseRectangles[i].sort((a, b) => a - b);
                 break;
             }
         }
-        reverseRectangles[i].sort((a, b) => a - b);
-    }
 
+    }
 
     for (let i = 0; i < rectangles.length; i++) {
         if (reverseRectangles[i].length > 0) {
-            reverseRectangles[i].sort((a, b) => a - b);
             let allTrue = true;
             for (let j = 0; j < reverseRectangles[i].length; j++) {
                 if (!values[reverseRectangles[i][j]]) {
@@ -337,20 +342,14 @@ function _getRectangles({values, colCount, rowGrayCode, columnGrayCode}) {
             }
             if (allTrue) {
                 for (let k = 0; k < reverseRectangles[i].length; k++) {
-                    if (rectangles[i].includes(reverseRectangles[i][k])) {
-                    } else {
-                        rectangles[i].push(reverseRectangles[i][k]);
-                    }
+                    rectangles[i].push(reverseRectangles[i][k]);
                 }
                 rectangles[i].sort((a, b) => a - b);
             }
         }
     }
-    console.log(rectangles);
-
 
     let corners = [0, colCount - 1, len - colCount, len - 1];
-    let trueCornerCells = [];
     let tempArr = [];
     let rowMax = [0, 0, 0, 0];
     let colMax = [0, 0, 0, 0];
@@ -363,7 +362,7 @@ function _getRectangles({values, colCount, rowGrayCode, columnGrayCode}) {
             } else {
                 cellToCheck = corners[i] - k;
             }
-            if (values[cellToCheck]) {
+            if (values[cellToCheck] && (k === 0 || corners.indexOf(cellToCheck) === -1)) {
                 rowMax[i]++;
             } else {
                 break;
@@ -376,7 +375,7 @@ function _getRectangles({values, colCount, rowGrayCode, columnGrayCode}) {
             } else {
                 cellToCheck = corners[i] - (k * colCount);
             }
-            if (values[cellToCheck]) {
+            if (values[cellToCheck] && (k === 0 || corners.indexOf(cellToCheck) === -1)) {
                 colMax[i]++;
             } else {
                 break;
@@ -468,8 +467,7 @@ function _getRectangles({values, colCount, rowGrayCode, columnGrayCode}) {
             i--;
         }
     }
-
-    /* This loop breaks something */
+    rectangles.sort((a, b) => a[0] - b[0]);
 
     for (let i = 0; i < rectangles.length; i++) {
         if (rectangles[i].length === len / 2) {
@@ -478,9 +476,8 @@ function _getRectangles({values, colCount, rowGrayCode, columnGrayCode}) {
             let firstCol = rectangles[i][0] % colCount;
             let lastCol = rectangles[i][(len / 2) - 1] % colCount;
             let valid = true;
-
             if ((lastRow - firstRow) + 1 !== rowCount / 2 && (lastCol - firstCol) + 1 !== colCount / 2) {
-                break;
+                continue;
             }
 
             if ((lastRow - firstRow) + 1 === rowCount) {
@@ -520,7 +517,7 @@ function _getRectangles({values, colCount, rowGrayCode, columnGrayCode}) {
             }
         }
     }
-
+    rectangles.sort((a, b) => a[0] - b[0]);
     return rectangles;
 }
 
