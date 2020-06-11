@@ -207,7 +207,7 @@ describe("wrapping detection", () => {
                  */
                 (rectangle, rectangleIndex) => {
                     test(`${rectangleIndex}-th rectangle matches`, () => {
-                        expect(rectangle.wrappingRectangles).toWrapTheSameAs(fixture.output[rectangleIndex])
+                        expect(rectangle._wrappingRectangles).toWrapTheSameAs(fixture.output[rectangleIndex])
                     })
                 })
 

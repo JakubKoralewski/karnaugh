@@ -1,117 +1,31 @@
-/**
- * @property {Array.<number>} cellArray - array of cells in 1D notation
- * @property {string} color
- * @property {{x: number, y: number}} pos - the position
- * @property {number} width
- * @property {number} height
- */
-export class Rectangle {
-    /**
-     * @param {Array.<number>} array
-     * @param {string} color
-     * @param {number} rowLength
-     */
-    constructor(array, color, rowLength) {
-        this.wrapping = false
-        const getY = cell => Math.floor(cell / rowLength)
-        const getX = cell => cell % rowLength
+class AbstractRectangle {
+    getX(cell) {
+        return (cell % this.rowLength)
+    }
 
+    getY(cell) {
+        return Math.floor(cell / this.rowLength)
+    }
+
+    generatePosition(firstElem) {
+        return {
+            x: this.getX(firstElem),
+            y: this.getY(firstElem)
+        }
+    }
+
+    constructor({rowLength, cellArray, color}) {
+        this.rowLength = rowLength
+        this.cellArray = cellArray
         this.color = color
-        this.cellArray = array
 
         /** @description Starting from 0, left-top */
-        this.pos = {x: getX(this.cellArray[0]), y: getY(this.cellArray[0])}
-        let lastPos = this.cellArray[0]
-        let breaks = {
-            doesWrap: false,
-            columns: undefined,
-            rows: undefined,
-        }
-        for (const cell of this.cellArray.slice(1)) {
-            if (((cell - 1) % rowLength) !== (lastPos % rowLength)) {
-                // cells change rows without spanning whole width, or skip columns
-                this.width = getX(lastPos) - getX(cell) + 1
-                breaks.columns = {to: cell, from: lastPos}
-                breaks.doesWrap = true
-                if(
-                    // with width not full rows
-                    // skip row
-                    this.width > 0 &&
-                    ((cell-1) % this.width) !== (lastPos % this.width)
-                ) {
-                    breaks.rows = {to: cell, from: lastPos}
-                }
-            }
-            if(
-                // row gaps
-                getY(cell - 1) !== getY(lastPos) &&
-                // with full row width    || with diagonal
-                (this.width === undefined || (breaks.columns && !breaks.rows))
-            ) {
-                breaks.rows = {to: cell, from: lastPos}
-                breaks.doesWrap = true
-            }
-            lastPos = cell
-        }
-        if (this.width === undefined) {
-            // No break between cells in array
-            if (lastPos + 1 > rowLength) {
-                this.width = rowLength
-                this.height = getY(lastPos) - getY(this.cellArray[0]) + 1
-            } else {
-                this.height = 1
-            }
-        } else {
-            // Width was found with a break, meaning more than one row of rectangle
-            this.height = getY(this.cellArray[this.cellArray.length - 1]) - getY(this.cellArray[0]) + 1
-        }
+        this.pos = this.generatePosition(this.cellArray[0])
+    }
 
-        if(breaks.doesWrap) {
-            // WRAPPING
-            this.wrapping = true
-            // top right bottom left
-            this.wrappingRectangles = {
-                top: [],
-                bottom: [],
-                left: [],
-                right: []
-            }
-            let widthOfFirst = this.width
-            let firstXOfSecond = 0
-            if(breaks.columns) {
-                const start = this.pos.x
-                const lastOfFirstRectangle = getX(breaks.columns.from)
-                firstXOfSecond = getX(breaks.columns.to)
-                widthOfFirst = lastOfFirstRectangle - start + 1
-            }
-            let heightOfFirst = this.height
-            let firstYOfSecond = 0
-            if(breaks.rows) {
-                const start = this.pos.y
-                const lastOfFirstRectangle = getY(breaks.rows.from)
-                firstYOfSecond = getY(breaks.rows.to)
-                heightOfFirst = lastOfFirstRectangle - start + 1
-            }
-            for(const cell of this.cellArray) {
-                const x = getX(cell)
-                const y = getY(cell)
-                if(firstXOfSecond !== 0 && x >= this.pos.x) {
-                    if(x < widthOfFirst) {
-                        this.wrappingRectangles.left.push(cell)
-                    }
-                    if(x >= firstXOfSecond) {
-                        this.wrappingRectangles.right.push(cell)
-                    }
-                }
-                if(firstYOfSecond !== 0 && y >= this.pos.y) {
-                    if(y < heightOfFirst) {
-                        this.wrappingRectangles.top.push(cell)
-                    }
-                    if(y >= firstYOfSecond) {
-                        this.wrappingRectangles.bottom.push(cell)
-                    }
-                }
-            }
+    * [Symbol.iterator]() {
+        for (const cellNumber of this.cellArray) {
+            yield cellNumber
         }
     }
 
@@ -125,11 +39,216 @@ export class Rectangle {
             y >= this.pos.y && y < this.pos.y + this.height
         )
     }
+}
 
-    * [Symbol.iterator]() {
-        for (const cellNumber of this.cellArray) {
-            yield cellNumber
+class WrappingRectangle extends AbstractRectangle {
+    /** @typedef {("left"|"right"|"top"|"bottom")[]} Edges */
+    /** @param {Object} obj
+     *  @param {number[]} obj.rectangles
+     *  @param {Edges} obj.invisibleEdges
+     *  @param {Rectangle | AbstractRectangle} parent
+     */
+    constructor({rectangles, invisibleEdges, parent}) {
+        super({rowLength: parent.rowLength, cellArray: rectangles, color: parent.color});
+        this.parent = parent
+
+        /** @type {Edges} top, right, bottom, left*/
+        this.invisibleEdges = invisibleEdges
+        const dims = this.generateDimensions(this.cellArray, this.rowLength)
+        this.width = dims.width
+        this.height = dims.height
+    }
+
+    generateDimensions(array, rowLength) {
+        let lastPos = array[0]
+
+        let width, height
+        for (const cell of array.slice(1)) {
+            if (((cell - 1) % rowLength) !== (lastPos % rowLength)) {
+                // cells change rows without spanning whole width, or skip columns
+                width = this.getX(lastPos) - this.getX(cell) + 1
+                break
+            }
+            lastPos = cell
         }
+        if (width === undefined) {
+            // No break between cells in array
+            if (lastPos + 1 > rowLength) {
+                width = rowLength
+                height = this.getY(lastPos) - this.getY(array[0]) + 1
+            } else {
+                height = 1
+            }
+        } else {
+            // Width was found with a break, meaning more than one row of rectangle
+            height = this.getY(array[array.length - 1]) - this.getY(array[0]) + 1
+        }
+
+        return {width, height}
+    }
+}
+
+
+/**
+ * @property {Array.<number>} cellArray - array of cells in 1D notation
+ * @property {string} color
+ * @property {{x: number, y: number}} pos - the position
+ * @property {number} width
+ * @property {number} height
+ */
+export class Rectangle extends AbstractRectangle {
+    /**
+     * @param {Array.<number>} array
+     * @param {string} color
+     * @param {number} rowLength
+     */
+    constructor(array, color, rowLength) {
+        super({rowLength, cellArray: array, color})
+        this.wrapping = false
+
+        let lastPos = this.cellArray[0]
+        let breaks = {
+            doesWrap: false,
+            columns: undefined,
+            rows: undefined,
+        }
+        for (const cell of this.cellArray.slice(1)) {
+            if (((cell - 1) % rowLength) !== (lastPos % rowLength)) {
+                // cells change rows without spanning whole width, or skip columns
+                this.width = this.getX(lastPos) - this.getX(cell) + 1
+                breaks.columns = {to: cell, from: lastPos}
+                breaks.doesWrap = true
+                if (
+                    // with width not full rows
+                    // skip row
+                    this.width > 0 &&
+                    ((cell - 1) % this.width) !== (lastPos % this.width)
+                ) {
+                    breaks.rows = {to: cell, from: lastPos}
+                }
+            }
+            if (
+                // row gaps
+                this.getY(cell - 1) !== this.getY(lastPos) &&
+                // with full row width    || with diagonal
+                (this.width === undefined || (breaks.columns && !breaks.rows))
+            ) {
+                breaks.rows = {to: cell, from: lastPos}
+                breaks.doesWrap = true
+            }
+            lastPos = cell
+        }
+        if (this.width === undefined) {
+            // No break between cells in array
+            if (lastPos + 1 > rowLength) {
+                this.width = rowLength
+                this.height = this.getY(lastPos) - this.getY(this.cellArray[0]) + 1
+            } else {
+                this.height = 1
+            }
+        } else {
+            // Width was found with a break, meaning more than one row of rectangle
+            this.height = this.getY(this.cellArray[this.cellArray.length - 1]) - this.getY(this.cellArray[0]) + 1
+        }
+
+        if (breaks.doesWrap) {
+            // WRAPPING
+            this.wrapping = true
+            // top right bottom left
+            const wrappingRectangles = {
+                top: [],
+                right: [],
+                bottom: [],
+                left: []
+            }
+            let widthOfFirst = this.width
+            let firstXOfSecond = 0
+            if (breaks.columns) {
+                const start = this.pos.x
+                const lastOfFirstRectangle = this.getX(breaks.columns.from)
+                firstXOfSecond = this.getX(breaks.columns.to)
+                widthOfFirst = lastOfFirstRectangle - start + 1
+            }
+            let heightOfFirst = this.height
+            let firstYOfSecond = 0
+            if (breaks.rows) {
+                const start = this.pos.y
+                const lastOfFirstRectangle = this.getY(breaks.rows.from)
+                firstYOfSecond = this.getY(breaks.rows.to)
+                heightOfFirst = lastOfFirstRectangle - start + 1
+            }
+            for (const cell of this.cellArray) {
+                const x = this.getX(cell)
+                const y = this.getY(cell)
+                if (firstXOfSecond !== 0 && x >= this.pos.x) {
+                    if (x < widthOfFirst) {
+                        wrappingRectangles.left.push(cell)
+                    }
+                    if (x >= firstXOfSecond) {
+                        wrappingRectangles.right.push(cell)
+                    }
+                }
+                if (firstYOfSecond !== 0 && y >= this.pos.y) {
+                    if (y < heightOfFirst) {
+                        wrappingRectangles.top.push(cell)
+                    }
+                    if (y >= firstYOfSecond) {
+                        wrappingRectangles.bottom.push(cell)
+                    }
+                }
+            }
+            this._wrappingRectangles = wrappingRectangles
+            this.wrappingRectangles = this._generateWrappedRectangles(wrappingRectangles)
+        }
+    }
+
+    _generateWrappedRectangles(rects) {
+        if (this.wrapping === false) {
+            console.error("this.wrapping is false!")
+            return undefined
+        }
+
+        const combinations = [
+            ["top", "left"],
+            ["top", "right"],
+            ["bottom", "left"],
+            ["bottom", "right"],
+            ["left"],
+            ["right"],
+            ["bottom"],
+            ["top"]
+        ]
+        // const mapping = {
+        //     bottom: "top",
+        //     left: "right",
+        //     top: "bottom",
+        //     right: "left"
+        // }
+        /** @type {(WrappingRectangle | AbstractRectangle)[]}*/
+        const splitRectangles = combinations.reduce(
+            /** @param {WrappingRectangle[]} acc
+             *  @param {string[]} comb
+             */
+            (acc, comb) => {
+                if (!comb.every(c => rects[c].length > 0)) {
+                    return acc
+                }
+                // Set of cells for that combination
+                const cells = comb.reduce((cellsAcc, x) => (rects[x].forEach(cellsAcc.add, cellsAcc), cellsAcc), new Set())
+                if (cells.size > 0) {
+                    // The inverse of the combination is the edges of that new rectangle
+                    acc.push(
+                        new WrappingRectangle({
+                            rectangles: Array.from(cells),
+                            invisibleEdges: comb,
+                            parent: this
+                        })
+                    )
+                }
+                return acc
+            }, [])
+        splitRectangles.sort((rect1, rect2) => (rect2.pos.x + rect2.pos.y) - rect1.pos.x + rect1.pos.y)
+        return splitRectangles
     }
 }
 
@@ -151,18 +270,27 @@ export class Rectangles {
         this.rowLength = rowLength
         this.colors = new Colors()
         /** @type {Array.<number|null>}*/
-        let allCells = new Array(rowLength*columnHeight).fill(0).map((_, i) => i)
-        this.rectangles = arrays.map(r => {
+        let allCells = new Array(rowLength * columnHeight).fill(0).map((_, i) => i)
+
+        // Raw rectangles without nesting of wrapped rectangles
+        this._rectangles = arrays.map(r => {
             r.forEach(c => {
                 allCells[c] = null
             })
             return new Rectangle(r, this.colors.getRandom(), rowLength)
         })
+
+        // unnested
+        this.rectangles = this._rectangles.flatMap(
+            rect => rect.wrapping ? rect.wrappingRectangles : rect
+        )
+
         allCells = allCells.filter(c => c !== null)
         this.map = this.generateMap()
         this.isTautology = allCells.length === 0
         this.isContradiction = arrays.length === 0
     }
+
 
     /**
      * Create mapping from cell number to Rectangle.
