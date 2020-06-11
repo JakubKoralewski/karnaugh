@@ -470,6 +470,11 @@ function _getRectangles({values, colCount, rowGrayCode, columnGrayCode}) {
     rectangles.sort((a, b) => a[0] - b[0]);
 
     for (let i = 0; i < rectangles.length; i++) {
+
+        if (columnGrayCode === undefined || columnGrayCode.length === 0) {
+            break;
+        }
+
         if (rectangles[i].length === len / 2) {
             let firstRow = Math.floor(rectangles[i][0] / colCount);
             let lastRow = Math.floor(rectangles[i][(len / 2) - 1] / colCount);
