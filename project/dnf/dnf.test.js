@@ -3,7 +3,7 @@ import {transformedTable, columnGrayCode, rowGrayCode, rowHeaders, columnHeaders
 import {test, expect, describe, beforeAll} from "@jest/globals";
 import rectangleFixtures from "./rectangle_fixtures"
 
-function arraysEqual(a, b) {
+export function arraysEqual(a, b) {
     if (a === b) return true;
     if (a == null || b == null) return false;
     if (a.length !== b.length) return false;
@@ -38,7 +38,7 @@ expect.extend({
             return {
                 pass: false,
                 message: () =>
-                        `Length of expected (${expected.length}) was different from actual length (${actual.length}).
+                    `Length of expected (${expected.length}) was different from actual length (${actual.length}).
                         Expected was: "${JSON.stringify(expected)}". 
                         Actual was: "${JSON.stringify(actual)}".`
             }
@@ -74,16 +74,17 @@ expect.extend({
         }
     }
 })
+
 describe("custom toBeArrayContainingTheSameArraysAs extend", () => {
     test("different order same contents equal", () => {
-        expect([[1,2,3], [1,2,2]]).toBeArrayContainingTheSameArraysAs([[1,2,2], [1,2,3]])
+        expect([[1, 2, 3], [1, 2, 2]]).toBeArrayContainingTheSameArraysAs([[1, 2, 2], [1, 2, 3]])
     })
 
     test("same order same contents equal", () => {
-        expect([[1,2,3], [1,2,2]]).toBeArrayContainingTheSameArraysAs([[1,2,3], [1,2,2]])
+        expect([[1, 2, 3], [1, 2, 2]]).toBeArrayContainingTheSameArraysAs([[1, 2, 3], [1, 2, 2]])
     })
     test("different lengths are not equal", () => {
-        expect([[1,2,3]]).not.toBeArrayContainingTheSameArraysAs([[1,2,3], [1,2,2]])
+        expect([[1, 2, 3]]).not.toBeArrayContainingTheSameArraysAs([[1, 2, 3], [1, 2, 2]])
     })
     test("empty arrays are equal", () => {
         expect([]).toBeArrayContainingTheSameArraysAs([])
