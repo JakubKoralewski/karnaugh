@@ -12,6 +12,7 @@ export class Rectangle {
      * @param {number} rowLength
      */
     constructor(array, color, rowLength) {
+        this.wrapping = false
         const getY = cell => Math.floor(cell / rowLength)
         const getX = cell => cell % rowLength
 
@@ -21,28 +22,96 @@ export class Rectangle {
         /** @description Starting from 0, left-top */
         this.pos = {x: getX(this.cellArray[0]), y: getY(this.cellArray[0])}
         let lastPos = this.cellArray[0]
+        let breaks = {
+            doesWrap: false,
+            columns: undefined,
+            rows: undefined,
+        }
         for (const cell of this.cellArray.slice(1)) {
             if (((cell - 1) % rowLength) !== (lastPos % rowLength)) {
-                // cells change rows without spanning whole width
+                // cells change rows without spanning whole width, or skip columns
                 this.width = getX(lastPos) - getX(cell) + 1
-                break;
+                breaks.columns = {to: cell, from: lastPos}
+                breaks.doesWrap = true
+                if(
+                    // with width not full rows
+                    // skip row
+                    this.width > 0 &&
+                    ((cell-1) % this.width) !== (lastPos % this.width)
+                ) {
+                    breaks.rows = {to: cell, from: lastPos}
+                }
+            }
+            if(
+                // row gaps
+                getY(cell - 1) !== getY(lastPos) &&
+                // with full row width    || with diagonal
+                (this.width === undefined || (breaks.columns && !breaks.rows))
+            ) {
+                breaks.rows = {to: cell, from: lastPos}
+                breaks.doesWrap = true
             }
             lastPos = cell
         }
         if (this.width === undefined) {
             // No break between cells in array
-            this.width = this.cellArray[this.cellArray.length - 1] - this.cellArray[0] + 1
-            if (this.width > rowLength) {
-                // If no breaks, because spans whole multiple rows
+            if (lastPos + 1 > rowLength) {
                 this.width = rowLength
-                this.height = getY(this.cellArray[this.cellArray.length - 1]) - getY(this.cellArray[0]) + 1
+                this.height = getY(lastPos) - getY(this.cellArray[0]) + 1
             } else {
                 this.height = 1
             }
         } else {
             // Width was found with a break, meaning more than one row of rectangle
-            //FIXME?
             this.height = getY(this.cellArray[this.cellArray.length - 1]) - getY(this.cellArray[0]) + 1
+        }
+
+        if(breaks.doesWrap) {
+            // WRAPPING
+            this.wrapping = true
+            // top right bottom left
+            this.wrappingRectangles = {
+                top: [],
+                bottom: [],
+                left: [],
+                right: []
+            }
+            let widthOfFirst = this.width
+            let firstXOfSecond = 0
+            if(breaks.columns) {
+                const start = this.pos.x
+                const lastOfFirstRectangle = getX(breaks.columns.from)
+                firstXOfSecond = getX(breaks.columns.to)
+                widthOfFirst = lastOfFirstRectangle - start + 1
+            }
+            let heightOfFirst = this.height
+            let firstYOfSecond = 0
+            if(breaks.rows) {
+                const start = this.pos.y
+                const lastOfFirstRectangle = getY(breaks.rows.from)
+                firstYOfSecond = getY(breaks.rows.to)
+                heightOfFirst = lastOfFirstRectangle - start + 1
+            }
+            for(const cell of this.cellArray) {
+                const x = getX(cell)
+                const y = getY(cell)
+                if(firstXOfSecond !== 0 && x >= this.pos.x) {
+                    if(x < widthOfFirst) {
+                        this.wrappingRectangles.left.push(cell)
+                    }
+                    if(x >= firstXOfSecond) {
+                        this.wrappingRectangles.right.push(cell)
+                    }
+                }
+                if(firstYOfSecond !== 0 && y >= this.pos.y) {
+                    if(y < heightOfFirst) {
+                        this.wrappingRectangles.top.push(cell)
+                    }
+                    if(y >= firstYOfSecond) {
+                        this.wrappingRectangles.bottom.push(cell)
+                    }
+                }
+            }
         }
     }
 
