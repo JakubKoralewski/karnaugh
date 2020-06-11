@@ -9,7 +9,7 @@ import NextLogo from "./next.svg"
 import TestingCodeBlocks from "./code_blocks/testing"
 import Code from "./code"
 
-const steps = 5
+const steps = 6
 
 function TechnicalImplementation(props) {
     const backgroundLightBlue = `linear-gradient(45deg, lightblue, coral)`
@@ -77,8 +77,13 @@ function TechnicalImplementation(props) {
                                 </motion.div>
 
                                 <p>
-                                    Each slide is each own statically pre-generated HTML file<br/>
-                                    that is hydrated and loaded with React code to accomplish dynamic behavior.
+                                    Each slide is each own statically generated HTML file<br/>
+                                    that is
+                                    <a
+                                        href="https://nextjs.org/docs/advanced-features/automatic-static-optimization"
+                                        target="_blank"
+                                    > hydrated and loaded with React code
+                                    </a> to accomplish both dynamic behavior and fast load times.
                                 </p>
 
                                 <p>
@@ -90,7 +95,11 @@ function TechnicalImplementation(props) {
                                     </a>,
                                 </p>
                                 <Code>
-                                    {"window.history.pushState({sid: newSlide}, '', newPath)"}
+                                    {
+'window.history.pushState(<span data-info="The new state.">{sid: newSlide}</span>' +
+', <span data-info="The title (currently ignored by most browsers)">\'\'</span>' +
+', <span data-info="The new URL">newPath</span>)'
+                                    }
                                 </Code>
                                 <p>
                                     so you can change slides both with the custom controls, <br/>
@@ -122,11 +131,11 @@ function TechnicalImplementation(props) {
                                     </a>.
                                 </p>
                                 <p>
-                                     <code>user input</code> -> <code>tombstone.js</code> -> <code>UI update</code>
+                                    <code>user input</code> -> <code>tombstone.js</code> -> <code>UI update</code>
                                 </p>
                                 <Code>
                                     {
-`{
+                                        `{
     let isValid = true
     let statement
     try {
@@ -170,11 +179,9 @@ function TechnicalImplementation(props) {
                             <h3>Animations</h3>
                             <div>
                                 <p>
-                                    The animation transitioning from truth table to Karnaugh map
-                                    was done by hand, but for almost everything else, <br/>
-                                    including the route transitions, animations on first appearance,
-                                    etc.
-
+                                    The transition from the truth table to the Karnaugh map
+                                    was done using vanilla JavaScript, but for almost everything else, <br/>
+                                    including the slide (route) transitions
 
                                     <a
                                         target="_blank"
@@ -190,11 +197,33 @@ function TechnicalImplementation(props) {
                     props.step >= 5 &&
                     <SimpleOpacityAnimation>
                         <section>
+                            <h3>Local storage</h3>
+                            <div>
+                                <p>
+                                    You may have noticed that the text inside the formula
+                                    input element stays the same even when you change slides. <br/>
+                                    Thanks to the browser's
+                                    <a
+                                        target="_blank"
+                                        href="https://developer.mozilla.org/en-US/docs/Web/API/Web_Storage_API"
+                                    > Web Storage API
+                                    </a> it is saved not only when you change slides, <br/> but also
+                                    when you refresh the page, restart the browser, or even
+                                    your device.
+                                </p>
+                            </div>
+                        </section>
+                    </SimpleOpacityAnimation>
+                }
+                {
+                    props.step >= 6 &&
+                    <SimpleOpacityAnimation>
+                        <section>
                             <h3>Testing</h3>
                             <div>
                                 <p>
                                     To make sure our algorithms were working as expected we <br/>
-                                    used unit testing leveraging the
+                                    created unit tests with the
                                     <a
                                         target="_blank"
                                         href="https://jestjs.io/"
@@ -203,7 +232,7 @@ function TechnicalImplementation(props) {
 
                                 </p>
                                 <p>
-                                    Here's how we would check whether wrapping
+                                    Here's how we would define a test checking whether wrapping
                                     horizontally is working as expected:
                                 </p>
                                 <Code>

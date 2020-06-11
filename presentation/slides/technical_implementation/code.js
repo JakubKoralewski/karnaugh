@@ -6,20 +6,20 @@ export default function Code({children}) {
 
     useEffect(() => {
         if (typeof document !== undefined && codeBlockRef.current !== null) {
-            Prism.highlightAllUnder(codeBlockRef.current)
+            Prism.highlightElement(codeBlockRef.current.firstChild.firstChild)
         }
     }, [])
 
     return (
         <>
-            <div ref={codeBlockRef}>
+            <div ref={codeBlockRef} style={{maxWidth: "calc(100px + 50vw)", fontSize: "1.2rem", position: "relative"}}>
                 <pre
-                    className="language-javascript"
+                    style={{overflow: "auto", wordWrap: "normal", whiteSpace: "pre", maxWidth: "100%"}}
                 >
                   <code
                       className="language-javascript"
+                      dangerouslySetInnerHTML={{__html: children}}
                   >
-                      {children}
                   </code>
                 </pre>
             </div>

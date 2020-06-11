@@ -5,6 +5,7 @@
       "prismjs",
       {
         "languages": ["javascript"],
+        "plugins": ["keep-markup"],
         "theme": "default"
       }
     ]

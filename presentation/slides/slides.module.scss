@@ -21,7 +21,7 @@ div.titular {
     // https://css-tricks.com/snippets/css/complete-guide-grid/
     display: grid;
     grid-template-columns: repeat(5, 1fr);
-    grid-template-rows: calc(20vh - 5vw) 8fr;
+    grid-template-rows: calc(150px + 5vh - 5vw) 8fr;
     grid-template-areas: "header header header header header" "main main main main main";
 
     & > h2, & > header {
