@@ -62,7 +62,7 @@ function getArr({rowHeaders, columnHeaders, rowGrayCode, columnGrayCode}) {
  * @param {Array.<boolean>} obj.values
  * @param {number} obj.colCount
  */
-function _getRectangles({values, colCount}) {
+function _getRectangles({values, colCount, rowGrayCode, columnGrayCode}) {
     let base = 0;
     const rectangles = [];
     let looped = false;
@@ -193,7 +193,7 @@ function _getRectangles({values, colCount}) {
                 while (allTrue && stopNumber <= colCount) {
                     for (let i = 0; i < rect.length; i++) {
                         for (let j = startNumber; j < stopNumber; j++) {
-                            if (values[rect[i] + j] && Math.floor(rect[i] + j / colCount) === Math.floor(rect[i] / colCount) && (rect[i] + j < len)) {
+                            if (values[rect[i] + j] && Math.floor((rect[i] + j) / colCount) === Math.floor(rect[i] / colCount) && (rect[i] + j < len)) {
                                 tempArray.push(rect[i] + j);
                             } else {
                                 allTrue = false;
@@ -418,6 +418,7 @@ function _getRectangles({values, colCount}) {
         }
     }
     if (rowMax[0] > 1 && colMax[1] > 0) {
+        let allValTrue = true;
         tempArr = [];
         let smaller = rowMax[0] < colMax[0] ? rowMax[0] : colMax[0];
         let cellToAdd = 0;
@@ -442,7 +443,7 @@ function _getRectangles({values, colCount}) {
                 }
             }
         }
-        if (tempArr.length > 0) {
+        if (allValTrue && tempArr.length > 0) {
             rectangles.push(tempArr);
         }
     }
@@ -465,6 +466,53 @@ function _getRectangles({values, colCount}) {
             i--;
         }
     }
+
+    for (let i = 0; i < rectangles.length; i++) {
+        if (rectangles[i].length === len / 2) {
+            let firstRow = Math.floor(rectangles[i][0] / colCount);
+            let lastRow = Math.floor(rectangles[i][(len / 2) - 1] / colCount);
+            let firstCol = rectangles[i][0] % colCount;
+            let lastCol = rectangles[i][(len / 2) - 1] % colCount;
+            let valid = true;
+
+            if ((lastRow - firstRow) + 1 === rowCount) {
+                for (let j = 0; j < columnGrayCode[0].length; j++) {
+                    valid = true;
+                    let firstVal = columnGrayCode[firstCol][j];
+                    for (let k = firstCol + 1; k <= lastCol; k++) {
+                        if (columnGrayCode[k][j] !== firstVal) {
+                            valid = false;
+                            break;
+                        }
+                    }
+                    if (valid) {
+                        break;
+                    }
+                }
+            } else if ((lastCol - firstCol) + 1 === colCount) {
+                for (let j = 0; j < rowGrayCode[0].length; j++) {
+                    valid = true;
+                    let firstVal = rowGrayCode[firstRow][j];
+                    for (let k = firstRow + 1; k <= lastRow; k++) {
+                        if (rowGrayCode[k][j] !== firstVal) {
+                            valid = false;
+                            break;
+                        }
+                    }
+                    if (valid) {
+                        break;
+                    }
+                }
+            }
+
+            if (!valid) {
+                let newRectangle = rectangles[i].splice(0, Math.ceil(rectangles[i].length / 2));
+                rectangles.push(newRectangle);
+                break;
+            }
+        }
+    }
+
     return rectangles;
 }
 
@@ -500,7 +548,7 @@ export function getRectangles(
         return values
     }
     const values = getValues()
-    return _getRectangles({values, colCount})
+    return _getRectangles({values, colCount, rowGrayCode, columnGrayCode})
 }
 
 /** Intermediate DNF representation used to be able to group together
