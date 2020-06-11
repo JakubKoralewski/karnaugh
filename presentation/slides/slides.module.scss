@@ -1,36 +1,54 @@
 $main-font-size: 1.5rem;
 
 .intro {
-  background-color: aqua;
-  h2 {
-    font-size: 4rem;
-  }
-  p {
-    text-align: center;
-  }
+    background-color: aqua;
+
+    h2 {
+        font-size: 4rem;
+    }
+
+    p {
+        text-align: center;
+    }
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
 }
 
 div.titular {
-  // https://css-tricks.com/snippets/css/complete-guide-grid/
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  grid-template-rows: calc(20vh - 5vw) 8fr;
-  grid-template-areas:
-          "header header header header header"
-          "main main main main main";
-  h2 {
-    grid-area: header;
-    text-align: center;
-    font-size: 3rem;
-  }
-  main {
-    //text-align: center;
-    grid-area: main;
-    padding: 0 8%;
-    font-size: 1.5rem;
-    font-weight: 100;
-  }
-  footer {
-    grid-area: footer;
-  }
+    // https://css-tricks.com/snippets/css/complete-guide-grid/
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    grid-template-rows: calc(150px + 5vh - 5vw) 8fr;
+    grid-template-areas: "header header header header header" "main main main main main";
+
+    & > h2, & > header {
+        grid-area: header;
+        text-align: center;
+    }
+
+    h2 {
+        font-size: 3rem;
+    }
+
+    & > header {
+        span {
+            font-size: 1rem;
+        }
+    }
+
+    main {
+        margin-top: 2rem;
+        //text-align: center;
+        grid-area: main;
+        padding: 0 8%;
+        font-size: 1.5rem;
+        font-weight: 100;
+    }
+
+    footer {
+        grid-area: footer;
+    }
 }

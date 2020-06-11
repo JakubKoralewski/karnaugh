@@ -7,7 +7,6 @@ export default function MyPresentation(props) {
         <Presentation slideID={props.slideID ?? 0}>
             {
                 slides.map((slide, i) => {
-                    // console.log("slide in presentation/presentation.js", slide)
                     return cloneElement(slide, {key: i})
                 })
             }

@@ -1,6 +1,15 @@
 {
   "presets": ["next/babel"],
-  "plugins": [],
+  "plugins": [
+    [
+      "prismjs",
+      {
+        "languages": ["javascript"],
+        "plugins": ["keep-markup"],
+        "theme": "default"
+      }
+    ]
+  ],
   "env": {
     "production": {
       "plugins": ["transform-remove-console"]

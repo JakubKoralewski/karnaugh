@@ -22,8 +22,8 @@ export default function Presentation(props) {
                 console.log("callback ref no node")
             } else {
                 console.log("callback ref node step " ,node.step())
-                setStepNumber(node.step())
                 slideRef.current = node
+                setStepNumber(node.step())
             }
         },
         []
@@ -149,7 +149,7 @@ export default function Presentation(props) {
                 goForward={goForward}
                 canGoBack={canGoBack}
                 canGoForward={canGoForward}
-                stepsInSlide={slideRef.current ? slideRef.current.steps() : 0}
+                stepsInSlide={slideRef.current ? slideRef.current.steps : () => 0}
                 currentStep={stepNumber}
                 errorMessage={errorMessage}
             />

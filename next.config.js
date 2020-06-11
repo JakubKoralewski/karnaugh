@@ -1,4 +1,11 @@
 const {PHASE_PRODUCTION_BUILD} = require("next/constants")
+const webpack = (config) => {
+    config.module.rules.push({
+        test: /\.svg$/,
+        use: ['@svgr/webpack']
+    })
+    return config
+}
 
 module.exports = (phase, {}) => {
     //enable both gh pages (/karnaugh) and netlify with (/)
@@ -16,6 +23,7 @@ module.exports = (phase, {}) => {
     console.log("isProductionBuild: ", isProductionBuild)
     console.log("ASSET_PREFIX: ", assetPrefix)
     return {
+        webpack,
         env: {
             prod: isProductionBuild,
             // Will be available on both server and client
