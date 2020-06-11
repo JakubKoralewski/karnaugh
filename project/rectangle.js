@@ -70,13 +70,29 @@ export class Rectangle {
  * @property {Set.<string>} usedColors
  * @property {Array.<Rectangle>} rectangles
  * @property {Object.<number, {rect: Rectangle, i:number}[]>} map
- * */
+ * @property {boolean} isTautology
+ * @property {boolean} isContradiction
+ */
 export class Rectangles {
-    constructor({rectangles: arrays, rowLength}) {
+    /**
+     * @param {Object} obj
+     * @param {number[][]} obj.rectangles
+     */
+    constructor({rectangles: arrays, rowLength, columnHeight}) {
         this.rowLength = rowLength
         this.colors = new Colors()
-        this.rectangles = arrays.map(r => new Rectangle(r, this.colors.getRandom(), rowLength))
+        /** @type {Array.<number|null>}*/
+        let allCells = new Array(rowLength*columnHeight).fill(0).map((_, i) => i)
+        this.rectangles = arrays.map(r => {
+            r.forEach(c => {
+                allCells[c] = null
+            })
+            return new Rectangle(r, this.colors.getRandom(), rowLength)
+        })
+        allCells = allCells.filter(c => c !== null)
         this.map = this.generateMap()
+        this.isTautology = allCells.length === 0
+        this.isContradiction = arrays.length === 0
     }
 
     /**

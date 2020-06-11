@@ -56,17 +56,27 @@
     will-change: transform;
 
     padding: 2px 8px;
-    cursor: pointer;
     background: white;
     border-radius: 8px;
-    border-width: 5px;
-    border-style: solid;
+    &.dnfBlockActual {
+        // This block actually has a corresponding SVG rectangle drawn onto it
+        // in comparison to `tautology`, `contradiction` and showing a single
+        // variable
+        cursor: pointer;
+        border-width: 5px;
+        border-style: solid;
+    }
     box-shadow: 3px 3px 10px rgba(0,0,0,0.1);
     display: inline-block;
     &.dnfBlockActive {
+        // When hovering over an SVG rectangle, show
+        // which dnf block it corresponds to
         animation: wiggle 2s ease-in-out;
     }
     &.dnfBlockResetAnim {
+        // Used to (at least try to) reset the animation when moving from
+        // cells while the `dnfBlockActive` class is added and removed
+        // so quickly that it is not restarted automatically. (PR#37 e3d8668)
         animation: none !important;
     }
 }
