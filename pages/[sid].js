@@ -1,6 +1,7 @@
 import MyPresentation from "../presentation/presentation";
 import slides from "../presentation/slides"
 import {useRouter} from "next/router"
+import React from "react";
 
 export default function Sid() {
     // https://nextjs.org/docs/routing/dynamic-routes

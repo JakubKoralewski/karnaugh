@@ -4,8 +4,8 @@ const Cite = React.forwardRef((props, ref) => {
     console.log("CIte props: ", props)
     let quote
     if (props.children.length) {
-        quote = new Array(props.children).map(elem => (
-            <q>{elem.props ? elem.props.children : elem}</q>
+        quote = new Array(props.children).map((elem,i) => (
+            <q key={i}>{elem.props ? elem.props.children : elem}</q>
         ))
     } else if (props.children.props) {
         quote = <q>{props.children.props.children}</q>
