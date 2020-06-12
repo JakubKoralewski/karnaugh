@@ -12,7 +12,9 @@ export default [
     {
         label: "Wrapping",
         group: [
-            "(p || q) & q & r"
+            "(~p || ~q || r) || (s & ~s & t)",
+            "p <-> q <-> r <-> s <-> t",
+            "(p & q & r & s & ~p) || (~q & ~ t)"
         ]
     }
 ]
