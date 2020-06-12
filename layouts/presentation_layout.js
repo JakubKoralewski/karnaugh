@@ -1,6 +1,8 @@
 import Head from 'next/head'
 import React, {Component} from 'react'
 import get_url from "../components/get_url"
+import * as Sentry from "@sentry/browser"
+import Error from "../components/error"
 
 
 /** @author https://docs.sentry.io/platforms/javascript/react/
@@ -27,14 +29,7 @@ class ErrorBoundary extends Component {
     render() {
         if (this.state.hasError) {
             //render fallback UI
-            return (
-                <div>
-                    Oh no! You broke our app, please behave and input only what we tell you.
-                    <button onClick={() => Sentry.showReportDialog({eventId: this.state.eventId})}>
-                        Report feedback
-                    </button>
-                </div>
-            );
+            return <Error eventId={this.state.eventId} />
         }
 
         //when there's not an error, render children untouched

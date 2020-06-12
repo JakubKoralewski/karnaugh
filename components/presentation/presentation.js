@@ -18,7 +18,14 @@ export default function Presentation(props) {
         console.log("process.env: ", process.env)
         if(SENTRY_DSN && process.browser) {
             console.log("Initializing SENTRY_DSN: ", SENTRY_DSN)
-            Sentry.init({dsn: SENTRY_DSN});
+            const enabled = process.env.prod || process.env.NODE_ENV === 'production'
+            console.log("Enabled: ", enabled)
+            Sentry.init(
+                {
+                    dsn: SENTRY_DSN,
+                    enabled
+                }
+            )
         }
     },[])
 
