@@ -328,8 +328,8 @@ export default React.memo(
                                         let shouldHighlight = false
                                         if(cell.rectangle && lastRectangle.current) {
                                             // Restore previous rectangle which was on top
-                                            let {i: lastI, j: lastJ, rect: lastRect} = lastRectangle.current
-                                            if(i === lastI && j === lastJ) {
+                                            let lastRect = lastRectangle.current
+                                            if(lastRect.checkIfInBounds(j-1, i)) {
                                                 cell.rectangle = lastRect
 
                                                 // Reset
@@ -345,7 +345,7 @@ export default React.memo(
                                                     console.log("Overriding rectangle", cell," with ", highlightRectangle, i-1,j-1)
 
                                                     // Save current to restore on hover end
-                                                    lastRectangle.current = {i, j, rect: cell.rectangle}
+                                                    lastRectangle.current = cell.rectangle
 
                                                     cell.rectangle = highlightRectangle
                                                 }
