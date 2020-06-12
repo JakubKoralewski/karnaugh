@@ -40,7 +40,8 @@ const webpack = (config, options) => {
                 urlPrefix: '~/_next',
                 release: `karnaugh@${process.env.npm_package_version}_${options.buildId}`,
                 setCommits: {
-                    repo: 'JakubKoralewski/karnaugh'
+                    repo: 'github.com/JakubKoralewski/karnaugh',
+                    commit: process.env.GIT_HEAD
                 }
             })
         )
