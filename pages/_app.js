@@ -6,7 +6,7 @@ import '../node_modules/prismjs/themes/prism.css'
 
 export default class PresentationApp extends App {
     render() {
-        const { Component, pageProps, router } = this.props
+        const { Component, pageProps } = this.props
 
         return (
             <PresentationLayout>

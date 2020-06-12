@@ -5,12 +5,23 @@ import Slide from './slide'
 import Controls from './controls'
 import styles from './presentation.module.scss'
 import get_url from '../get_url'
+import * as Sentry from "@sentry/browser";
+// https://nextjs.org/docs/basic-features/environment-variables
+const SENTRY_DSN = process.env.NEXT_PUBLIC_SENTRY_DSN
 
 // https://css-tricks.com/snippets/javascript/javascript-keycodes/
 const LEFT_ARROW = 37
 const RIGHT_ARROW = 39
 
 export default function Presentation(props) {
+    useEffect(() => {
+        console.log("process.env: ", process.env)
+        if(SENTRY_DSN && process.browser) {
+            console.log("Initializing SENTRY_DSN: ", SENTRY_DSN)
+            Sentry.init({dsn: SENTRY_DSN});
+        }
+    },[])
+
     const slides = props.children
     let [currentData, setData] = useState([props.slideID ?? 0, null])
     let [currentSlideNumber, direction] = currentData
