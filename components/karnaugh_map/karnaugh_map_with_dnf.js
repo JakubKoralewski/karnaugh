@@ -64,15 +64,22 @@ export default React.memo(
             let onCellHoverDecision = {
                 both(on) {
                     return (event) => {
-                        if(!rectangleIndexToDNFBlockMap.current) {return;}
+                        console.group("onCellHover")
+                        if (!rectangleIndexToDNFBlockMap.current) {
+                            console.groupEnd()
+                            return;
+                        }
                         const blockInfos = highlightedRectangles.map(r => rectangleIndexToDNFBlockMap.current[r.i])
                         console.log("on cell hover ", on, event, highlightedRectangles)
                         console.log("blocks", blockInfos)
-                        for(const blockInfo of blockInfos) {
+                        for (const blockInfo of blockInfos) {
                             if (on === "toggle") {
                                 blockInfo.active = !blockInfo.active
                             } else {
                                 blockInfo.active = on
+                            }
+                            if(!blockInfo.ref.current) {
+                                continue;
                             }
 
                             if (blockInfo.active) {
@@ -86,6 +93,7 @@ export default React.memo(
                                 blockInfo.ref.current.classList.remove(karnaughStyles.dnfBlockResetAnim)
                             }
                         }
+                        console.groupEnd()
                     }
                 }
             }
@@ -139,7 +147,7 @@ export default React.memo(
                                 let rect
                                 if (rectangles) {
                                     rect = rectangles.rectangles[b.rectangleIndex]
-                                    if(!rectangleIndexToDNFBlockMap.current) {
+                                    if (!rectangleIndexToDNFBlockMap.current) {
                                         rectangleIndexToDNFBlockMap.current = {}
                                     }
                                     rectangleIndexToDNFBlockMap.current[b.rectangleIndex] = {
@@ -167,15 +175,15 @@ export default React.memo(
                                         >
                                             {b.text}
                                         </span>
-                                              {
-                                                  text ? (
-                                                      <span
-                                                          style={{fontWeight: `bold`}}
-                                                      >
+                                        {
+                                            text ? (
+                                                <span
+                                                    style={{fontWeight: `bold`}}
+                                                >
                                                       {text}
                                                   </span>
-                                                  ) : null
-                                              }
+                                            ) : null
+                                        }
                                     </React.Fragment>
                                 )
                             })
