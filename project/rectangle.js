@@ -242,7 +242,8 @@ export class Rectangle extends AbstractRectangle {
  * @property {Colors} colors
  * @property {number} rowLength
  * @property {Set.<string>} usedColors
- * @property {Array.<Rectangle>} rectangles
+ * @property {(Rectangle|WrappingRectangle)[]} rectangles
+ * @property {Rectangle[]} _rectangles
  * @property {Object.<number, {rect: Rectangle, i:number}[]>} map
  * @property {boolean} isTautology
  * @property {boolean} isContradiction
@@ -308,7 +309,7 @@ export class Rectangles {
         return map
     }
 
-
+    /** @returns {{rect: Rectangle, i:number}|{rect: Rectangle, i:number}[]}*/
     get(row, column, {all = false} = {}) {
         const index = row * this.rowLength + column
         if (this.map[index]) {

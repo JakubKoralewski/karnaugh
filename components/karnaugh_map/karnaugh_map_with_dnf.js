@@ -30,6 +30,13 @@ export default React.memo(
         const onReturnDNF = (dnf) => {
             setDNF(dnf)
         }
+
+        /**
+         * @type {{current: Object.<number, {block: DNFBlock, ref: {current: HTMLSpanElement}, active: boolean}>}}
+         */
+        const rectangleIndexToDNFBlockMap = useRef({})
+
+        /** @param {Rectangles|} r*/
         const onReturnRectangles = (r) => {
             setRectangles(r)
         }
@@ -40,7 +47,7 @@ export default React.memo(
          * @param {"!b.active" | boolean} newValue
          */
         const onBlockHover = (block, ref, newValue) => {
-            return (event) => {
+            return (_event) => {
                 console.log("Hover starting setting to", newValue)
 
                 if (newValue === "!b.active") {
@@ -57,13 +64,16 @@ export default React.memo(
                 }
             }
         }
-        /** @type {{current: Object.<number, {block: DNFBlock, ref: {current: HTMLSpanElement}, active: boolean}>}}*/
-        const rectangleIndexToDNFBlockMap = useRef(null)
+        /** @param {{rect: Rectangle, i:number}[]} highlightedRectangles*/
         const onCellHoverDecisionFactory = (highlightedRectangles) => {
             let onCellHoverDecision = {
                 both(on) {
                     return (event) => {
-                        if(!rectangleIndexToDNFBlockMap.current) {return;}
+                        console.group("onCellHover")
+                        if (!rectangleIndexToDNFBlockMap.current) {
+                            console.groupEnd()
+                            return;
+                        }
                         const blockInfos = highlightedRectangles.map(r => rectangleIndexToDNFBlockMap.current[r.i])
                         console.log("on cell hover ", on, event, highlightedRectangles)
                         console.log("blocks", blockInfos)
@@ -72,6 +82,9 @@ export default React.memo(
                                 blockInfo.active = !blockInfo.active
                             } else {
                                 blockInfo.active = on
+                            }
+                            if (!blockInfo.ref.current) {
+                                continue;
                             }
 
                             if (blockInfo.active) {
@@ -85,6 +98,7 @@ export default React.memo(
                                 blockInfo.ref.current.classList.remove(karnaughStyles.dnfBlockResetAnim)
                             }
                         }
+                        console.groupEnd()
                     }
                 }
             }
@@ -104,7 +118,9 @@ export default React.memo(
 
             return onCellHoverDecision
         }
-        /** Multiple rectangles in that cell*/
+        /** Multiple rectangles in that cell
+         * @param {{rect: Rectangle, i:number}[]} rectangles
+         */
         const onCellHover = (rectangles) => {
             return onCellHoverDecisionFactory(rectangles)
         }
@@ -113,14 +129,25 @@ export default React.memo(
                 let ref = dnfRefs.current[i]
                 let rect
                 if (rectangles) {
-                    rect = rectangles.rectangles[b.rectangleIndex]
-                    if(!rectangleIndexToDNFBlockMap.current) {
-                        rectangleIndexToDNFBlockMap.current = {}
-                    }
-                    rectangleIndexToDNFBlockMap.current[b.rectangleIndex] = {
-                        block: b,
-                        ref,
-                        active: false
+                    // Know (on hover of rectangle) which dnf block needs to be highlighted
+                    rect = rectangles._rectangles[b.rectangleIndex]
+                    if(rect.wrapping) {
+                        // Can't know in this map function how to map from a single dnf block to
+                        // possibly multiple rectangles, without looping through the wrapping rectangles
+                        // if they exist
+                        rect.wrappingRectangles.forEach((rect,i) => {
+                            rectangleIndexToDNFBlockMap.current[i] = {
+                                block: b,
+                                ref,
+                                active: false
+                            }
+                        })
+                    } else {
+                        rectangleIndexToDNFBlockMap.current[b.rectangleIndex] = {
+                            block: b,
+                            ref,
+                            active: false
+                        }
                     }
                 }
                 let text = null
@@ -130,23 +157,21 @@ export default React.memo(
                 return (
                     <React.Fragment key={i}>
                         <span
-                            className={
-                                [
-                                    karnaughStyles.dnfBlock,
-                                    karnaughStyles.dnfBlockActual
-                                ].join(' ')
-                            }
-                            style={{
-                                borderColor: rect.color,
-                                '--wiggle': ref.current ? window.innerWidth / ref.current.scrollWidth / 4 : 15,
-                            }}
-                            ref={ref}
-                            onMouseEnter={onBlockHover(b, ref, true)}
-                            onMouseLeave={onBlockHover(b, ref, false)}
-                            onTouchStart={onBlockHover(b, ref, "!b.active")}
-                        >
-                            {b.text}
-                        </span>
+                            className={[
+                                karnaughStyles.dnfBlock,
+                                karnaughStyles.dnfBlockActual
+                            ].join(' ')
+                            } style={{
+                            borderColor: rect.color,
+                            '--wiggle': ref.current ? window.innerWidth / ref.current.scrollWidth / 4 : 15,
+                        }}
+                        ref={ref}
+                        onMouseEnter={onBlockHover(b, ref, true)}
+                        onMouseLeave={onBlockHover(b, ref, false)}
+                        onTouchStart={onBlockHover(b, ref, "!b.active")}
+                    >
+                        {b.text}
+                    </span>
                         {
                             text ? (
                                 <span
@@ -164,29 +189,29 @@ export default React.memo(
         const contradiction = "false"
 
         let DNFBlocksOutput = ""
-        if(table && DNF && DNF.blocks) {
+        if (table && DNF && DNF.blocks) {
             let DNFBlocksText = ""
             let isTautology = rectangles.isTautology
             let isContradiction = rectangles.isContradiction
-            if(isTautology && isContradiction) {
+            if (isTautology && isContradiction) {
                 const isTautologyWithOneVariable = table.rows.every(x => x.eval)
                 const isContradictionWithOneVariable = table.rows.every(x => !x.eval)
-                if(isTautologyWithOneVariable) {
+                if (isTautologyWithOneVariable) {
                     DNFBlocksText = tautology
-                } else if(isContradictionWithOneVariable) {
+                } else if (isContradictionWithOneVariable) {
                     DNFBlocksText = contradiction
                 } else {
                     DNFBlocksText = table.variables[0]
                 }
-            } else if(isTautology) {
+            } else if (isTautology) {
                 DNFBlocksText = tautology
-            } else if(isContradiction) {
+            } else if (isContradiction) {
                 DNFBlocksText = contradiction
             } else {
                 DNFBlocksOutput = DNFBlocks()
             }
 
-            if(!DNFBlocksOutput && DNFBlocksText) {
+            if (!DNFBlocksOutput && DNFBlocksText) {
                 DNFBlocksOutput = (
                     <span className={karnaughStyles.dnfBlock}>
                         {DNFBlocksText}

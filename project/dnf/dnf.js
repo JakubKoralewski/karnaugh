@@ -564,6 +564,10 @@ export function getRectangles(
 /** Intermediate DNF representation used to be able to group together
  *  blocks of variables with corresponding rectangles for
  *  hovering applications.
+ *
+ *  The `getDnf` function is passed the raw `_rectangles`,
+ *  meaning the rectangle index corresponds to a single `Rectangle`!
+ *  Even if they are broken into multiple for display.
  */
 export class DNFIntermediate {
     /**
