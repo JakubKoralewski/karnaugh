@@ -15,7 +15,7 @@ export default React.memo(
             [DNF, setDNF] = useState(null)
         }
         const [rectangles, setRectangles] = useState(null)
-        const [highlightRectangleIndex, setHLRect] = useState(null)
+        const [highlightRectangleIndexes, setHLRect] = useState(null)
 
         /** @type {{current: {current: HTMLSpanElement}[]}}*/
         let dnfRefs = useRef([])
@@ -56,25 +56,23 @@ export default React.memo(
                     block.active = newValue
                 }
                 if (block.active) {
-                    ref.current.classList.add("active")
-                    setHLRect(block.rectangleIndex)
+                    setHLRect(block.rectangleIndexes)
                 } else {
-                    ref.current.classList.remove("active")
                     setHLRect(null)
                 }
             }
         }
-        /** @param {{rect: Rectangle, i:number}[]} highlightedRectangles*/
+        /** @param {Rectangle[]} highlightedRectangles*/
         const onCellHoverDecisionFactory = (highlightedRectangles) => {
             let onCellHoverDecision = {
                 both(on) {
                     return (event) => {
                         console.group("onCellHover")
-                        if (!rectangleIndexToDNFBlockMap.current) {
+                        if (!rectangleIndexToDNFBlockMap.current[0]) {
                             console.groupEnd()
                             return;
                         }
-                        const blockInfos = highlightedRectangles.map(r => rectangleIndexToDNFBlockMap.current[r.i])
+                        const blockInfos = highlightedRectangles.map(r => rectangleIndexToDNFBlockMap.current[r.index])
                         console.log("on cell hover ", on, event, highlightedRectangles)
                         console.log("blocks", blockInfos)
                         for (const blockInfo of blockInfos) {
@@ -119,36 +117,25 @@ export default React.memo(
             return onCellHoverDecision
         }
         /** Multiple rectangles in that cell
-         * @param {{rect: Rectangle, i:number}[]} rectangles
+         * @param {Rectangle[]} highlightedRectangles
          */
-        const onCellHover = (rectangles) => {
-            return onCellHoverDecisionFactory(rectangles)
+        const onCellHover = (highlightedRectangles) => {
+            return onCellHoverDecisionFactory(highlightedRectangles)
         }
         const DNFBlocks = () => {
             return DNF.blocks.map((/** @type {DNFBlock}*/b, i) => {
                 let ref = dnfRefs.current[i]
-                let rect
+                let color
                 if (rectangles) {
                     // Know (on hover of rectangle) which dnf block needs to be highlighted
-                    rect = rectangles._rectangles[b.rectangleIndex]
-                    if(rect.wrapping) {
-                        // Can't know in this map function how to map from a single dnf block to
-                        // possibly multiple rectangles, without looping through the wrapping rectangles
-                        // if they exist
-                        rect.wrappingRectangles.forEach((rect,i) => {
-                            rectangleIndexToDNFBlockMap.current[i] = {
-                                block: b,
-                                ref,
-                                active: false
-                            }
-                        })
-                    } else {
-                        rectangleIndexToDNFBlockMap.current[b.rectangleIndex] = {
+                    b.rectangleIndexes.forEach(i => {
+                        rectangleIndexToDNFBlockMap.current[i] = {
                             block: b,
                             ref,
                             active: false
                         }
-                    }
+                        color = rectangles.rectangles[i].color
+                    })
                 }
                 let text = null
                 if (i !== DNF.blocks.length - 1) {
@@ -157,21 +144,23 @@ export default React.memo(
                 return (
                     <React.Fragment key={i}>
                         <span
-                            className={[
-                                karnaughStyles.dnfBlock,
-                                karnaughStyles.dnfBlockActual
-                            ].join(' ')
-                            } style={{
-                            borderColor: rect.color,
-                            '--wiggle': ref.current ? window.innerWidth / ref.current.scrollWidth / 4 : 15,
-                        }}
-                        ref={ref}
-                        onMouseEnter={onBlockHover(b, ref, true)}
-                        onMouseLeave={onBlockHover(b, ref, false)}
-                        onTouchStart={onBlockHover(b, ref, "!b.active")}
-                    >
-                        {b.text}
-                    </span>
+                            className={
+                                [
+                                    karnaughStyles.dnfBlock,
+                                    karnaughStyles.dnfBlockActual
+                                ].join(' ')
+                            }
+                            style={{
+                                borderColor: color,
+                                '--wiggle': ref.current ? window.innerWidth / ref.current.scrollWidth / 4 : 15,
+                            }}
+                            ref={ref}
+                            onMouseEnter={onBlockHover(b, ref, true)}
+                            onMouseLeave={onBlockHover(b, ref, false)}
+                            onTouchStart={onBlockHover(b, ref, "!b.active")}
+                        >
+                            {b.text}
+                        </span>
                         {
                             text ? (
                                 <span
@@ -229,7 +218,7 @@ export default React.memo(
                         symbols={{t: "T", f: "F", na: "*"}}
                         returnDNF={onReturnDNF}
                         returnRectangles={onReturnRectangles}
-                        highlightRectangleIndex={highlightRectangleIndex}
+                        highlightRectangleIndexes={highlightRectangleIndexes}
                         onCellHover={onCellHover}
                         dnf={true}
                         style={
