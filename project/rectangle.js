@@ -45,26 +45,6 @@ class AbstractRectangle {
     generateDimensions(array) {
         let lastPos = array[array.length -1]
 
-        // let width, height
-        // for (const cell of array.slice(1)) {
-        //     if (((cell - 1) % rowLength) !== (lastPos % rowLength)) {
-        //         // cells change rows without spanning whole width, or skip columns
-        //         width = this.getX(lastPos) - this.getX(cell) + 1
-        //         break
-        //     }
-        //     lastPos = cell
-        // }
-        // if (width === undefined) {
-        //     // No break between cells in array, or array of size one
-        //     if (this.getY(array[array.length-1]) - this.getY(array[0]) > 1) {
-        //         width = rowLength
-        //     } else {
-        //         width = 1
-        //     }
-        // } else {
-        //     // Width was found with a break, meaning more than one row of rectangle
-        //     height = this.getY(array[array.length - 1]) - this.getY(array[0]) + 1
-        // }
         const width = this.getX(lastPos) - this.getX(array[0]) + 1
         const height = this.getY(lastPos) - this.getY(array[0]) + 1
 
@@ -88,35 +68,6 @@ class WrappingRectangle extends AbstractRectangle {
         const dims = this.generateDimensions(this.cellArray)
         this.width = dims.width
         this.height = dims.height
-    }
-
-    generateDimensions(array) {
-        let lastPos = array[array.length -1]
-
-        // let width, height
-        // for (const cell of array.slice(1)) {
-        //     if (((cell - 1) % rowLength) !== (lastPos % rowLength)) {
-        //         // cells change rows without spanning whole width, or skip columns
-        //         width = this.getX(lastPos) - this.getX(cell) + 1
-        //         break
-        //     }
-        //     lastPos = cell
-        // }
-        // if (width === undefined) {
-        //     // No break between cells in array, or array of size one
-        //     if (this.getY(array[array.length-1]) - this.getY(array[0]) > 1) {
-        //         width = rowLength
-        //     } else {
-        //         width = 1
-        //     }
-        // } else {
-        //     // Width was found with a break, meaning more than one row of rectangle
-        //     height = this.getY(array[array.length - 1]) - this.getY(array[0]) + 1
-        // }
-        const width = this.getX(lastPos) - this.getX(array[0]) + 1
-        const height = this.getY(lastPos) - this.getY(array[0]) + 1
-
-        return {width, height}
     }
 }
 
@@ -147,9 +98,13 @@ export class Rectangle extends AbstractRectangle {
         for (const cell of this.cellArray.slice(1)) {
             if (((cell - 1) % rowLength) !== (lastPos % rowLength)) {
                 // cells change rows without spanning whole width, or skip columns
-                this.width = this.getX(lastPos) - this.getX(cell) + 1
-                breaks.columns = {to: cell, from: lastPos}
-                breaks.doesWrap = true
+                const lastPosX = this.getX(lastPos)
+                const currentPosX = this.getX(cell)
+                this.width = lastPosX - currentPosX + 1
+                if(lastPosX !== currentPosX) {
+                    breaks.columns = {to: cell, from: lastPos}
+                    breaks.doesWrap = true
+                }
                 if (
                     // with width not full rows
                     // skip row
