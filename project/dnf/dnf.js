@@ -584,12 +584,12 @@ export class DNFIntermediate {
 
     /** @param {DNFBlock} block */
     add(block) {
-        if(block.variables.length === 0) {
+        if (block.variables.length === 0) {
             console.log(`Empty DNF. Ignoring. Rectangle: ${block.rectangleIndex}.`)
             return
         }
         let blockJoined = block.variables.join(" & ")
-        if(block.variables.length > 1) {
+        if (block.variables.length > 1) {
             // Don't add parentheses when only single variable
             blockJoined = `(${blockJoined})`
         }

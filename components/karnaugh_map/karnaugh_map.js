@@ -1,4 +1,4 @@
-import React, {useEffect, useRef, useState} from "react"
+import React, {useEffect, useRef} from "react"
 import inputStyles from "../input_formula.module.scss"
 import styles from "./karnaugh_map.module.scss"
 import CellRender from "./karnaugh_render"
@@ -121,7 +121,7 @@ export default React.memo(
             returnRectangles,
 
             // rectangle highlighting (on dnf hover)
-            highlightRectangleIndex=null,
+            highlightRectangleIndex = null,
 
             // dnf highlighting (on cell hover)
             onCellHover,
@@ -156,8 +156,15 @@ export default React.memo(
 
             rectangles = React.useMemo(
                 () => {
-                    console.log("generating new rectangles, because transformedTable changed: ", transformedTable)
-                    return new Rectangles({rectangles, rowLength: columnGrayCode.length, columnHeight: rowGrayCode.length})
+                    console.log(
+                        "generating new rectangles, because transformedTable changed: ",
+                        transformedTable
+                    )
+                    return new Rectangles({
+                        rectangles,
+                        rowLength: columnGrayCode.length,
+                        columnHeight: rowGrayCode.length
+                    })
                 },
                 [memoJsonTable]
             )
@@ -273,7 +280,7 @@ export default React.memo(
 
         // For restore
         const lastRectangle = useRef()
-        if(highlightRectangleIndex !== null) {
+        if (highlightRectangleIndex !== null) {
             highlightRectangle = rectangles.rectangles[highlightRectangleIndex]
         }
 
@@ -287,6 +294,7 @@ export default React.memo(
                         {
                             position: "relative",
                             tableLayout: "fixed",
+                            borderCollapse: "collapse",
                             ...commonTableStyles
                         } : commonTableStyles
                 }
@@ -296,7 +304,7 @@ export default React.memo(
                     <SVGRectangles
                         highlightRectangleIndex={highlightRectangleIndex}
                         rectangles={rectangles}
-                        numRows={rowGrayCode.length + 1}
+                        numRows={rowGrayCode.length}
                         numColumns={columnGrayCode.length + 1}
                         rowRef={headRowRef}
                     />
