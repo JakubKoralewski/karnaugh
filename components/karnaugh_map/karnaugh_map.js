@@ -173,7 +173,7 @@ export default React.memo(
             if (dnf && returnDNF) {
                 console.log("returning dnf")
                 returnDNF(getDnf({
-                    rectangles: rectangles.rectangles.map(r => r.cellArray),
+                    rectangles: rectangles._rectangles.map(r => r.cellArray),
                     columnGrayCode,
                     columnHeaders,
                     rowGrayCode,
