@@ -1,5 +1,11 @@
 import {intersection} from "lodash"
 
+/** @property {number} rowLength
+ *  @property {number[]} cellArray
+ *  @property {string} color
+ *  @property {{x: number, y:number}} pos
+ *  @property {number} index
+ */
 class AbstractRectangle {
     getX(cell) {
         return (cell % this.rowLength)
@@ -31,6 +37,11 @@ class AbstractRectangle {
         }
     }
 
+    withIndex(index) {
+        this.index = index
+        return this
+    }
+
     /** Check if 2D coordinates are inside this rectangle.
      * @param {number} x
      * @param {number} y
@@ -42,6 +53,7 @@ class AbstractRectangle {
         )
     }
 
+    /** @returns {{width: number, height: number}} */
     generateDimensions(array) {
         let lastPos = array[array.length -1]
 
@@ -52,8 +64,14 @@ class AbstractRectangle {
     }
 }
 
+/** @typedef {("left"|"right"|"top"|"bottom")[]} Edges */
+
+/** @property {Rectangle} parent
+ *  @property {Edges} invisibleEdges - top, right, bottom, left
+ *  @property {number} width
+ *  @property {number} height
+ */
 class WrappingRectangle extends AbstractRectangle {
-    /** @typedef {("left"|"right"|"top"|"bottom")[]} Edges */
     /** @param {Object} obj
      *  @param {number[]} obj.rectangles
      *  @param {Edges} obj.invisibleEdges
@@ -63,7 +81,6 @@ class WrappingRectangle extends AbstractRectangle {
         super({rowLength: parent.rowLength, cellArray: rectangles, color: parent.color});
         this.parent = parent
 
-        /** @type {Edges} top, right, bottom, left*/
         this.invisibleEdges = invisibleEdges
         const dims = this.generateDimensions(this.cellArray)
         this.width = dims.width
@@ -73,7 +90,6 @@ class WrappingRectangle extends AbstractRectangle {
 
 
 /**
- * @property {Array.<number>} cellArray - array of cells in 1D notation
  * @property {string} color
  * @property {{x: number, y: number}} pos - the position
  * @property {number} width
@@ -183,6 +199,7 @@ export class Rectangle extends AbstractRectangle {
             this._wrappingRectangles = wrappingRectangles
             this.wrappingRectangles = this._generateWrappedRectangles(wrappingRectangles)
         }
+
     }
 
     _generateWrappedRectangles(rects) {
@@ -242,7 +259,8 @@ export class Rectangle extends AbstractRectangle {
  * @property {Colors} colors
  * @property {number} rowLength
  * @property {Set.<string>} usedColors
- * @property {Array.<Rectangle>} rectangles
+ * @property {(Rectangle|WrappingRectangle)[]} rectangles
+ * @property {Rectangle[]} _rectangles
  * @property {Object.<number, {rect: Rectangle, i:number}[]>} map
  * @property {boolean} isTautology
  * @property {boolean} isContradiction
@@ -255,10 +273,10 @@ export class Rectangles {
     constructor({rectangles: arrays, rowLength, columnHeight}) {
         this.rowLength = rowLength
         this.colors = new Colors()
-        /** @type {Array.<number|null>}*/
+        /** @type {Array.<number|null>} for contradiction detection */
         let allCells = new Array(rowLength * columnHeight).fill(0).map((_, i) => i)
 
-        // Raw rectangles without nesting of wrapped rectangles
+        /** @type {any} - Raw rectangles without nesting of wrapped rectangles */
         this._rectangles = arrays.map(r => {
             r.forEach(c => {
                 allCells[c] = null
@@ -266,10 +284,18 @@ export class Rectangles {
             return new Rectangle(r, this.colors.getRandom(), rowLength)
         })
 
-        // unnested
-        /** @type {(Rectangle|WrappingRectangle)[]}*/
+        /** @type {(Rectangle|WrappingRectangle)[]} - not nested*/
+        let index = 0
         this.rectangles = this._rectangles.flatMap(
-            rect => rect.wrapping ? rect.wrappingRectangles : rect
+            (rect,i) => {
+                if(rect.wrapping) {
+                    rect.wrappingRectangles = rect.wrappingRectangles.map(r => r.withIndex(index++))
+                    return rect.wrappingRectangles
+                } else {
+                    this._rectangles[i].index = index++
+                    return this._rectangles[i]
+                }
+            }
         )
 
         allCells = allCells.filter(c => c !== null)
@@ -284,17 +310,17 @@ export class Rectangles {
      * Rectangles sorted from smallest to largest, so that the top most are
      * the ones with least cells.
      *
-     * @return {Object.<int, {rect: Rectangle, i:number}[]>}
+     * @return {Object.<int, Rectangle[]>}
      */
     generateMap() {
-        /** @type {Object.<int, {rect: Rectangle, i:number}[]>}*/
+        /** @type {Object.<int, Rectangle[]>}*/
         let map = {}
-        this.rectangles.forEach((rect, i) => {
+        this.rectangles.forEach(rect => {
             for (const cell of rect) {
                 if (!map[cell]) {
-                    map[cell] = [{rect, i}]
+                    map[cell] = [rect]
                 } else {
-                    map[cell].push({rect, i})
+                    map[cell].push(rect)
                 }
             }
         })
@@ -302,13 +328,13 @@ export class Rectangles {
             // the less cells the higher the cell should be
             map[key] = map[key].sort(
                 (rect1, rect2) =>
-                    rect1.rect.cellArray.length - rect2.rect.cellArray.length
+                    rect1.cellArray.length - rect2.cellArray.length
             )
         }
         return map
     }
 
-
+    /** @returns {Rectangle|Rectangle[]}*/
     get(row, column, {all = false} = {}) {
         const index = row * this.rowLength + column
         if (this.map[index]) {
