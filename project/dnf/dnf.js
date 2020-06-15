@@ -564,14 +564,20 @@ export function getRectangles(
 /** Intermediate DNF representation used to be able to group together
  *  blocks of variables with corresponding rectangles for
  *  hovering applications.
+ *
+ *  The `getDnf` function is passed the raw `_rectangles`,
+ *  meaning the rectangle index corresponds to a single `Rectangle`!
+ *  Even if they are broken into multiple for display.
  */
 export class DNFIntermediate {
     /**
      * @typedef {
      *      {
      *          variables: number[],
-     *          rectangleIndex: number,
-     *          text: string
+     *          rectangleIndexes: number[],
+     *          text?: string,
+     *          multiple?: number[],
+     *          active ?: boolean
      *      }
      * } DNFBlock
      */
@@ -585,7 +591,7 @@ export class DNFIntermediate {
     /** @param {DNFBlock} block */
     add(block) {
         if (block.variables.length === 0) {
-            console.log(`Empty DNF. Ignoring. Rectangle: ${block.rectangleIndex}.`)
+            console.log(`Empty DNF. Ignoring. Rectangle: ${block.rectangleIndexes}.`)
             return
         }
         let blockJoined = block.variables.join(" & ")
@@ -603,11 +609,11 @@ export class DNFIntermediate {
 /**
  * Description: This function takes rectangles as an input and generate a disjunctive normal form.
  * @param {Object} obj
- * @param {Array.<Array.<number>>} obj.rectangles
- * @param {Array.<string>} obj.rowHeaders
- * @param {Array.<string>} obj.columnHeaders
- * @param {Array.<Array.<number>>} obj.rowGrayCode
- * @param {Array.<Array.<number>>} obj.columnGrayCode
+ * @param {Rectangles} obj.rectangles
+ * @param {string[]} obj.rowHeaders
+ * @param {string[]} obj.columnHeaders
+ * @param {number[][]} obj.rowGrayCode
+ * @param {number[][]} obj.columnGrayCode
  *
  * @returns {DNFIntermediate}
  */
@@ -625,15 +631,16 @@ export function getDnf(
     // final dnf return
     let dnf = new DNFIntermediate();
 
-    rectangles.forEach((rectangle, r) => {
+    rectangles._rectangles.forEach(rectangle => {
+        const cellArray = rectangle.cellArray
         vars.forEach(variable => {
             let count = 0;
-            for (const cell of rectangle) {
+            for (const cell of cellArray) {
                 if (variable.cells.includes(cell)) {
                     count++;
                 }
             }
-            if (rectangle.length === count) {
+            if (cellArray.length === count) {
                 dependentVars.add(variable.variable)
             } else if (count === 0) {
                 dependentVars.add(`~${variable.variable}`)
@@ -642,7 +649,10 @@ export function getDnf(
         dnf.add(
             {
                 variables: Array.from(dependentVars),
-                rectangleIndex: r
+                rectangleIndexes:
+                    rectangle.wrapping ?
+                        rectangle.wrappingRectangles.map(r => r.index) :
+                        [rectangle.index]
             }
         )
         dependentVars.clear();
