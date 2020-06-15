@@ -62,30 +62,37 @@ function getArr({rowHeaders, columnHeaders, rowGrayCode, columnGrayCode}) {
  * @param {Array.<boolean>} obj.values
  * @param {number} obj.colCount
  */
-function _getRectangles({values, colCount}) {
+function _getRectangles({values, colCount, rowGrayCode, columnGrayCode}) {
     let base = 0;
     const rectangles = [];
+    let looped = false;
+    let len = values.length; // The total number of cells in the Karnaugh map
 
     while (base < values.length) {
         while (values[base]) {
             let right = true;
             let down = true;
-            let temporary = [base];
-            let rect = [base];
+            let temporary = [];
+            temporary.push(base);
+            let rect = [];
+            rect.push(base);
             let rightCount = 1;
             let downCount = 0;
-            let len = values.length; // The total number of cells in the Karnaugh map
             let start = base;
             let secondStart = base;
             let n = 1;
             let s = 1; // The number of rows to be checked
-            let allTrue = true;
             let tempCount = 1;
             let tempArray = [];
             let isExec = false;
-
+            let allTrue = true;
+            if (looped) {
+                right = false;
+                down = true;
+            }
 
             while (right || down) {
+                allTrue = true;
                 if (right) {
                     if (
                         Math.floor(start / colCount) === Math.floor((start + n) / colCount)
@@ -125,14 +132,15 @@ function _getRectangles({values, colCount}) {
                 tempArray = []; // The indexes of cells that are true will be pushed to this array
                 allTrue = true;
 
-                if (!right && isExec) {
-                    s *= 2;
-                    secondStart = get1DCellNumber(s, base, colCount);
-                } else {
-                    secondStart = get1DCellNumber(s, base, colCount) + downCount;
-                }
-
                 if (down) {
+                    if (!right && isExec) {
+                        s *= 2;
+                    } else {
+                        secondStart = get1DCellNumber(s, base, colCount) + downCount;
+                    }
+                    if (!right && isExec) {
+                        secondStart = get1DCellNumber(s, base, colCount);
+                    }
                     isExec = true
                     let lastCell = 0;
                     if (rightCount > downCount) {
@@ -140,30 +148,28 @@ function _getRectangles({values, colCount}) {
                     } else {
                         lastCell = secondStart + (s * colCount);
                     }
-                    if (lastCell <= len) {
-                        for (let i = 1; i <= s; i++) {
-                            let first = secondStart + ((i - 1) * colCount);
-                            let last = lastCell - ((s - i) * colCount);
-                            if (last > first + rightCount) {
-                                last = first + rightCount;
-                            }
-                            for (let j = first; j < last; j++) {
-                                if (values[j]) {
-                                    tempArray.push(j);
-                                    downCount++;
-                                } else {
-                                    allTrue = false;
-                                    down = false;
-                                    break;
-                                }
+
+                    for (let i = 1; i <= s; i++) {
+                        let first = secondStart + ((i - 1) * colCount);
+                        let last = lastCell - ((s - i) * colCount);
+                        if (last > first + rightCount) {
+                            last = first + rightCount;
+                        }
+                        for (let j = first; j < last; j++) {
+                            if (values[j]) {
+                                tempArray.push(j);
+                                downCount++;
+                            } else {
+                                allTrue = false;
+                                down = false;
+                                break;
                             }
                         }
-                        if (allTrue) {
-                            temporary.push(...tempArray);
-                            tempArray = [];
-                        }
-                    } else {
-                        down = false;
+                    }
+
+                    if (allTrue) {
+                        temporary.push(...tempArray);
+                        tempArray = [];
                     }
                     if (!down && downCount > 0) {
                         temporary = rect.slice(0)
@@ -176,10 +182,40 @@ function _getRectangles({values, colCount}) {
                     rect = temporary.slice(0)
                 }
             }
-            base++;
 
-            // If a rectangle is generated it is pushed to an array named rectangles in which all
-            // the rectangles are stored.
+            if (looped) {
+                // Add true values rightwards to rect in second loop
+                allTrue = true;
+                tempArray = [];
+                temporary = [];
+                let startNumber = 1;
+                let stopNumber = 2;
+                while (allTrue && stopNumber <= colCount) {
+                    for (let i = 0; i < rect.length; i++) {
+                        for (let j = startNumber; j < stopNumber; j++) {
+                            if (values[rect[i] + j] && Math.floor((rect[i] + j) / colCount) === Math.floor(rect[i] / colCount) && (rect[i] + j < len)) {
+                                tempArray.push(rect[i] + j);
+                            } else {
+                                allTrue = false;
+                                break;
+                            }
+                        }
+                    }
+                    if (allTrue) {
+                        temporary.push(...tempArray);
+                        tempArray = [];
+                    }
+                    startNumber = stopNumber;
+                    stopNumber *= 2;
+                }
+                rect.push(...temporary);
+                base++;
+                looped = false;
+            } else {
+                looped = true;
+            }
+
+            // If a rectangle is generated it is pushed to an array named rectangles in which all the rectangles are stored.
             rectangles.push(rect.sort((a, b) => a - b));
             rect = [];
         }
@@ -187,24 +223,306 @@ function _getRectangles({values, colCount}) {
     }
 
     // Remove rectangles that are subsets of other rectangles
+    rectangles.sort((a, b) => a.length - b.length);
     for (let i = 0; i < rectangles.length; i++) {
-        for (let j = 0; j < rectangles.length; j++) {
-            let isIncluded = 1;
-            if (j !== i && rectangles[i].length < rectangles[j].length) {
-                for (let k = 0; k < rectangles[i].length; k++) {
-                    if (rectangles[j].indexOf(rectangles[i][k]) === -1) {
-                        isIncluded = 0;
-                        break;
-                    }
-                }
-                if (isIncluded === 1) {
-                    rectangles.splice(i, 1);
-                    i--;
+        rectangles[i].sort((a, b) => a - b);
+        let counter = 0;
+        for (let j = 0; j < rectangles[i].length; j++) {
+            for (let k = 0; k < rectangles.length; k++) {
+                if (k !== i && rectangles[k].includes(rectangles[i][j])) {
+                    counter++;
                     break;
                 }
             }
         }
+        if (counter === rectangles[i].length) {
+            rectangles.splice(i, 1);
+            i--;
+        }
     }
+    rectangles.sort((a, b) => a[0] - b[0]);
+
+    let rowCount = len / colCount;
+    let rowEdges = [];
+    let possibleRectangles = [];
+    for (let i = 0; i < rowCount; i++) {
+        rowEdges.push((colCount * i) + colCount - 1);
+    }
+    for (let i = 0; i < rectangles.length; i++) {
+        possibleRectangles[i] = [];
+        for (let j = 0; j < rectangles[i].length; j++) {
+            if (rowEdges.includes(rectangles[i][j])) {
+                let rowCellCount = 1;
+                let colCellCount = 1;
+                for (let k = 1; k < colCount; k++) {
+                    if (rectangles[i].includes(rectangles[i][j] - k)) {
+                        rowCellCount++;
+                    } else {
+                        break;
+                    }
+                }
+                colCellCount = rectangles[i].length / rowCellCount;
+                for (let k = 0; k < colCellCount; k++) {
+                    for (let l = 0; l < rowCellCount; l++) {
+                        possibleRectangles[i].push((rectangles[i][j] + (k * colCount) - colCount) + 1 + l);
+                    }
+                }
+                break;
+            }
+        }
+        possibleRectangles[i].sort((a, b) => a - b);
+    }
+
+    for (let i = 0; i < rectangles.length; i++) {
+        if (possibleRectangles[i].length > 0) {
+            possibleRectangles[i].sort((a, b) => a - b);
+            let allTrue = true;
+            for (let j = 0; j < possibleRectangles[i].length; j++) {
+                if (!values[possibleRectangles[i][j]]) {
+                    allTrue = false;
+                    break;
+                }
+            }
+            if (allTrue) {
+                for (let k = 0; k < possibleRectangles[i].length; k++) {
+                    if (rectangles[i].includes(possibleRectangles[i][k])) {
+                    } else {
+                        rectangles[i].push(possibleRectangles[i][k]);
+                    }
+                }
+                rectangles[i].sort((a, b) => a - b);
+            }
+        }
+    }
+
+    let colEdges = [];
+    let reverseRectangles = [];
+    for (let i = 0; i < colCount; i++) {
+        colEdges.push(len - colCount + i);
+    }
+    for (let i = 0; i < rectangles.length; i++) {
+        reverseRectangles[i] = [];
+        for (let j = 0; j < rectangles[i].length; j++) {
+            if (colEdges.includes(rectangles[i][j])) {
+
+                let rowCellCount = 1;
+                let colCellCount = 1;
+                for (let k = 1; k < colCount; k++) {
+                    if (rectangles[i].includes(rectangles[i][j] + k)) {
+                        rowCellCount++;
+                    } else {
+                        break;
+                    }
+                }
+                if (rectangles[i].length / rowCellCount === rowCount) {
+                    break;
+                }
+
+                colCellCount = rectangles[i].length / rowCellCount;
+                for (let k = 1; k <= colCellCount; k++) {
+                    for (let l = 0; l < rowCellCount; l++) {
+                        reverseRectangles[i].push((rectangles[i][j] - ((rowCount - k) * colCount)) + l);
+                    }
+                }
+                reverseRectangles[i].sort((a, b) => a - b);
+                break;
+            }
+        }
+
+    }
+
+    for (let i = 0; i < rectangles.length; i++) {
+        if (reverseRectangles[i].length > 0) {
+            let allTrue = true;
+            for (let j = 0; j < reverseRectangles[i].length; j++) {
+                if (!values[reverseRectangles[i][j]]) {
+                    allTrue = false;
+                    break;
+                }
+            }
+            if (allTrue) {
+                for (let k = 0; k < reverseRectangles[i].length; k++) {
+                    rectangles[i].push(reverseRectangles[i][k]);
+                }
+                rectangles[i].sort((a, b) => a - b);
+            }
+        }
+    }
+
+    let corners = [0, colCount - 1, len - colCount, len - 1];
+    let tempArr = [];
+    let rowMax = [0, 0, 0, 0];
+    let colMax = [0, 0, 0, 0];
+    for (let i = 0; i < corners.length; i++) {
+        let cellToCheck = corners[i];
+
+        for (let k = 0; k < rowCount / 2; k++) {
+            if (i === 0 || i === 2) {
+                cellToCheck = corners[i] + k;
+            } else {
+                cellToCheck = corners[i] - k;
+            }
+            if (values[cellToCheck] && (k === 0 || corners.indexOf(cellToCheck) === -1)) {
+                rowMax[i]++;
+            } else {
+                break;
+            }
+        }
+
+        for (let k = 0; k < colCount / 2; k++) {
+            if (i === 0 || i === 1) {
+                cellToCheck = corners[i] + (k * colCount);
+            } else {
+                cellToCheck = corners[i] - (k * colCount);
+            }
+            if (values[cellToCheck] && (k === 0 || corners.indexOf(cellToCheck) === -1)) {
+                colMax[i]++;
+            } else {
+                break;
+            }
+        }
+    }
+
+    rowMax.sort((a, b) => a - b);
+    colMax.sort((a, b) => a - b);
+
+    let lengths = [rowMax[0], colMax[0]];
+    for (let i = 0; i < 2; i++) {
+        let allValTrue = true;
+        tempArr[i] = [];
+        for (let j = 0; j < corners.length; j++) {
+            for (let k = 0; k < lengths[i]; k++) {
+                let cellToAdd = 0;
+                if (i === 0) {
+                    if (j === 0 || j === 2) {
+                        cellToAdd = corners[j] + k;
+                    } else {
+                        cellToAdd = corners[j] - k;
+                    }
+                } else if (i === 1) {
+                    if (j === 0 || j === 1) {
+                        cellToAdd = corners[j] + (k * colCount);
+                    } else {
+                        cellToAdd = corners[j] - (k * colCount);
+                    }
+                }
+                if (values[cellToAdd]) {
+                    tempArr[i].push(cellToAdd);
+                } else {
+                    allValTrue = false;
+                    break;
+                }
+            }
+        }
+        if (allValTrue && tempArr[i].length > 0) {
+            rectangles.push(tempArr[i]);
+        }
+    }
+    if (rowMax[0] > 1 && colMax[1] > 0) {
+        let allValTrue = true;
+        tempArr = [];
+        let smaller = rowMax[0] < colMax[0] ? rowMax[0] : colMax[0];
+        let cellToAdd = 0;
+        for (let j = 0; j < corners.length; j++) {
+            for (let k = 0; k < smaller; k++) {
+                for (let l = 0; l < smaller; l++) {
+                    if (j === 0) {
+                        cellToAdd = corners[j] + (k * colCount) + l;
+                    } else if (j === 1) {
+                        cellToAdd = corners[j] + (k * colCount) - l;
+                    } else if (j === 2) {
+                        cellToAdd = corners[j] - (k * colCount) + l;
+                    } else if (j === 3) {
+                        cellToAdd = corners[j] - (k * colCount) - l;
+                    }
+                    if (values[cellToAdd]) {
+                        tempArr.push(cellToAdd);
+                    } else {
+                        allValTrue = false;
+                        break;
+                    }
+                }
+            }
+        }
+        if (allValTrue && tempArr.length > 0) {
+            rectangles.push(tempArr);
+        }
+    }
+
+    // Remove rectangles that are subsets of other rectangles
+    rectangles.sort((a, b) => a.length - b.length);
+    for (let i = 0; i < rectangles.length; i++) {
+        rectangles[i].sort((a, b) => a - b);
+        let counter = 0;
+        for (let j = 0; j < rectangles[i].length; j++) {
+            for (let k = 0; k < rectangles.length; k++) {
+                if (k !== i && rectangles[k].includes(rectangles[i][j])) {
+                    counter++;
+                    break;
+                }
+            }
+        }
+        if (counter === rectangles[i].length) {
+            rectangles.splice(i, 1);
+            i--;
+        }
+    }
+    rectangles.sort((a, b) => a[0] - b[0]);
+
+    for (let i = 0; i < rectangles.length; i++) {
+
+        if (columnGrayCode === undefined || columnGrayCode.length === 0) {
+            break;
+        }
+
+        if (rectangles[i].length === len / 2) {
+            let firstRow = Math.floor(rectangles[i][0] / colCount);
+            let lastRow = Math.floor(rectangles[i][(len / 2) - 1] / colCount);
+            let firstCol = rectangles[i][0] % colCount;
+            let lastCol = rectangles[i][(len / 2) - 1] % colCount;
+            let valid = true;
+            if ((lastRow - firstRow) + 1 !== rowCount / 2 && (lastCol - firstCol) + 1 !== colCount / 2) {
+                continue;
+            }
+
+            if ((lastRow - firstRow) + 1 === rowCount) {
+                for (let j = 0; j < columnGrayCode[0].length; j++) {
+                    valid = true;
+                    let firstVal = columnGrayCode[firstCol][j];
+                    for (let k = firstCol + 1; k <= lastCol; k++) {
+                        if (columnGrayCode[k][j] !== firstVal) {
+                            valid = false;
+                            break;
+                        }
+                    }
+                    if (valid) {
+                        break;
+                    }
+                }
+            } else if ((lastCol - firstCol) + 1 === colCount) {
+                for (let j = 0; j < rowGrayCode[0].length; j++) {
+                    valid = true;
+                    let firstVal = rowGrayCode[firstRow][j];
+                    for (let k = firstRow + 1; k <= lastRow; k++) {
+                        if (rowGrayCode[k][j] !== firstVal) {
+                            valid = false;
+                            break;
+                        }
+                    }
+                    if (valid) {
+                        break;
+                    }
+                }
+            }
+
+            if (!valid) {
+                let newRectangle = rectangles[i].splice(0, Math.ceil(rectangles[i].length / 2));
+                rectangles.push(newRectangle);
+                break;
+            }
+        }
+    }
+    rectangles.sort((a, b) => a[0] - b[0]);
     return rectangles;
 }
 
@@ -240,7 +558,7 @@ export function getRectangles(
         return values
     }
     const values = getValues()
-    return _getRectangles({values, colCount})
+    return _getRectangles({values, colCount, rowGrayCode, columnGrayCode})
 }
 
 /** Intermediate DNF representation used to be able to group together
@@ -266,12 +584,12 @@ export class DNFIntermediate {
 
     /** @param {DNFBlock} block */
     add(block) {
-        if(block.variables.length === 0) {
+        if (block.variables.length === 0) {
             console.log(`Empty DNF. Ignoring. Rectangle: ${block.rectangleIndex}.`)
             return
         }
         let blockJoined = block.variables.join(" & ")
-        if(block.variables.length > 1) {
+        if (block.variables.length > 1) {
             // Don't add parentheses when only single variable
             blockJoined = `(${blockJoined})`
         }

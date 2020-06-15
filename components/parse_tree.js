@@ -226,7 +226,7 @@ export default React.memo(function ParseTree({statement}) {
     )
 })
 
-function generateParseTree(data, {circleRadius}) {
+function generateParseTree(data) {
     // https://github.com/d3/d3/blob/master/CHANGES.md#shapes-d3-shape
     // https://github.com/d3/d3-hierarchy/blob/master/README.md#tree
     // https://observablehq.com/@d3/tidy-tree
@@ -235,13 +235,11 @@ function generateParseTree(data, {circleRadius}) {
     const margin = {top: 20, right: 120, bottom: 20, left: 120}
     const width = 960 - margin.right - margin.left
     const height = (30 * size) - margin.top - margin.bottom
-    // const height = 100
 
     let i = 0
 
     let root = d3.hierarchy(data.tree[0])
     const tree = d3.tree().size([height, width])
-    let maxYTransform = 0
 
     const treeData = tree(root)
 

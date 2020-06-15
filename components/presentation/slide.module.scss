@@ -6,13 +6,9 @@
   overflow: hidden;
 
   & > div {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    width: 100%;
-    min-height: 100vh;
-    flex-direction: column;
-    padding: 2% 4% calc(2rem + 2vh) 2%;
+      width: 100%;
+      min-height: 100vh;
+      padding: 2% 4% calc(2rem + 2vh) 2%;
   }
 
   q {

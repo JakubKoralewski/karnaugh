@@ -4,6 +4,36 @@ import {Rectangles} from "../../project/rectangle"
 import {debounce} from "lodash";
 import karnaughStyles from "./karnaugh_map.module.scss"
 
+/** @author hmak.me https://stackoverflow.com/a/38118843 */
+function generatePath({x, y, width: w, height: h, strokeWidth: r}, invisibleEdges) {
+    console.log("generating path, invisible edges: ", invisibleEdges)
+    if(invisibleEdges) {
+        for (const edge of invisibleEdges) {
+            switch (edge) {
+                case "top": {
+                    y -= r;
+                    h += r;
+                    break;
+                }
+                case "right": {
+                    w += r;
+                    break;
+                }
+                case "left": {
+                    x -= r;
+                    w += r;
+                    break;
+                }
+                case "bottom": {
+                    h += r;
+                    break;
+                }
+            }
+        }
+    }
+    return `M${x},${y} h${w} a${r},${r} 0 0 1 ${r},${r} v${h} a${r},${r} 0 0 1 -${r},${r} h-${w} a${r},${r} 0 0 1 -${r},-${r} v-${h} a${r},${r} 0 0 1 ${r},-${r} z`
+}
+
 export default React.memo(function SVGRectangles(props) {
     const {
         /** @type {Rectangles} */rectangles,
@@ -22,7 +52,7 @@ export default React.memo(function SVGRectangles(props) {
         const columnWidth = rowWidth / numColumns
         return {
             rowHeight: rowRef.current.scrollHeight,
-            rowWidth,
+            rowWidth: rowWidth - columnWidth,
             columnWidth,
             strokeWidth: 4 + columnWidth / 80
         }
@@ -55,13 +85,9 @@ export default React.memo(function SVGRectangles(props) {
         return {
             width: (width * sizes.columnWidth) - sizes.strokeWidth * 3,
             height: (sizes.rowHeight * height) - sizes.strokeWidth * 3,
-            x: sizes.strokeWidth * 1.5 + ((x + 1) * sizes.columnWidth),
-            y: ((y + 1) * sizes.rowHeight) + sizes.strokeWidth / 2
+            x: sizes.strokeWidth * 1.5 + (x * sizes.columnWidth),
+            y: y * sizes.rowHeight + sizes.strokeWidth / 2
         }
-    }
-    /** @author hmak.me https://stackoverflow.com/a/38118843 */
-    const drawRectPath = ({x, y, width: w, height: h}, r = sizes.strokeWidth) => {
-        return `M${x},${y} h${w} a${r},${r} 0 0 1 ${r},${r} v${h} a${r},${r} 0 0 1 -${r},${r} h-${w} a${r},${r} 0 0 1 -${r},-${r} v-${h} a${r},${r} 0 0 1 ${r},-${r} z`
     }
     useEffect(() => {
         return () => {
@@ -112,8 +138,8 @@ export default React.memo(function SVGRectangles(props) {
             ref={svgRef}
             style={{
                 position: "absolute",
-                top: "0px",
-                left: "0px",
+                top: `${sizes.rowHeight}px`,
+                left: `${sizes.columnWidth}px`,
                 width: `${sizes.rowWidth}px`,
                 height: `${sizes.rowHeight * numRows}px`,
                 pointerEvents: "none"
@@ -132,7 +158,7 @@ export default React.memo(function SVGRectangles(props) {
                     rectangles.rectangles.map((rect, i) => {
                         console.group("Drawing rectangle number ", i, "with rect", rect)
                         const pos = getPos(rect.pos.x, rect.pos.y, rect.width, rect.height)
-                        const d = drawRectPath(pos)
+                        const d = generatePath({strokeWidth: sizes.strokeWidth, ...pos}, rect.invisibleEdges)
                         console.groupEnd()
                         return (
                             <motion.path
@@ -159,4 +185,3 @@ export default React.memo(function SVGRectangles(props) {
     console.groupEnd()
     return rv
 })
-

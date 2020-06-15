@@ -23,7 +23,7 @@ export default React.memo(
             cell,
             refs,
             cellKey,
-            isLast,
+            isLast = false,
             show = true,
             naSymbol = "*",
             style: parentStyle,

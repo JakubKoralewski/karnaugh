@@ -29,9 +29,15 @@ function DNF(props) {
     }, [props.step, state.statement])
 
     useEffect(() => {
-        let prevBG = document.body.style.backgroundColor
+        let prevBG = document.body.style.background
         document.body.style.background = "coral"
-        return () => document.body.style.backgroundColor = prevBG
+        return () => {
+            if (props.direction === -1) {
+                document.body.style.background = `linear-gradient(45deg, lightblue, coral)`
+            } else {
+                document.body.style.background = prevBG
+            }
+        }
     }, [])
 
 
@@ -73,4 +79,5 @@ function DNF(props) {
 
 export default {
     Slide: DNF,
+    steps: 0
 }
