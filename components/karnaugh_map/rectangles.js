@@ -77,7 +77,7 @@ export default React.memo(function SVGRectangles(props) {
     }, 50), [rowRef.current.scrollWidth])
 
     useEffect(() => {
-        window.addEventListener("resize", () => onRowRefResize)
+        window.addEventListener("resize", onRowRefResize)
         return () => window.removeEventListener("resize", onRowRefResize)
     }, [])
 
