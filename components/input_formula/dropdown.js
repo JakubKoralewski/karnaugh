@@ -1,10 +1,10 @@
 import React, {useState} from "react"
-import styles from "./input_formula_dropdown.module.scss"
+import styles from "./dropdown.module.scss"
 import {AnimatePresence, motion} from "framer-motion"
 
 /** @typedef {string} Option*/
 /** @typedef {({group: Option[], label: string}|Option)[]} Options*/
-export function DropDownArrow({style, arrowColor, onClick, active}) {
+function DropDownArrow({style, arrowColor, onClick, active}) {
     return (
         <svg
             xmlns="http://www.w3.org/2000/svg"

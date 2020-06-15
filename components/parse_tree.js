@@ -1,5 +1,5 @@
 import React, {useEffect, useReducer, useState, useMemo, useRef} from "react"
-import styles from "./input_formula.module.scss"
+import styles from "./input_formula/styles.module.scss"
 import * as d3 from "d3"
 import {motion} from "framer-motion"
 

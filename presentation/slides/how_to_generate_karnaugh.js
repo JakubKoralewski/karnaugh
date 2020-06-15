@@ -1,6 +1,6 @@
-import React, {useRef, useEffect, useCallback, useState, createRef} from "react"
+import React, {useEffect, useState} from "react"
 import styles from "./slides.module.scss"
-import InputFormulaAll from "../../components/input_formula_all"
+import InputFormulaAll from "../../components/input_formula"
 import {BasicAnimation, SimpleOpacityAnimation} from "../animations"
 import TruthTableJsx from "../../components/truth_table"
 import KarnaughMap from "../../components/karnaugh_map/karnaugh_map"

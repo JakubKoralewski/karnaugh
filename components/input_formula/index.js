@@ -1,10 +1,10 @@
-import React, {useState, useEffect, useCallback, useReducer, useRef, useMemo} from "react"
-import styles from './input_formula.module.scss'
-import InputFormula from "./input_formula_only"
-import TruthTableJsx from "./truth_table"
-import ParseTree from "./parse_tree"
-import {DropDown, DropDownArrow} from "./input_formula_dropdown"
-import dropDownOptions from "./input_formula_options"
+import React, {useState} from "react"
+import styles from './styles.module.scss'
+import InputFormula from "./input_formula"
+import TruthTableJsx from "../truth_table"
+import ParseTree from "../parse_tree"
+import {DropDown} from "./dropdown"
+import dropDownOptions from "./dropdown_options"
 
 /** @author https://blog.hackages.io/conditionally-wrap-an-element-in-react-a8b9a47fab2 */
 const ConditionalWrapper = ({condition, wrapper, children}) =>

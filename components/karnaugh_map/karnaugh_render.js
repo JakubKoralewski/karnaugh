@@ -1,7 +1,7 @@
 // @ts-check
 import React, {useCallback, useEffect, useRef} from "react"
 import slideStyles from "../presentation/slide.module.scss"
-import inputFormulaStyles from "../input_formula.module.scss"
+import inputFormulaStyles from "../input_formula/styles.module.scss"
 import karnaughStyles from "./karnaugh_map.module.scss"
 import {isEqual} from "lodash"
 

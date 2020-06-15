@@ -1,5 +1,5 @@
 import styles from './slides.module.scss'
-import InputFormulaAll from "../../components/input_formula_all"
+import InputFormulaAll from "../../components/input_formula"
 import React, {useRef, useEffect} from "react"
 import {BasicAnimation, ScrollIntoViewAnimation} from "../animations"
 

@@ -1,7 +1,7 @@
 import React, {useState, useEffect, useCallback, useReducer, useRef, useMemo} from "react"
-import useStateWithLocalStorage from "./useStateWithLocalStorage"
-import Statement from "../project/statement";
-import styles from './input_formula.module.scss'
+import useStateWithLocalStorage from "../useStateWithLocalStorage"
+import Statement from "../../project/statement";
+import styles from './styles.module.scss'
 import {debounce} from "lodash"
 
 const initialState = {

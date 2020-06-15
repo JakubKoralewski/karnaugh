@@ -1,4 +1,3 @@
-
 /** @type {Options}*/
 export default [
     {

@@ -1,5 +1,5 @@
 import React, {createRef, useEffect, useRef} from "react"
-import styles from "./input_formula.module.scss"
+import styles from "./input_formula/styles.module.scss"
 import makeTruthTable from "../project/truth_table"
 
 const localStorageKey = `${process.env.staticFolder}-input-formula-truth-table`

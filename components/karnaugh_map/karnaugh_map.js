@@ -1,5 +1,5 @@
 import React, {useEffect, useRef} from "react"
-import inputStyles from "../input_formula.module.scss"
+import inputStyles from "../input_formula/styles.module.scss"
 import styles from "./karnaugh_map.module.scss"
 import CellRender from "./karnaugh_render"
 import {getDnf, getRectangles} from "../../project/dnf/dnf"
