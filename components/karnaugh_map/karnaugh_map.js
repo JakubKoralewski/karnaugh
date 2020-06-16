@@ -276,7 +276,7 @@ export default React.memo(
         let highlightRectangles
 
         // For restore
-        const lastRectangle = useRef()
+        const lastRectangle = useRef({})
         if (highlightRectangleIndexes !== null) {
             highlightRectangles = highlightRectangleIndexes.map(i => rectangles.rectangles[i])
         }
@@ -331,14 +331,14 @@ export default React.memo(
                                     row.map((cell, j) => {
                                         const key = columns.length + i * row.length + j
                                         let shouldHighlight = false
-                                        if(cell.rectangle && lastRectangle.current) {
+                                        let lastRect = lastRectangle.current[key]
+                                        if(cell.rectangle && lastRect) {
                                             // Restore previous rectangle which was on top
-                                            let lastRect = lastRectangle.current
                                             if(lastRect.checkIfInBounds(j-1, i)) {
                                                 cell.rectangle = lastRect
 
                                                 // Reset
-                                                lastRectangle.current = null
+                                                lastRectangle.current[key] = null
                                             }
                                         }
                                         if (highlightRectangles && cell.rectangle) {
@@ -351,7 +351,7 @@ export default React.memo(
                                                     console.log("Overriding rectangle", cell," with ", highlightedRectangle, i-1,j-1)
 
                                                     // Save current to restore on hover end
-                                                    lastRectangle.current = cell.rectangle
+                                                    lastRectangle.current[key] = cell.rectangle
 
                                                     cell.rectangle = highlightedRectangle
                                                 }
