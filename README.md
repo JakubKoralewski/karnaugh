@@ -1,8 +1,17 @@
+![](https://github.com/JakubKoralewski/karnaugh/workflows/GitHub%20Pages%20deploy%20from%20master/badge.svg)
+![](https://github.com/JakubKoralewski/karnaugh/workflows/test/badge.svg)
+
 This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/zeit/next.js/tree/canary/packages/create-next-app).
 
 ## Getting Started
 
-First, run the development server:
+Install hundreds of unnecessary dependencies using this neatly concise command:
+
+```bash
+npm install
+```
+
+Then, run the development server:
 
 ```bash
 npm run dev
@@ -12,7 +21,22 @@ yarn dev
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-You can start editing the page by modifying `pages/index.js`. The page auto-updates as you edit the file.
+## File structure
+
+```bash
+.
+├── components # React components
+│   ├── input_formula # The text input accepting statements
+│   ├── karnaugh_map # Tables, SVG drawing, DNF highlighting
+│   └── presentation # Slide component, arrow controls
+├── pages # SSG
+├── presentation # Powerpoint directory
+│   └── slides # Actual slide components
+├── project # Actual project algorithms w/ tests
+│   └── dnf
+│       └── rectangle_fixtures # test cases
+└── public # favicons, images, etc.
+```
 
 ## Deploy as if on GitHub
 
