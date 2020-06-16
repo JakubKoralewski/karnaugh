@@ -201,7 +201,7 @@ describe("wrapping detection", () => {
                 }
             )
 
-            rectangles.rectangles.forEach(
+            rectangles._rectangles.forEach(
                 /** @param {Rectangle} rectangle
                  *  @param {number} rectangleIndex
                  */
