@@ -1,5 +1,6 @@
-![](https://github.com/JakubKoralewski/karnaugh/workflows/GitHub%20Pages%20deploy%20from%20master/badge.svg)
-![](https://github.com/JakubKoralewski/karnaugh/workflows/test/badge.svg)
+![GH Actions Test badge](https://github.com/JakubKoralewski/karnaugh/workflows/GitHub%20Pages%20deploy%20from%20master/badge.svg)
+[![GH Actions Deploy badge](https://github.com/JakubKoralewski/karnaugh/workflows/test/badge.svg)](https://JakubKoralewski.github.io/karnaugh)
+[![Netlify Status](https://api.netlify.com/api/v1/badges/a5ea0702-854b-4ddb-91f4-1588714ec5d6/deploy-status)](https://karnaugh.netlify.app)
 
 This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/zeit/next.js/tree/canary/packages/create-next-app).
 
