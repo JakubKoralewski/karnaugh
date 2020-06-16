@@ -525,7 +525,7 @@ function _getRectangles({values, colCount, rowGrayCode, columnGrayCode}) {
     rectangles.sort((a, b) => a[0] - b[0]);
 
     // Remove duplicates
-    for (var i = 0; i < rectangles.length; i++) {
+    for (let i = 0; i < rectangles.length; i++) {
         rectangles[i] = rectangles[i].filter( function( item, index, self ) { return self.indexOf(item) == index; });
     }
 
