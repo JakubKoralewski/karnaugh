@@ -2,6 +2,7 @@ import {getRectangles, getDnf, testables} from "./dnf"
 import {transformedTable, columnGrayCode, rowGrayCode, rowHeaders, columnHeaders} from "./dnf.fixtures"
 import {test, expect, describe, beforeAll} from "@jest/globals";
 import rectangleFixtures from "./rectangle_fixtures"
+import {Rectangles} from "../rectangle";
 
 export function arraysEqual(a, b) {
     if (a === b) return true;
@@ -132,8 +133,14 @@ function visualizeMap({rowGrayCode, columnGrayCode, transformedTable}) {
 
 describe('given it generates rectangles', () => {
     let rectangles
+    let rectanglesClass
     beforeAll(() => {
         rectangles = getRectangles(config)
+        rectanglesClass = new Rectangles({
+            rectangles,
+            rowLength: columnGrayCode.length,
+            columnHeight: rowGrayCode.length
+        })
     })
 
     test('rectangles have right shape', () => {
@@ -156,7 +163,6 @@ describe('given it generates rectangles', () => {
     })
     test('no ones are left out', () => {
         const twoDimensionalMap = visualizeMap({rowGrayCode, columnGrayCode, transformedTable})
-        const rowLength = rowGrayCode.length
         const columnLength = columnGrayCode.length
         for (const rectangle of rectangles) {
             for (const cell of rectangle) {
@@ -169,10 +175,9 @@ describe('given it generates rectangles', () => {
             expect(row.filter(x => !!x)).toHaveLength(0)
         }
     })
-    //TODO: no larger possible combination of rectangles?
 
     test('generates dnf', () => {
-        const dnf = getDnf({rectangles, ...config})
+        const dnf = getDnf({rectangles: rectanglesClass, ...config})
         expect(dnf).toBeDefined()
     })
 })
