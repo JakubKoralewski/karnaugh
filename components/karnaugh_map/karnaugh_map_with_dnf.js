@@ -32,11 +32,11 @@ export default React.memo(
         }
 
         /**
-         * @type {{current: Object.<number, {block: DNFBlock, ref: {current: HTMLSpanElement}, active: boolean}>}}
+         * @type {{current: Object.<number, {block: DNFBlock, ref: {current: HTMLSpanElement}}>}}
          */
         const rectangleIndexToDNFBlockMap = useRef({})
 
-        /** @param {Rectangles|} r*/
+        /** @param {Rectangles} r*/
         const onReturnRectangles = (r) => {
             setRectangles(r)
         }

@@ -1,0 +1,79 @@
+@mixin mixinBg($secondary) {
+    background-color: $secondary;
+}
+
+.dropDownArrow {
+    $size: 1.5rem;
+    position: absolute;
+    right: 1rem;
+    bottom: calc(#{$size} - 8px);
+    z-index: 40;
+    padding: 8px 4px;
+    cursor: pointer;
+    width: $size;
+    fill: var(--arrow-color);
+    transition: transform 0.25s ease-in-out;
+
+    &.dropDownArrowActive {
+        transform-origin: 50% 50%;
+        transform: rotate(180deg);
+    }
+}
+
+.dropDownContainer {
+    position: relative;
+
+    $border-radius: 10px;
+    $padding: 0.2rem;
+    $secondary: var(--secondary-color);
+    $separator: var(--separator-color);
+    $font-heading-color: var(--font-heading-color);
+    .option {
+        padding: 0 0;
+        margin: $padding 0;
+        height: 2rem;
+        span {
+            cursor: pointer;
+            padding: 0 1rem;
+        }
+    }
+    .option:last-of-type:first-of-type {
+        border-radius: $border-radius;
+    }
+
+    .dropDown {
+        border-radius: $border-radius;
+        position: absolute;
+        right: 0;
+        top: 0;
+        width: 90%;
+        background-color: white;
+
+        .optGroup {
+            &:first-of-type {
+                .label {
+                    border-radius: $border-radius $border-radius 0 0;
+                }
+            }
+            .label {
+                font-weight: 700;
+                @include mixinBg($secondary);
+                padding: 0.5rem 1rem;
+                color: $font-heading-color;
+            }
+
+            .options {
+            }
+
+            .option {
+                padding-left: 2rem;
+                &:nth-child(2n) {
+                    @include mixinBg($separator);
+                }
+            }
+        }
+    }
+
+}
+
+

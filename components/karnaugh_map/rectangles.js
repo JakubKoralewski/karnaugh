@@ -77,10 +77,10 @@ export default React.memo(
             setSizes(initSizes(numColumns))
         }, 50), [rowRef.current.scrollWidth])
 
-        useEffect(() => {
-            window.addEventListener("resize", () => onRowRefResize)
-            return () => window.removeEventListener("resize", onRowRefResize)
-        }, [])
+    useEffect(() => {
+        window.addEventListener("resize", onRowRefResize)
+        return () => window.removeEventListener("resize", onRowRefResize)
+    }, [])
 
         const getPos = (x, y, width, height) => {
             return {

@@ -1,6 +1,6 @@
 import React, {useEffect, useState} from "react"
 import styles from "./slides.module.scss"
-import InputFormulaAll from "../../components/input_formula_all"
+import InputFormulaAll from "../../components/input_formula"
 import {BasicAnimation, SimpleOpacityAnimation} from "../animations"
 import makeTruthTable from "../../project/truth_table"
 import KarnaughMapWithDNF from "../../components/karnaugh_map/karnaugh_map_with_dnf"
@@ -52,6 +52,15 @@ function DNF(props) {
                         <InputFormulaAll
                             onChange={onStatementChange}
                             animate={children => <SimpleOpacityAnimation>{children}</SimpleOpacityAnimation>}
+                            dropdown={true}
+                            arrowColor={"coral"}
+                            dropDownStyle={{
+                                "--arrow-color": "rgb(255, 127, 80)",
+                                // "--secondary-color": "rgb(245,119,77)",
+                                "--secondary-color": "rgb(224,224,224)",
+                                "--separator-color": "rgb(255,247,247)",
+                                "--font-heading-color": "black"
+                            }}
                         />
                     </SimpleOpacityAnimation>
                     <div style={{display: "flex", width: "100%", justifyContent: "center"}}>
