@@ -1,4 +1,4 @@
-import React, {useEffect, usex, useState, createRef} from "react"
+import React, {useEffect, usex, useState, createRef, useRef} from "react"
 import slideStyles from "../slides.module.scss"
 import moduleStyles from "./styles.module.scss"
 import {Animation, BasicAnimation, SimpleOpacityAnimation} from "../../animations"
@@ -135,7 +135,7 @@ function TechnicalImplementation(props) {
                                 </p>
                                 <Code>
                                     {
-                                        `{
+                                        `
     let isValid = true
     let statement
     try {
@@ -145,7 +145,7 @@ function TechnicalImplementation(props) {
         // throws error if formula invalid
         isValid = false
     }
-}`
+`
                                     }
                                 </Code>
                             </div>
