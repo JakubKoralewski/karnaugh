@@ -117,7 +117,8 @@ export class Rectangle extends AbstractRectangle {
                 const lastPosX = this.getX(lastPos)
                 const currentPosX = this.getX(cell)
                 this.width = lastPosX - currentPosX + 1
-                if(lastPosX !== currentPosX) {
+                if(lastPosX !== currentPosX && this.getY(lastPos) === this.getY(cell)) {
+                    // Skipping columns
                     breaks.columns = {to: cell, from: lastPos}
                     breaks.doesWrap = true
                 }
@@ -284,8 +285,8 @@ export class Rectangles {
             return new Rectangle(r, this.colors.getRandom(), rowLength)
         })
 
-        /** @type {(Rectangle|WrappingRectangle)[]} - not nested*/
         let index = 0
+        /** @type {(Rectangle|WrappingRectangle)[]} - not nested*/
         this.rectangles = this._rectangles.flatMap(
             (rect,i) => {
                 if(rect.wrapping) {
