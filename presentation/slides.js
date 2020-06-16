@@ -2,6 +2,7 @@ import Intro from "./slides/intro"
 import WhatIsKarnaugh from "./slides/what_is_karnaugh"
 import HowToGenerateKarnaugh from "./slides/how_to_generate_karnaugh"
 import DNF from "./slides/dnf"
+import OtherMethods from "./slides/other_methods"
 import TechnicalImplementation from "./slides/technical_implementation"
 
 const slideOrder = [
@@ -9,6 +10,7 @@ const slideOrder = [
     WhatIsKarnaugh,
     HowToGenerateKarnaugh,
     DNF,
+    OtherMethods,
     TechnicalImplementation
 ]
 export default slideOrder.map(createWithRef)

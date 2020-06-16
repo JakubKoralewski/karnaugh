@@ -33,7 +33,7 @@ function DNF(props) {
         document.body.style.background = "coral"
         return () => {
             if (props.direction === -1) {
-                document.body.style.background = `linear-gradient(45deg, lightblue, coral)`
+                document.body.style.background = `white`
             } else {
                 document.body.style.background = prevBG
             }
@@ -79,5 +79,4 @@ function DNF(props) {
 
 export default {
     Slide: DNF,
-    steps: 0
 }
