@@ -28,5 +28,18 @@ export default [
         group: [
             "p <-> q <-> r <-> s <-> t",
         ]
+    },
+    {
+        label: "Other",
+        group: [
+            "p -> r -> s -> t -> u",
+            "(p & r & s & t & u & ~p) || (p & s) || (~r & ~s)",
+            "p & q || r || (s & ~s) || (~q & ~ t)",
+            "(p & q & r & s & t & u & ~p) || (~q & ~r & ~t) || (~q & ~t & ~u)",
+            "(p -> q) || (q -> r) || (r -> t)",
+            "(p & ~q) & (r -> s) & (p <-> q)",
+            "p & q & r -> s & t",
+            "(p -> q) & (q -> r) & (r -> t)",
+        ]
     }
 ]

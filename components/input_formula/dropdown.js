@@ -43,7 +43,7 @@ const mainDivVariants = {
  * @param {Object} obj
  * @param {Options} obj.options
  */
-export function DropDown({options, style, onOptionClick: onOptionParentClick}) {
+export function DropDown({options, style, onOptionClick: onOptionParentClick, currentText}) {
     const [active, setActive] = useState(false)
     const onArrowClick = () => {
         setActive(old => !old)
@@ -102,6 +102,11 @@ export function DropDown({options, style, onOptionClick: onOptionParentClick}) {
                                                                     key={j}
                                                                     value={actual_opt}
                                                                     onClick={onOptionClick(actual_opt)}
+                                                                    className={
+                                                                        currentText === actual_opt ?
+                                                                            styles.dropDownActive :
+                                                                            null
+                                                                    }
                                                                 />
                                                             )
                                                         })
@@ -132,9 +137,9 @@ export function DropDown({options, style, onOptionClick: onOptionParentClick}) {
  * @param {Object} obj
  * @param {Option} obj.value
  * */
-function Option({value, onClick}) {
+function Option({value, onClick, className}) {
     return (
-        <div className={styles.option}>
+        <div className={[styles.option, className].join(' ')}>
             <span onClick={onClick}>
                 {value}
             </span>

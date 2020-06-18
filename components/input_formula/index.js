@@ -30,7 +30,7 @@ export default function InputFormulaAll(
         arrowColor
     }) {
     let [statement, setStatement] = useState('')
-    let [dropDownInfusedStatement, setDropDownInfusedStatement] = useState('')
+    let [dropDownInfusedStatement, setDropDownInfusedStatement] = useState({refreshIndex: 0, value: ''})
     console.log("rendering inputformulaall statement: ", statement)
     /** @param {string} stat*/
     const onInnerChange = (stat) => {
@@ -40,7 +40,7 @@ export default function InputFormulaAll(
         }
     }
     const onOptionClick = (text) => {
-        setDropDownInfusedStatement(text)
+        setDropDownInfusedStatement(old => ({refreshIndex: ++old.refreshIndex, value: text}))
     }
 
     return (
@@ -51,12 +51,13 @@ export default function InputFormulaAll(
                         shouldShowInput &&
                         <InputFormula
                             onChange={onInnerChange}
-                            dropDownInfusedStatement={dropdown ? dropDownInfusedStatement : null}
+                            dropDownInfusedStatement={dropdown ? dropDownInfusedStatement.value : null}
                         />
                     }
                     {
                         dropdown &&
                         <DropDown
+                            currentText={statement.statement}
                             arrowColor={arrowColor}
                             options={dropDownOptions}
                             style={dropDownStyle}
