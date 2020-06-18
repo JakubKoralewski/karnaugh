@@ -4,10 +4,12 @@ import HowToGenerateKarnaugh from "./slides/how_to_generate_karnaugh"
 import DNF from "./slides/dnf"
 import OtherMethods from "./slides/other_methods"
 import TechnicalImplementation from "./slides/technical_implementation"
+import CodeExplanation from "./slides/code_explanation"
 
 const slideOrder = [
     Intro,
     WhatIsKarnaugh,
+    CodeExplanation,
     HowToGenerateKarnaugh,
     DNF,
     OtherMethods,
