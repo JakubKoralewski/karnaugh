@@ -48,6 +48,8 @@
         top: 0;
         width: 90%;
         background-color: white;
+        overflow-y: auto;
+        max-height: 50vh;
 
         .optGroup {
             &:first-of-type {
@@ -69,6 +71,10 @@
                 padding-left: 2rem;
                 &:nth-child(2n) {
                     @include mixinBg($separator);
+                }
+                &.dropDownActive {
+                    box-sizing: content-box;
+                    border: 3px solid $secondary;
                 }
             }
         }
