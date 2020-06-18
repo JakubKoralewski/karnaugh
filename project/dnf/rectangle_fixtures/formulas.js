@@ -18,7 +18,7 @@ const otherFixturesAbstracted = [
                 [16,20,24,28],
                 [22,26],
                 [24,25,26,27,28,29,30,31]
-            ],
+        ],
         description:
             `Formula: p -> t -> ( z & q <-> d)`
     }
