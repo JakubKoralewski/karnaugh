@@ -8,6 +8,7 @@ function Intro(props) {
 
     return (
         <div className={[styles.intro].join(' ')}>
+            <a href="https://git.io/karnaugh" style={{position: "fixed", top: "2rem"}}>git.io/karnaugh</a>
             {
                 props.step >= 1 &&
                 <BasicAnimation>
